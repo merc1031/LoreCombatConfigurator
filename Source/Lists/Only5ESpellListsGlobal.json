@@ -1,0 +1,445 @@
+{
+    "Fighter": {},
+    "Barbarian": {},
+    "Wizard": {
+        "Cantrip": [
+            "Target_LightningLure",
+            "Target_CreateBonfire",
+            "Target_MindSliver",
+            "Target_GreenFlameBlade",
+            "Target_ControlFlames",
+            "Target_Frostbite",
+            "Target_Gust",
+            "Target_ShapeWater",
+            "Target_TollTheDead",
+            "Target_MoldEarth",
+            "Shout_Thunderclap",
+            "Shout_SwordBurst",
+            "Target_BoomingBlade",
+            "Target_Prestidigitation"
+        ],
+        "Fifth": [
+            "Target_SynapticStatic",
+            "Target_SteelWindStrike",
+            "Projectile_NegativeEnergyFlood",
+            "Target_FarStep",
+            "Target_SkillEmpowerment"
+        ],
+        "First": [
+            "Shout_AbsorbElements",
+            "Zone_TashasCausticBrew",
+            "Shout_EarthTremor",
+            "Target_UnseenServant",
+            "Target_CauseFear",
+            "Shout_DetectMagic",
+            "Target_Snare",
+            "Zone_FrostFingers",
+            "Throw_Catapult"
+        ],
+        "Fourth": [
+            "Target_SummonElemental",
+            "Projectile_RaulothimsPsychicLance",
+            "Target_CharmMonster"
+        ],
+        "Second": [
+            "Target_FlockOfFamiliars",
+            "Shout_WardingWind",
+            "Target_MaximiliansEarthenGrasp",
+            "Target_WitherAndBloom",
+            "Target_SnillocsSnowballStorm",
+            "Target_DragonsBreath",
+            "Shout_ShadowBlade",
+            "Zone_AganazzarsScorcher",
+            "Target_TashasMindWhip",
+            "Target_VortexWarp",
+            "Target_DustDevil",
+            "Target_NathairsMischief",
+            "Shout_KineticJaunt",
+            "Shout_BorrowedKnowledge",
+            "Zone_RimesBindingIce",
+            "Target_MindSpike",
+            "Target_ContinualFlame"
+        ],
+        "Sixth": [],
+        "Third": [
+            "Target_EruptingEarth",
+            "Target_EnemiesAbound",
+            "Target_FlameArrows",
+            "Shout_AshardalonsStride",
+            "Target_SummonShadowspawn",
+            "Teleportation_ThunderStep",
+            "Projectile_MinuteMeteors",
+            "Shout_SpiritShroud",
+            "Target_IntellectFortress",
+            "Target_Nondetection",
+            "Target_Catnap"
+        ],
+        "base": []
+    },
+    "Sorcerer": {
+        "Cantrip": [
+            "Target_LightningLure",
+            "Target_CreateBonfire",
+            "Target_MindSliver",
+            "Target_GreenFlameBlade",
+            "Target_ControlFlames",
+            "Target_Frostbite",
+            "Target_Gust",
+            "Target_ShapeWater",
+            "Target_MoldEarth",
+            "Shout_Thunderclap",
+            "Shout_SwordBurst",
+            "Target_BoomingBlade",
+            "Target_Prestidigitation"
+        ],
+        "Fifth": [
+            "Target_SynapticStatic",
+            "Target_FarStep",
+            "Target_SkillEmpowerment"
+        ],
+        "First": [
+            "Shout_AbsorbElements",
+            "Zone_TashasCausticBrew",
+            "Shout_EarthTremor",
+            "Shout_DetectMagic",
+            "Target_ChaosBolt",
+            "Throw_Catapult"
+        ],
+        "Fourth": [
+            "Projectile_RaulothimsPsychicLance",
+            "Target_CharmMonster"
+        ],
+        "Second": [
+            "Shout_WardingWind",
+            "Target_MaximiliansEarthenGrasp",
+            "Target_WitherAndBloom",
+            "Target_SnillocsSnowballStorm",
+            "Target_DragonsBreath",
+            "Shout_ShadowBlade",
+            "Zone_AganazzarsScorcher",
+            "Target_VortexWarp",
+            "Target_DustDevil",
+            "Target_NathairsMischief",
+            "Shout_KineticJaunt",
+            "Target_TashasMindWhip",
+            "Zone_RimesBindingIce",
+            "Target_MindSpike"
+        ],
+        "Sixth": [],
+        "Third": [
+            "Target_EruptingEarth",
+            "Target_EnemiesAbound",
+            "Shout_WaterWalk",
+            "Target_FlameArrows",
+            "Shout_AshardalonsStride",
+            "Projectile_MinuteMeteors",
+            "Teleportation_ThunderStep",
+            "Target_Catnap",
+            "Target_IntellectFortress"
+        ],
+        "base": []
+    },
+    "Bard": {
+        "Cantrip": [
+            "Shout_Thunderclap",
+            "Target_Prestidigitation"
+        ],
+        "Fifth": [
+            "Target_SynapticStatic",
+            "Target_SkillEmpowerment"
+        ],
+        "First": [
+            "Target_UnseenServant",
+            "Shout_DetectMagic",
+            "Shout_EarthTremor"
+        ],
+        "Fourth": [
+            "Projectile_RaulothimsPsychicLance",
+            "Target_CharmMonster"
+        ],
+        "MSFifth": [
+            "Shout_ShadowOfMoil",
+            "Shout_GuardianOfNature",
+            "Shout_SwiftQuiver",
+            "Shout_DestructiveWave",
+            "Target_Stoneskin",
+            "Target_SummonElemental",
+            "Target_BlackTentacles",
+            "Target_SteelWindStrike",
+            "Target_ConjureWoodlandBeings",
+            "Target_ResilientSphere",
+            "Target_GraspingVine",
+            "Projectile_NegativeEnergyFlood",
+            "Target_FarStep",
+            "Target_HolyWeapon",
+            "ProjectileStrike_ConjureVolley"
+        ],
+        "MSThird": [
+            "Target_GreenFlameBlade",
+            "Target_Goodberry",
+            "Projectile_RayOfSickness",
+            "Zone_GustOfWind",
+            "Projectile_AcidSplash",
+            "Shout_ProduceFlame",
+            "Target_Snare",
+            "Target_Guidance",
+            "Shout_WaterWalk",
+            "Shout_FlameBlade",
+            "Target_ShieldOfFaith",
+            "Zone_BurningHands",
+            "Target_WitherAndBloom",
+            "Shout_SwordBurst",
+            "Shout_ExpeditiousRetreat",
+            "Target_FlockOfFamiliars",
+            "Projectile_HailOfThorns",
+            "Target_Frostbite",
+            "Projectile_MinuteMeteors",
+            "Shout_PrayerOfHealing",
+            "Zone_AganazzarsScorcher",
+            "Target_Smite_Wrathful",
+            "Target_Smite_Branding_Container",
+            "Target_ControlFlames",
+            "Target_Gust",
+            "Projectile_WitchBolt",
+            "Shout_ArmsOfHadar",
+            "Target_ShapeWater",
+            "Target_SummonShadowspawn",
+            "Shout_SpiritShroud",
+            "Shout_Thaumaturgy",
+            "Target_MagicStone",
+            "Target_FindFamiliar",
+            "Target_LightningLure",
+            "Target_Resistance",
+            "Target_WardingBond",
+            "Shout_DetectEvilAndGood",
+            "Shout_ZephyrStrike",
+            "Throw_Catapult",
+            "Target_EruptingEarth",
+            "Target_ProtectionFromEvilAndGood",
+            "Target_SpareTheDying",
+            "Target_MindSpike",
+            "Target_MageArmor",
+            "Target_ShockingGrasp",
+            "Target_VortexWarp",
+            "Target_Grease",
+            "Zone_RimesBindingIce",
+            "Target_MaximiliansEarthenGrasp",
+            "Target_HealingSpirit",
+            "Target_SnillocsSnowballStorm",
+            "Shout_AbsorbElements",
+            "Zone_TashasCausticBrew",
+            "Target_Jump",
+            "Target_DustDevil",
+            "Target_BoomingBlade",
+            "Zone_FrostFingers",
+            "Target_FlamingSphere",
+            "Target_InflictWounds",
+            "Shout_Druidcraft",
+            "Target_Ceremony",
+            "Shout_AshardalonsStride",
+            "Target_ThornWhip",
+            "Projectile_PoisonSpray",
+            "Target_ChaosBolt",
+            "Target_ContinualFlame",
+            "Shout_Shillelagh",
+            "Target_MagicWeapon",
+            "Target_FlameArrows",
+            "Target_TollTheDead",
+            "Projectile_EnsnaringStrike_Container",
+            "Target_Moonbeam",
+            "Shout_WordOfRadiance",
+            "Target_CreateDestroyWater",
+            "Target_CreateBonfire",
+            "Target_MindSliver",
+            "Target_ProtectionFromPoison",
+            "Target_CreateFoodAndWater",
+            "Target_CauseFear",
+            "Teleportation_ThunderStep",
+            "Target_Smite_Searing",
+            "Target_TashasMindWhip",
+            "Shout_Shield_Sorcerer",
+            "Target_MoldEarth",
+            "Target_FogCloud",
+            "Target_Barkskin",
+            "Shout_ShadowBlade",
+            "Target_DragonsBreath"
+        ],
+        "Second": [
+            "Target_NathairsMischief",
+            "Shout_KineticJaunt",
+            "Shout_BorrowedKnowledge",
+            "Shout_WardingWind"
+        ],
+        "Sixth": [],
+        "Third": [
+            "Target_EnemiesAbound",
+            "Target_Catnap",
+            "Target_IntellectFortress",
+            "Target_Nondetection",
+            "Target_MotivationalSpeech"
+        ],
+        "base": []
+    },
+    "Cleric": {
+        "Cantrip": [
+            "Target_TollTheDead",
+            "Shout_WordOfRadiance",
+            "Target_SpareTheDying"
+        ],
+        "Fifth": [
+            "Target_HolyWeapon"
+        ],
+        "First": [
+            "Shout_DetectEvilAndGood",
+            "Shout_DetectMagic",
+            "Target_Ceremony"
+        ],
+        "Second": [
+            "Shout_BorrowedKnowledge",
+            "Target_ContinualFlame"
+        ],
+        "Third": [
+            "Target_LifeTransference",
+            "Shout_WaterWalk",
+            "Target_CreateFoodAndWater",
+            "Shout_SpiritShroud",
+            "Target_MotivationalSpeech"
+        ],
+        "base": []
+    },
+    "Ranger": {
+        "First": [
+            "Shout_AbsorbElements",
+            "Target_Snare",
+            "Shout_DetectMagic",
+            "Shout_ZephyrStrike",
+            "Target_BeastBond"
+        ],
+        "Second": [
+            "Target_HealingSpirit",
+            "Target_SummonBeast"
+        ],
+        "Third": [
+            "Target_Nondetection",
+            "Shout_AshardalonsStride",
+            "Target_FlameArrows",
+            "Shout_WaterWalk"
+        ],
+        "base": []
+    },
+    "Paladin": {
+        "First": [
+            "Shout_DetectEvilAndGood",
+            "Shout_DetectMagic",
+            "Target_Ceremony"
+        ],
+        "Second": [],
+        "Third": [
+            "Target_CreateFoodAndWater",
+            "Shout_SpiritShroud"
+        ],
+        "base": []
+    },
+    "Druid": {
+        "Cantrip": [
+            "Target_CreateBonfire",
+            "Target_PrimalSavagery",
+            "Target_ControlFlames",
+            "Target_Frostbite",
+            "Target_Gust",
+            "Shout_Druidcraft",
+            "Target_ShapeWater",
+            "Target_MagicStone",
+            "Target_MoldEarth",
+            "Shout_Thunderclap"
+        ],
+        "Fifth": [
+            "Shout_CommuneWithNature"
+        ],
+        "First": [
+            "Shout_AbsorbElements",
+            "Target_Snare",
+            "Shout_EarthTremor",
+            "Shout_DetectMagic",
+            "Target_BeastBond"
+        ],
+        "Fourth": [
+            "Shout_GuardianOfNature",
+            "Target_SummonElemental",
+            "Target_CharmMonster"
+        ],
+        "Second": [
+            "Shout_WardingWind",
+            "Target_WitherAndBloom",
+            "Target_HealingSpirit",
+            "Target_SummonBeast",
+            "Target_DustDevil",
+            "Target_ContinualFlame"
+        ],
+        "Third": [
+            "Target_FlameArrows",
+            "Target_EruptingEarth",
+            "Shout_WaterWalk"
+        ],
+        "base": []
+    },
+    "Rogue": {},
+    "Warlock": {
+        "ArchfeyFifth": [],
+        "ArchfeyFirst": [],
+        "ArchfeyFourth": [],
+        "ArchfeySecond": [],
+        "ArchfeyThird": [],
+        "Cantrip": [
+            "Target_LightningLure",
+            "FW_Frostbite_Cantrip",
+            "Target_CreateBonfire",
+            "Target_MindSliver",
+            "UW_Thunderclap_Cantrip",
+            "Target_GreenFlameBlade",
+            "Target_Frostbite",
+            "Target_Gust",
+            "Target_ShapeWater",
+            "Target_TollTheDead",
+            "Target_MagicStone",
+            "Shout_Thunderclap",
+            "Shout_SwordBurst",
+            "FW_ChurnPuddle",
+            "Target_BoomingBlade",
+            "Target_Prestidigitation"
+        ],
+        "FiendFifth": [],
+        "FiendFirst": [
+            "Target_CauseFear",
+            "Target_UnseenServant"
+        ],
+        "FiendFourth": [
+            "Shout_ShadowOfMoil",
+            "Projectile_RaulothimsPsychicLance",
+            "Target_CharmMonster"
+        ],
+        "FiendSecond": [
+            "Target_FlockOfFamiliars",
+            "Shout_ShadowBlade",
+            "Shout_BorrowedKnowledge",
+            "Target_MindSpike"
+        ],
+        "FiendThird": [],
+        "GOOFifth": [
+            "Target_SynapticStatic",
+            "Target_FarStep",
+            "Projectile_NegativeEnergyFlood"
+        ],
+        "GOOFirst": [],
+        "GOOFourth": [],
+        "GOOSecond": [],
+        "GOOThird": [
+            "Target_EnemiesAbound",
+            "Target_SummonShadowspawn",
+            "Teleportation_ThunderStep",
+            "Shout_SpiritShroud",
+            "Target_IntellectFortress"
+        ],
+        "base": []
+    }
+}

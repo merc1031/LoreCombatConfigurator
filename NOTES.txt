@@ -1,0 +1,888 @@
+Ext.Definition.GetAll("ClassDescription")
+Has All
+
+S >> _D(Ext.Definition.Get(Ext.Definition.GetAll("ClassDescription")[63], "ClassDescription"))
+{
+        "AnimationSetPriority" : 0,
+        "BaseHp" : 0,
+        "CanLearnSpells" : false,
+        "CharacterCreationPose" : "0f07ec6e-4ef0-434e-9a51-1353260ccff8",
+        "ClassEquipment" : "",
+        "ClassHotbarColumns" : 6,
+        "CommonHotbarColumns" : 8,
+        "Description" :
+        {
+                "ArgumentString" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                },
+                "Handle" :
+                {
+                        "Handle" : "hf922abcfgb27dg4e38ga879g419b23b374cc",
+                        "Version" : 9
+                }
+        },
+        "DisplayName" :
+        {
+                "ArgumentString" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                },
+                "Handle" :
+                {
+                        "Handle" : "hd736dc8cgf832g44dbg92fag23cd9dc6bd87",
+                        "Version" : 1
+                }
+        },
+        "HasGod" : false,
+        "HpPerLevel" : 0,
+        "IsDefaultForUseSpellAction" : false,
+        "IsSomaticWithInstrument" : false,
+        "ItemsHotbarColumns" : 2,
+        "LearningStrategy" : 1,
+        "MulticlassSpellcasterModifier" : 0.0,
+        "MustPrepareSpells" : false,
+        "Name" : "PathOfTheStormHerald",
+        "ParentGuid" : "d8cadb42-0ff9-4049-afaf-e5d78d06a399",
+        "PrimaryAbility" : 1,
+        "ProgressionTableUUID" : "b11dcb99-712b-417a-8e69-891c47f2ddc2",
+        "ResourceUUID" : "728a726d-8df0-48af-aedf-09ec5a14d92c",
+        "SoundClassType" : "Barbarian",
+        "SpellCastingAbility" : 3,
+        "SpellList" : "00000000-0000-0000-0000-000000000000",
+        "SubclassTitle" :
+        {
+                "ArgumentString" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                },
+                "Handle" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                }
+        },
+        "Tags" : [],
+        "Unused" :
+        {
+                "ArgumentString" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                },
+                "Handle" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                }
+        },
+        "field_71" : 0
+}
+S >> _D(Ext.Definition.Get(Ext.Definition.GetAll("ClassDescription")[64], "ClassDescription"))
+{
+        "AnimationSetPriority" : 0,
+        "BaseHp" : 0,
+        "CanLearnSpells" : false,
+        "CharacterCreationPose" : "0f07ec6e-4ef0-434e-9a51-1353260ccff8",
+        "ClassEquipment" : "",
+        "ClassHotbarColumns" : 6,
+        "CommonHotbarColumns" : 8,
+        "Description" :
+        {
+                "ArgumentString" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                },
+                "Handle" :
+                {
+                        "Handle" : "h4006bb04g1504g42c0gb89ag282244a3df9d",
+                        "Version" : 3
+                }
+        },
+        "DisplayName" :
+        {
+                "ArgumentString" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                },
+                "Handle" :
+                {
+                        "Handle" : "h4db71550g5be9g49cfg8517gdbaeaebb46bb",
+                        "Version" : 1
+                }
+        },
+        "HasGod" : false,
+        "HpPerLevel" : 0,
+        "IsDefaultForUseSpellAction" : false,
+        "IsSomaticWithInstrument" : false,
+        "ItemsHotbarColumns" : 2,
+        "LearningStrategy" : 1,
+        "MulticlassSpellcasterModifier" : 0.0,
+        "MustPrepareSpells" : false,
+        "Name" : "AstralSelf",
+        "ParentGuid" : "c4598bdb-fc07-40dd-a62c-90cc138bd76f",
+        "PrimaryAbility" : 2,
+        "ProgressionTableUUID" : "44a8291a-3bf4-4f92-8002-8c25db356c4b",
+        "ResourceUUID" : "4cbcab30-4854-4473-9784-2170daa055ef",
+        "SoundClassType" : "Monk",
+        "SpellCastingAbility" : 5,
+        "SpellList" : "00000000-0000-0000-0000-000000000000",
+        "SubclassTitle" :
+        {
+                "ArgumentString" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                },
+                "Handle" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                }
+        },
+        "Tags" : [],
+        "Unused" :
+        {
+                "ArgumentString" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                },
+                "Handle" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                }
+        },
+        "field_71" : 106
+}
+S >> _D(Ext.Definition.Get(Ext.Definition.GetAll("ClassDescription")[65], "ClassDescription"))
+{
+        "AnimationSetPriority" : 0,
+        "BaseHp" : 0,
+        "CanLearnSpells" : false,
+        "CharacterCreationPose" : "0f07ec6e-4ef0-434e-9a51-1353260ccff8",
+        "ClassEquipment" : "",
+        "ClassHotbarColumns" : 6,
+        "CommonHotbarColumns" : 8,
+        "Description" :
+        {
+                "ArgumentString" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                },
+                "Handle" :
+                {
+                        "Handle" : "hcc476c7dg5090g4ca3g92a4gbb272db8224d",
+                        "Version" : 1
+                }
+        },
+        "DisplayName" :
+        {
+                "ArgumentString" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                },
+                "Handle" :
+                {
+                        "Handle" : "h38b1cd9fg94d3g4501g9aebg761ad6decf6d",
+                        "Version" : 1
+                }
+        },
+        "HasGod" : false,
+        "HpPerLevel" : 0,
+        "IsDefaultForUseSpellAction" : false,
+        "IsSomaticWithInstrument" : false,
+        "ItemsHotbarColumns" : 2,
+        "LearningStrategy" : 1,
+        "MulticlassSpellcasterModifier" : 0.0,
+        "MustPrepareSpells" : false,
+        "Name" : "Reaper",
+        "ParentGuid" : "c4598bdb-fc07-40dd-a62c-90cc138bd76f",
+        "PrimaryAbility" : 2,
+        "ProgressionTableUUID" : "a4b59b58-7512-4698-8598-e3a34cddb8bb",
+        "ResourceUUID" : "35427743-f804-455e-92f6-fa56d486858f",
+        "SoundClassType" : "Monk",
+        "SpellCastingAbility" : 5,
+        "SpellList" : "00000000-0000-0000-0000-000000000000",
+        "SubclassTitle" :
+        {
+                "ArgumentString" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                },
+                "Handle" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                }
+        },
+        "Tags" : [],
+        "Unused" :
+        {
+                "ArgumentString" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                },
+                "Handle" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                }
+        },
+        "field_71" : 0
+}
+S >> _D(Ext.Definition.Get(Ext.Definition.GetAll("ClassDescription")[69], "ClassDescription"))
+{
+        "AnimationSetPriority" : 0,
+        "BaseHp" : 0,
+        "CanLearnSpells" : false,
+        "CharacterCreationPose" : "0f07ec6e-4ef0-434e-9a51-1353260ccff8",
+        "ClassEquipment" : "",
+        "ClassHotbarColumns" : 6,
+        "CommonHotbarColumns" : 8,
+        "Description" :
+        {
+                "ArgumentString" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                },
+                "Handle" :
+                {
+                        "Handle" : "h6d1dc009g6659g4031g9d2fgd0bd8bb8b8d6",
+                        "Version" : 1
+                }
+        },
+        "DisplayName" :
+        {
+                "ArgumentString" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                },
+                "Handle" :
+                {
+                        "Handle" : "h6a7e7924g21bag40bcg9600gb80ff0c79d3f",
+                        "Version" : 1
+                }
+        },
+        "HasGod" : false,
+        "HpPerLevel" : 0,
+        "IsDefaultForUseSpellAction" : false,
+        "IsSomaticWithInstrument" : false,
+        "ItemsHotbarColumns" : 2,
+        "LearningStrategy" : 1,
+        "MulticlassSpellcasterModifier" : 0.0,
+        "MustPrepareSpells" : true,
+        "Name" : "CircleofStars",
+        "ParentGuid" : "457d0a6e-9da8-4f95-a225-18382f0e94b5",
+        "PrimaryAbility" : 5,
+        "ProgressionTableUUID" : "9b2a7e3c-7191-4f37-a428-ba7413f97af4",
+        "ResourceUUID" : "5ef8c19d-cb24-4192-83bf-5db9593c7fde",
+        "SoundClassType" : "Druid",
+        "SpellCastingAbility" : 5,
+        "SpellList" : "00000000-0000-0000-0000-000000000000",
+        "SubclassTitle" :
+        {
+                "ArgumentString" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                },
+                "Handle" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                }
+        },
+        "Tags" : [],
+        "Unused" :
+        {
+                "ArgumentString" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                },
+                "Handle" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                }
+        },
+        "field_71" : 0
+}
+S >> _D(Ext.Definition.Get(Ext.Definition.GetAll("ClassDescription")[80], "ClassDescription"))
+{
+        "AnimationSetPriority" : 0,
+        "BaseHp" : 0,
+        "CanLearnSpells" : false,
+        "CharacterCreationPose" : "0f07ec6e-4ef0-434e-9a51-1353260ccff8",
+        "ClassEquipment" : "",
+        "ClassHotbarColumns" : 6,
+        "CommonHotbarColumns" : 8,
+        "Description" :
+        {
+                "ArgumentString" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                },
+                "Handle" :
+                {
+                        "Handle" : "samuraidesc",
+                        "Version" : 1
+                }
+        },
+        "DisplayName" :
+        {
+                "ArgumentString" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                },
+                "Handle" :
+                {
+                        "Handle" : "samuraiclass",
+                        "Version" : 1
+                }
+        },
+        "HasGod" : false,
+        "HpPerLevel" : 0,
+        "IsDefaultForUseSpellAction" : false,
+        "IsSomaticWithInstrument" : false,
+        "ItemsHotbarColumns" : 2,
+        "LearningStrategy" : 1,
+        "MulticlassSpellcasterModifier" : 0.0,
+        "MustPrepareSpells" : false,
+        "Name" : "Samurai",
+        "ParentGuid" : "721dfac3-92d4-41f5-b773-b7072a86232f",
+        "PrimaryAbility" : 1,
+        "ProgressionTableUUID" : "33a5a323-cab6-447a-b0f5-c9c6262ae4f3",
+        "ResourceUUID" : "4a9878a2-b7d4-4fe7-b89c-c6ddfd3ab4ce",
+        "SoundClassType" : "Fighter",
+        "SpellCastingAbility" : 0,
+        "SpellList" : "00000000-0000-0000-0000-000000000000",
+        "SubclassTitle" :
+        {
+                "ArgumentString" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                },
+                "Handle" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                }
+        },
+        "Tags" : [],
+        "Unused" :
+        {
+                "ArgumentString" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                },
+                "Handle" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                }
+        },
+        "field_71" : 0
+}
+S >> _D(Ext.Definition.Get(Ext.Definition.GetAll("ClassDescription")[23], "ClassDescription"))
+{
+        "AnimationSetPriority" : 0,
+        "BaseHp" : 0,
+        "CanLearnSpells" : false,
+        "CharacterCreationPose" : "0f07ec6e-4ef0-434e-9a51-1353260ccff8",
+        "ClassEquipment" : "",
+        "ClassHotbarColumns" : 6,
+        "CommonHotbarColumns" : 8,
+        "Description" :
+        {
+                "ArgumentString" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                },
+                "Handle" :
+                {
+                        "Handle" : "h2accac8fg28eeg4d85gb412g2f6f8ec2d756",
+                        "Version" : 1
+                }
+        },
+        "DisplayName" :
+        {
+                "ArgumentString" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                },
+                "Handle" :
+                {
+                        "Handle" : "hd3d0e53ag76a8g4275g98b2g751f2c421b8a",
+                        "Version" : 1
+                }
+        },
+        "HasGod" : false,
+        "HpPerLevel" : 0,
+        "IsDefaultForUseSpellAction" : false,
+        "IsSomaticWithInstrument" : false,
+        "ItemsHotbarColumns" : 2,
+        "LearningStrategy" : 1,
+        "MulticlassSpellcasterModifier" : 0.0,
+        "MustPrepareSpells" : false,
+        "Name" : "BeastMaster",
+        "ParentGuid" : "36be18ba-23db-4dff-bfa6-ae105ce43144",
+        "PrimaryAbility" : 2,
+        "ProgressionTableUUID" : "1ba04e99-e329-471d-a656-bbd5a363d7c8",
+        "ResourceUUID" : "6fd9547d-cc28-400e-bfa9-3a85baa70f24",
+        "SoundClassType" : "Ranger",
+        "SpellCastingAbility" : 5,
+        "SpellList" : "00000000-0000-0000-0000-000000000000",
+        "SubclassTitle" :
+        {
+                "ArgumentString" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                },
+                "Handle" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                }
+        },
+        "Tags" :
+        [
+                "bfaccaca-e512-43ea-89cc-372b5d1925ee"
+        ],
+        "Unused" :
+        {
+                "ArgumentString" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                },
+                "Handle" :
+                {
+                        "Handle" : "ls::TranslatedStringRepository::s_HandleUnknown",
+                        "Version" : 0
+                }
+        },
+        "field_71" : 0
+}
+
+Ext.Definition.GetAll("Progression")
+
+S >> _D(Ext.Definition.Get(Ext.Definition.GetAll("Progression")[1], "Progression"))
+{
+        "AddSpells" : [],
+        "AllowImprovement" : false,
+        "Boosts" : "ProficiencyBonus(SavingThrow,Strength);ProficiencyBonus(SavingThrow,Constitution);Proficiency(LightArmor);Proficiency(MediumArmor);Proficiency(Shields);Proficiency(SimpleWeapons);Proficiency(MartialWeapons);ActionResource(Rage,2,0)",
+        "IsMulticlass" : false,
+        "Level" : 1,
+        "Name" : "Barbarian",
+        "PassivesAdded" : "RageUnlock;UnarmouredDefence_Barbarian;Rage_Armour_Message;Rage_NoHeavyArmour_VFX",
+        "PassivesRemoved" : "",
+        "ProgressionType" : 0,
+        "ResourceUUID" : "a2198ee9-ea4c-468e-b6b4-22b32d37806e",
+        "SelectAbilities" : [],
+        "SelectAbilityBonus" :
+        [
+                {
+                        "Amount" : 2,
+                        "Amounts" :
+                        [
+                                2,
+                                1
+                        ],
+                        "BonusType" : "AbilityBonus",
+                        "UUID" : "b9149c8e-52c8-46e5-9cb6-fc39301c05fe"
+                }
+        ],
+        "SelectEquipment" : [],
+        "SelectPassives" : [],
+        "SelectSkills" :
+        [
+                {
+                        "Amount" : 2,
+                        "Arg3" : "",
+                        "UUID" : "233793b3-838a-4d4e-9d68-1e0a1089aba5"
+                }
+        ],
+        "SelectSkillsExpertise" : [],
+        "SelectSpells" : [],
+        "SubClasses" : [],
+        "TableUUID" : "60bbcc97-5381-4898-bc15-908c072895de",
+        "field_D0" : []
+}
+S >> _D(Ext.Definition.Get(Ext.Definition.GetAll("Progression")[2], "Progression"))
+{
+        "AddSpells" : [],
+        "AllowImprovement" : true,
+        "Boosts" : "",
+        "IsMulticlass" : false,
+        "Level" : 2,
+        "Name" : "Barbarian",
+        "PassivesAdded" : "DangerSense;RecklessAttack",
+        "PassivesRemoved" : "",
+        "ProgressionType" : 0,
+        "ResourceUUID" : "89986e8a-09b1-4163-b1d0-ddb2332bf3c5",
+        "SelectAbilities" : [],
+        "SelectAbilityBonus" : [],
+        "SelectEquipment" : [],
+        "SelectPassives" : [],
+        "SelectSkills" : [],
+        "SelectSkillsExpertise" : [],
+        "SelectSpells" : [],
+        "SubClasses" : [],
+        "TableUUID" : "60bbcc97-5381-4898-bc15-908c072895de",
+        "field_D0" : []
+}
+S >> _D(Ext.Definition.Get(Ext.Definition.GetAll("Progression")[3], "Progression"))
+{
+        "AddSpells" : [],
+        "AllowImprovement" : false,
+        "Boosts" : "ActionResource(Rage,1,0)",
+        "IsMulticlass" : false,
+        "Level" : 3,
+        "Name" : "Barbarian",
+        "PassivesAdded" : "",
+        "PassivesRemoved" : "",
+        "ProgressionType" : 0,
+        "ResourceUUID" : "0d4a6b4b-8162-414b-81ef-1838e36e778a",
+        "SelectAbilities" : [],
+        "SelectAbilityBonus" : [],
+        "SelectEquipment" : [],
+        "SelectPassives" : [],
+        "SelectSkills" : [],
+        "SelectSkillsExpertise" : [],
+        "SelectSpells" : [],
+        "SubClasses" :
+        [
+                "32eee7d8-1b2f-4de5-b9ee-78fbd286c6ef",
+                "05c272ce-2dc2-42f5-b688-d0eb40d8a078",
+                "460fcfa7-5219-4ab4-9151-2dd813e82d14",
+                "728a726d-8df0-48af-aedf-09ec5a14d92c",
+                "d6bf00fc-3518-4d63-ba8b-03532c1abc4d",
+                "2e585948-d775-451d-b58b-15b75321d11e"
+        ],
+        "TableUUID" : "60bbcc97-5381-4898-bc15-908c072895de",
+        "field_D0" : []
+}
+S >> _D(Ext.Definition.Get(Ext.Definition.GetAll("Progression")[6], "Progression"))
+{
+        "AddSpells" :
+        [
+                {
+                        "Ability" : "None",
+                        "ActionResource" : "d136c5d9-0ff0-43da-acce-a74a07f8d6bf",
+                        "ClassUUID" : "00000000-0000-0000-0000-000000000000",
+                        "CooldownType" : "Default",
+                        "PrepareType" : "Unknown",
+                        "SelectorId" : " ",
+                        "SpellUUID" : "17803035-4762-4143-8f2f-1143d47e4f40"
+                }
+        ],
+        "AllowImprovement" : false,
+        "Boosts" : "",
+        "IsMulticlass" : false,
+        "Level" : 3,
+        "Name" : "BerserkerPath",
+        "PassivesAdded" : "RageFrenzyUnlock",
+        "PassivesRemoved" : "RageUnlock",
+        "ProgressionType" : 1,
+        "ResourceUUID" : "5ce67263-04f2-4ede-b30a-2eb962d828f2",
+        "SelectAbilities" : [],
+        "SelectAbilityBonus" : [],
+        "SelectEquipment" : [],
+        "SelectPassives" : [],
+        "SelectSkills" : [],
+        "SelectSkillsExpertise" : [],
+        "SelectSpells" : [],
+        "SubClasses" : [],
+        "TableUUID" : "b2a03b63-809f-4df9-a179-bf5b899082ef",
+        "field_D0" : []
+}
+S >> _D(Ext.Definition.Get(Ext.Definition.GetAll("Progression")[10], "Progression"))
+{
+        "AddSpells" : [],
+        "AllowImprovement" : false,
+        "Boosts" : "ActionResource(BardicInspiration,3,0);ActionResource(SpellSlot,2,1);ProficiencyBonus(SavingThrow,Dexterity);ProficiencyBonus(SavingThrow,Charisma);Proficiency(LightArmor);Proficiency(SimpleWeapons);Proficiency(HandCrossbows);Proficiency(Longsword,
+        "IsMulticlass" : false,
+        "Level" : 1,
+        "Name" : "Bard",
+        "PassivesAdded" : "BardicInspiration;BardSpellcasting;UnlockedSpellSlotLevel1",
+        "PassivesRemoved" : "",
+        "ProgressionType" : 0,
+        "ResourceUUID" : "374c3aae-828b-44d8-b4e3-51ba802977dd",
+        "SelectAbilities" : [],
+        "SelectAbilityBonus" :
+        [
+                {
+                        "Amount" : 2,
+                        "Amounts" :
+                        [
+                                2,
+                                1
+                        ],
+                        "BonusType" : "AbilityBonus",
+                        "UUID" : "b9149c8e-52c8-46e5-9cb6-fc39301c05fe"
+                }
+        ],
+        "SelectEquipment" :
+        [
+                {
+                        "Amount" : 1,
+                        "Arg3" : "BardInstrument",
+                        "UUID" : "aab8c5b5-eacf-4867-8e5f-bd4de3a9132e"
+                }
+        ],
+        "SelectPassives" : [],
+        "SelectSkills" :
+        [
+                {
+                        "Amount" : 3,
+                        "Arg3" : "",
+                        "UUID" : "ed664663-93b9-4070-a54b-3c7b19c0e7b4"
+                }
+        ],
+        "SelectSkillsExpertise" : [],
+        "SelectSpells" :
+        [
+                {
+                        "ActionResource" : "d136c5d9-0ff0-43da-acce-a74a07f8d6bf",
+                        "Amount" : 2,
+                        "Arg3" : 0,
+                        "CastingAbility" : "None",
+                        "ClassUUID" : "00000000-0000-0000-0000-000000000000",
+                        "CooldownType" : "Default",
+                        "PrepareType" : "AlwaysPrepared",
+                        "SelectorId" : "BardCantrip",
+                        "SpellUUID" : "61f79a30-2cac-4a7a-b5fe-50c89d307dd6"
+                },
+                {
+                        "ActionResource" : "d136c5d9-0ff0-43da-acce-a74a07f8d6bf",
+                        "Amount" : 4,
+                        "Arg3" : 0,
+                        "CastingAbility" : "None",
+                        "ClassUUID" : "00000000-0000-0000-0000-000000000000",
+                        "CooldownType" : "Default",
+                        "PrepareType" : "Unknown",
+                        "SelectorId" : "BardSpells",
+                        "SpellUUID" : "dcb45167-86bd-4297-9b9d-c295be51af5b"
+                }
+        ],
+        "SubClasses" : [],
+        "TableUUID" : "229c98da-2cd1-4a5e-8051-9d90ec7931e7",
+        "field_D0" : []
+}
+S >> _D(Ext.Definition.Get(Ext.Definition.GetAll("Progression")[9], "Progression"))
+{
+        "AddSpells" : [],
+        "AllowImprovement" : false,
+        "Boosts" : "",
+        "IsMulticlass" : false,
+        "Level" : 5,
+        "Name" : "TotemWarriorPath",
+        "PassivesAdded" : "",
+        "PassivesRemoved" : "",
+        "ProgressionType" : 1,
+        "ResourceUUID" : "0fe6f4ec-8601-462d-a233-53fc0ad62513",
+        "SelectAbilities" : [],
+        "SelectAbilityBonus" : [],
+        "SelectEquipment" : [],
+        "SelectPassives" :
+        [
+                {
+                        "Amount" : 0,
+                        "Amount2" : 1,
+                        "Arg3" : "TotemWarriorPassiveReplace",
+                        "UUID" : "7f7340a0-faf3-4122-bd3f-37a5434dd6cf"
+                }
+        ],
+        "SelectSkills" : [],
+        "SelectSkillsExpertise" : [],
+        "SelectSpells" : [],
+        "SubClasses" : [],
+        "TableUUID" : "48f1760f-86e7-401c-ad52-633fffbae49e",
+        "field_D0" : []
+}
+S >> _D(Ext.Definition.Get(Ext.Definition.GetAll("Progression")[11], "Progression"))
+{
+        "AddSpells" :
+        [
+                {
+                        "Ability" : "None",
+                        "ActionResource" : "d136c5d9-0ff0-43da-acce-a74a07f8d6bf",
+                        "ClassUUID" : "00000000-0000-0000-0000-000000000000",
+                        "CooldownType" : "Default",
+                        "PrepareType" : "Unknown",
+                        "SelectorId" : " ",
+                        "SpellUUID" : "80225e21-5acd-4122-b779-488dae33a31c"
+                }
+        ],
+        "AllowImprovement" : true,
+        "Boosts" : "ActionResource(SpellSlot,1,1)",
+        "IsMulticlass" : false,
+        "Level" : 2,
+        "Name" : "Bard",
+        "PassivesAdded" : "JackOfAllTrades",
+        "PassivesRemoved" : "",
+        "ProgressionType" : 0,
+        "ResourceUUID" : "7a2f66b5-7555-49f2-833b-f3d79affc7ca",
+        "SelectAbilities" : [],
+        "SelectAbilityBonus" : [],
+        "SelectEquipment" : [],
+        "SelectPassives" : [],
+        "SelectSkills" : [],
+        "SelectSkillsExpertise" : [],
+        "SelectSpells" :
+        [
+                {
+                        "ActionResource" : "d136c5d9-0ff0-43da-acce-a74a07f8d6bf",
+                        "Amount" : 1,
+                        "Arg3" : 1,
+                        "CastingAbility" : "None",
+                        "ClassUUID" : "00000000-0000-0000-0000-000000000000",
+                        "CooldownType" : "Default",
+                        "PrepareType" : "Unknown",
+                        "SelectorId" : "BardSpells",
+                        "SpellUUID" : "dcb45167-86bd-4297-9b9d-c295be51af5b"
+                }
+        ],
+        "SubClasses" : [],
+        "TableUUID" : "229c98da-2cd1-4a5e-8051-9d90ec7931e7",
+        "field_D0" : []
+}
+
+Ext.Definition.GetAll("SpellList")
+
+S >> _D(Ext.Definition.Get(Ext.Definition.GetAll("SpellList")[1], "SpellList"))
+{
+        "ResourceUUID" : "2f43a103-5bf1-4534-b14f-663decc0c525",
+        "Spells" :
+        [
+                "Shout_BladeWard",
+                "Target_Guidance",
+                "Target_Light",
+                "Shout_ProduceFlame",
+                "Target_Resistance",
+                "Target_SacredFlame",
+                "Target_SpareTheDying",
+                "Shout_Thaumaturgy",
+                "Target_TollTheDead",
+                "Shout_WordOfRadiance"
+        ]
+}
+
+-- Found in ["ServerCharacter"]["Character"]["Template"]["CombatComponent"]["AiHint"]
+-- Found in ["ServerCharacter"]["Character"]["Template"]["CombatComponent"]["Archetype"]
+
+
+
+```
+---@param target any The target character EntityProxy
+---@return table|nil
+local function GetCombatEntities(target)
+    if target == nil then return nil end
+    local combatParticipant = target:GetComponent("CombatParticipant") --[[@as CombatParticipantComponent]]
+    if combatParticipant and combatParticipant.CombatHandle then
+        local combatState = combatParticipant.CombatHandle:GetComponent("CombatState") --[[@as CombatStateComponent]]
+        if combatState then
+            return combatState.Participants
+        end
+    end
+end
+```
+
+
+--[[
+local opts = {
+    Beautify = true,
+    StringifyInternalTypes = true,
+    IterateUserdata = true,
+    AvoidRecursion = fasle,
+}
+Ext.IO.SaveFile("RootClasses.json", Ext.Json.Stringify(Mods.LCC.FindRootClasses(), opts))
+Ext.IO.SaveFile("SpellsByClass.json", Ext.Json.Stringify(Mods.LCC.GenerateSpellLists(Mods.LCC.BlacklistedAbilitiesByClass, Mods.LCC.BlacklistedAbilities, Mods.LCC.BlacklistedLists, Mods.LCC.FindRootClasses()), opts))
+Ext.IO.SaveFile("PassivesByClass.json", Ext.Json.Stringify(Mods.LCC.GeneratePassiveLists(Mods.LCC.BlacklistedPassivesByClass, Mods.LCC.BlacklistedPassives, Mods.LCC.BlacklistedLists, Mods.LCC.FindRootClasses()), opts))
+]]--
+
+-- SpellSchool
+Transmutation
+Evocation
+Abjuration
+Divination
+Conjuration
+Illusion
+Necromancy
+Enchantment
+
+None
+```
+bg3 rg --no-filename 'data "SpellSchool"' | cut -f3- -d' ' | sort | uniq -c
+    141 ""
+     38 "Abjuration"
+     50 "Conjuration"
+     13 "Divination"
+     36 "Enchantment"
+     72 "Evocation"
+     15 "Illusion"
+     46 "Necromancy"
+     64 "None"
+     73 "Transmutation"
+```
+-- VerbalIntent
+Utility
+Damage
+Control
+Buff
+Debuff
+Summon
+Healing
+-- SpellFlags
+IsSpell
+IsAttack
+CannotTargetCharacter
+CannotTargetItems
+Invisible
+IsMelee
+Wildshape -- do shouts have this?
+IsHarmful
+CannotTargetTerrain
+HasHighGroundRangeExtension
+RangeIgnoreVerticalThreshold
+IgnoreVisionBlock
+IsEnemySpell
+IsConcentration
+HasVerbalComponent
+NoCooldownOnMiss
+IsSwarmAttack
+IgnoreSilence
+HasSomaticComponent
+AddFallDamageOnLand
+IsDefaultWeaponAction
+IsLinkedSpellContainer
+CanDualWield
+Temporary
+DisableBlood
+Stealth
+ImmediateCast
+UnavailableInDialogs
+NoCameraMove
+-- AIFlags
+CanNotUse -- seems important

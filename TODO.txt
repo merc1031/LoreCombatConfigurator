@@ -1,0 +1,22 @@
+[] Remove enable / disable of 5E spells and P2FE and Homebrew.
+[] Discover spells by Level by iterating relevant SpellLists for classes on SessionLoad
+[] [] Caster <> Sorcerer + Wizard since they have same spell list
+[] [] Do the same for ther specialized classes (Druid, Ranger, Cleric, Bard, Warlock)
+[] [] Exclude EldritchKnight as the flavor is off
+[] [] (Rogue, Fighter, Barbarian) do the same but for Abilities via collected spell lists
+[] For passives, use a 2 phase approach to collect passives via PassiveList guids and combine with PassivesAdded hardcoded via python scrript. Ensure this collection occurs onSessionLoad
+[] For classes:
+    ClassDescriptions.lsx has Entries, if no ParentGuid == VanillaClass
+                                         yes ParentGuid == Subclass
+                        These can be used to find all Progression.lsx entries
+
+[] New spell idea
+    Give N max level spells, and N + %  of each lower level spell
+[] Spell affinity
+    Filter allowed spells by SpellSchool based on lorefull ness annotations
+    _Fey -> Illusion
+[] Spell Kinds
+    Intent -> Harmful, Control, Buff, Utility
+
+[] spell slots???
+    warlock spell slots???

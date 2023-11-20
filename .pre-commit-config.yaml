@@ -1,0 +1,44 @@
+default_language_version:
+    python: python3.10
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.1.0
+    hooks:
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: detect-private-key
+      - id: check-added-large-files
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: check-ast
+      - id: check-docstring-first
+        # - repo: https://github.com/pycqa/isort
+        #   rev: 5.10.1
+        #   hooks:
+        #     - id: isort
+        #       name: isort (python)
+        #       types: [python]
+        # - repo: https://github.com/ikamensh/flynt/
+        #   rev: '0.76'
+        #   hooks:
+        #     - id: flynt
+        #       language: python
+        #       types: [python]
+        #       args: [--line-length, '999', --aggressive, --fail-on-change]
+        # - repo: https://github.com/psf/black
+        #   rev: 21.12b0
+        #   hooks:
+        #     - id: black
+        # - repo: https://github.com/flakeheaven/flakeheaven
+        #   rev: 0.11.0
+        #   hooks:
+        #     - id: flakeheaven
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.1.0
+    hooks:
+      - id: fix-byte-order-marker
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
