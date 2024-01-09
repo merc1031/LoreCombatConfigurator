@@ -215,7 +215,19 @@ Restrictions = {
     Kobold_Inventor = {},
     Kobold_Melee = {},
     Kobold_Ranger = {},
-    Kuotoa_Caster = {},
+    Kuotoa_Caster = {
+        Spell = {
+            School = {
+                Exclusive = {
+                    "Evocation",
+                    "Enchantment",
+                    "Abjuration",
+                    "Conjuration",
+                    "Transmutation",
+                },
+            },
+        },
+    },
     Kuotoa_Ranger = {},
     LOW_Githyanki_Paladin = {},
     RedCap_Caster = {},
@@ -342,7 +354,7 @@ Kinds = {
     Kobold_Inventor = {"Caster"},
     Kobold_Melee = {"Fighter"},
     Kobold_Ranger = {"Ranger"},
-    Kuotoa_Caster = {"Caster"},
+    Kuotoa_Caster = {"Cleric"},
     Kuotoa_Ranger = {"Ranger"},
     LOW_Githyanki_Paladin = {"Paladin"},
     RedCap_Caster = {"Caster"},
@@ -1980,6 +1992,7 @@ BlacklistedPassivesByClass = {
 
 BlacklistedAbilities = {
     Target_Goodberry = true,
+    Target_EnhanceAbility = true,
     Shout_SpeakWithAnimals = true,
 }
 
