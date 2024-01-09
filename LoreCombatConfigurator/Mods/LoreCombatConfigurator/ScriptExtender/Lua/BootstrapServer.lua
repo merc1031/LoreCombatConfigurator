@@ -535,6 +535,7 @@ function SpellListsToSpells()
                 AIFlags = aiFlags,
                 CanAIUse = aiFlags["CanNotUse"] == nil,
                 CanUseInCombat = canUseInCombat,
+                Origin = Ext.Mod.GetMod(spellData.ModId).Info.Name,
             }
         end
     end
