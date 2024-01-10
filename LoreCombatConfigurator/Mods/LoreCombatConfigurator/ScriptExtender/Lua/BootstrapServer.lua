@@ -503,7 +503,9 @@ function SpellListsToSpells(sessionContext)
     for _, p in ipairs(allSpellLists) do
         spellListToSpells[p] = {}
         local spellList = Ext.Definition.Get(p, "SpellList")
-        for _, spell in ipairs(Ext.Types.Serialize(spellList.Spells)) do
+        local spells = spellList.Spells
+        local spellsIterable = Ext.Types.Serialize(spellList.Spells)
+        for _, spell in ipairs(spellsIterable) do
             local spellData = Ext.Stats.Get(spell)
 
             local useCosts = Split(spellData.UseCosts, ";")
@@ -2480,6 +2482,7 @@ function GetVarsJson(sessionContext)
     if (configStr == nil) then
         sessionContext.Log(0, "Creating configuration file.")
         ResetConfigJson(sessionContext)
+        return
     end
     local varsJson = Ext.Json.Parse(configStr)
     if varsJson["ConsistentHash"] ~= nil and varsJson["ConsistentHash"] == 1 and varsJson["ConsistentHashSalt"] == nil then
