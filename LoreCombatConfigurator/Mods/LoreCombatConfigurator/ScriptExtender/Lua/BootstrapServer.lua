@@ -2191,6 +2191,7 @@ function _LogI(sessionContext, level, indent, str)
     _Log(sessionContext, level, string.format("%s%s", spaces, str))
 end
 
+--- @type EntityConfig
 Defaults = {
     -- Makes Action Point boosting more conservative when boosting a character with ExtraAttack to prevent insanity
     ConservativeActionPointBoosts = 1,
