@@ -416,6 +416,7 @@ KindMapping = {
     },
 }
 
+--- @param sessionContext SessionContext
 function _EntityToKinds(sessionContext, kinds, target)
     local entity = Ext.Entity.Get(target)
     local res, kind = pcall(function () return entity["ServerCharacter"]["Character"]["Template"]["Stats"] end)
@@ -432,6 +433,7 @@ function _EntityToKinds(sessionContext, kinds, target)
     return nil
 end
 
+--- @param sessionContext SessionContext
 function _EntityToRestrictions(sessionContext, restrictions, target)
     local entity = Ext.Entity.Get(target)
     local res, stat = pcall(function () return entity["ServerCharacter"]["Character"]["Template"]["Stats"] end)
@@ -448,6 +450,7 @@ function _EntityToRestrictions(sessionContext, restrictions, target)
     return nil
 end
 
+--- @param sessionContext SessionContext
 function AllowedByRestrictions(sessionContext, restrictionsDefinition, restrictionType, candidate)
     local restrictions = restrictionsDefinition[restrictionType]
     if restrictions == nil then
@@ -496,6 +499,7 @@ function DropBlacklistedAbilities(abilities)
     return DropBlacklisted(BlacklistedAbilities, abilities)
 end
 
+--- @param sessionContext SessionContext
 function SpellListsToSpells(sessionContext)
     local allSpellLists = Ext.Definition.GetAll("SpellList")
     local spellListToSpells = {}
@@ -545,6 +549,7 @@ function SpellListsToSpells(sessionContext)
     return spellListToSpells
 end
 
+--- @param sessionContext SessionContext
 function PassiveListsToPassives(sessionContext)
     local allPassiveLists = Ext.Definition.GetAll("PassiveList")
     local passiveListToPassives = {}
@@ -557,6 +562,7 @@ function PassiveListsToPassives(sessionContext)
     return passiveListToPassives
 end
 
+--- @param sessionContext SessionContext
 function ProgressionsByTable(sessionContext)
     local spellListToSpells = SpellListsToSpells(sessionContext)
     local passiveListToPassives = PassiveListsToPassives(sessionContext)
@@ -619,6 +625,7 @@ function ProgressionsByTable(sessionContext)
     return progressionsByTable
 end
 
+--- @param sessionContext SessionContext
 function FindRootClasses(sessionContext)
     local progressionsByTable = ProgressionsByTable(sessionContext)
 
@@ -679,6 +686,7 @@ SpellLevelToName = {
     "Level9",
 }
 
+--- @param sessionContext SessionContext
 function GenerateSpellLists(sessionContext, blacklistedAbilitiesByClass, blacklistedAbilities, blaclistedLists, rootClasses)
     local classToSpellLists = {}
     for className, class in pairs(rootClasses) do
@@ -692,6 +700,7 @@ function GenerateSpellLists(sessionContext, blacklistedAbilitiesByClass, blackli
     return classToSpellLists
 end
 
+--- @param sessionContext SessionContext
 function GenerateClassSpellLists(sessionContext, blacklistedAbilitiesByClass, blacklistedAbilities, blaclistedLists, class)
     local spells = {}
     for level, progression in pairs(class.Progression) do
@@ -772,6 +781,7 @@ function GenerateClassSpellLists(sessionContext, blacklistedAbilitiesByClass, bl
     return spells, spellsBySpellLevel, abiltiiesByLevel
 end
 
+--- @param sessionContext SessionContext
 function GeneratePassiveLists(sessionContext, blacklistedPassivesByClass, blacklistedPassives, blaclistedLists, rootClasses)
     local classToPassiveLists = {}
     for className, class in pairs(rootClasses) do
@@ -784,6 +794,7 @@ function GeneratePassiveLists(sessionContext, blacklistedPassivesByClass, blackl
     return classToPassiveLists
 end
 
+--- @param sessionContext SessionContext
 function GenerateClassPassiveLists(sessionContext, blacklistedPassivesByClass, blacklistedPassives, blaclistedLists, class)
     local passives = {}
     local passivesByLevel = {}
@@ -847,6 +858,7 @@ function GenerateClassPassiveLists(sessionContext, blacklistedPassivesByClass, b
     return passives, passivesByLevelLists
 end
 
+--- @param sessionContext SessionContext
 function LevelGate(sessionContext, varSection, max, npcLevel, target, configType)
     local minLevels = {}
     local requiredLevelsChoices = {}
@@ -872,6 +884,7 @@ function LevelGate(sessionContext, varSection, max, npcLevel, target, configType
     return requiredLevels or {}
 end
 
+--- @param sessionContext SessionContext
 function ComputeClassLevelAdditions(sessionContext, sourceTables, var, presenceCheckFn, target, configType, combatid)
     local toAdd = {}
     local requiredLevels = LevelGate(sessionContext.VarsJson, var, 20, Osi.GetLevel(target), target, configType)
@@ -923,6 +936,7 @@ function ComputeClassLevelAdditions(sessionContext, sourceTables, var, presenceC
     return toAdd
 end
 
+--- @param sessionContext SessionContext
 function ComputeClassSpecificPassives(sessionContext, target, configType, combatid)
     local passivesToAdd = {}
     local passiveTables = {}
@@ -968,6 +982,7 @@ function ComputeClassSpecificPassives(sessionContext, target, configType, combat
     return ComputeClassLevelAdditions(sessionContext, passiveTables, "PassivesAdded", Osi.HasPassive, target, configType, combatid)
 end
 
+--- @param sessionContext SessionContext
 function ComputeClassSpecificAbilities(sessionContext, target, configType, combatid)
     local abiltiesToAdd = {}
     local abilityTables = {}
@@ -1042,6 +1057,7 @@ function InSpellTable(spellTable, candidate)
     return false
 end
 
+--- @param sessionContext SessionContext
 function IsEnemiesEnhancedLoaded(sessionContext)
     local eeDisabled = sessionContext.VarsJson["DebugDisableEE"] or 0
     return eeDisabled == 0 and Ext.Mod.IsModLoaded("7deea48e-8b9d-45e4-8685-5acfd0ce39ad")
@@ -1063,6 +1079,7 @@ function CheckIfOurSummon(target)
     return 0
 end
 
+--- @param sessionContext SessionContext
 function GetVar(sessionContext, var, guid, configType)
     local race = Osi.GetRace(guid, 0)
     local vars = sessionContext.VarsJson
@@ -1093,6 +1110,7 @@ function GetVar(sessionContext, var, guid, configType)
     return result
 end
 
+--- @param sessionContext SessionContext
 function GetVarComplex(sessionContext, topvar, var, guid, configType)
     local race = Osi.GetRace(guid, 0)
     local vars = sessionContext.VarsJson
@@ -1151,6 +1169,7 @@ function RemoveBoostsAdv(target, val, combatid)
     Osi.RemoveBoosts(target, val, 0, sourceId, sourceId)
 end
 
+--- @param sessionContext SessionContext
 function HasSpellThorough(sessionContext, target, spell)
     if Osi.HasSpell(target, spell) == 1 then
         return true
@@ -1184,6 +1203,7 @@ function HasSpellThorough(sessionContext, target, spell)
     return false
 end
 
+--- @param sessionContext SessionContext
 function GuessIfCaster(sessionContext, target)
     sessionContext.LogI(3, 22, string.format("Guessing if caster on %s", target))
     local eeCaster = (
@@ -1220,6 +1240,7 @@ function GuessIfCaster(sessionContext, target)
     )
 end
 
+--- @param sessionContext SessionContext
 function GuessIfBarbarian(sessionContext, target)
     sessionContext.LogI(3, 22, string.format("Guessing if barbarian on %s", target))
     local barbarianTypes = {
@@ -1235,6 +1256,7 @@ function GuessIfBarbarian(sessionContext, target)
     )
 end
 
+--- @param sessionContext SessionContext
 function GuessIfFighter(sessionContext, target)
     sessionContext.LogI(3, 22, string.format("Guessing if fighter on %s", target))
     local fighterTypes = {
@@ -1253,6 +1275,7 @@ function GuessIfFighter(sessionContext, target)
     )
 end
 
+--- @param sessionContext SessionContext
 function GuessIfHealer(sessionContext, target)
     sessionContext.LogI(3, 22, string.format("Guessing if healer on %s", target))
     local healerTypes = {
@@ -1266,6 +1289,7 @@ function GuessIfHealer(sessionContext, target)
     )
 end
 
+--- @param sessionContext SessionContext
 function GuessIfCleric(sessionContext, target)
     sessionContext.LogI(3, 22, string.format("Guessing if cleric on %s", target))
     local clericTypes = {
@@ -1282,6 +1306,7 @@ function GuessIfCleric(sessionContext, target)
     )
 end
 
+--- @param sessionContext SessionContext
 function GuessIfBard(sessionContext, target)
     sessionContext.LogI(3, 22, string.format("Guessing if bard on %s", target))
     local bardTypes = {
@@ -1298,6 +1323,7 @@ function GuessIfBard(sessionContext, target)
     )
 end
 
+--- @param sessionContext SessionContext
 function GuessIfPaladin(sessionContext, target)
     sessionContext.LogI(3, 22, string.format("Guessing if paladin on %s", target))
     local paladinTypes = {
@@ -1314,6 +1340,7 @@ function GuessIfPaladin(sessionContext, target)
     )
 end
 
+--- @param sessionContext SessionContext
 function GuessIfDruid(sessionContext, target)
     sessionContext.LogI(3, 22, string.format("Guessing if druid on %s", target))
     local druidTypes = {
@@ -1330,6 +1357,7 @@ function GuessIfDruid(sessionContext, target)
     )
 end
 
+--- @param sessionContext SessionContext
 function GuessIfMonk(sessionContext, target)
     sessionContext.LogI(3, 22, string.format("Guessing if monk on %s", target))
     local monkTypes = {
@@ -1349,6 +1377,7 @@ function GuessIfMonk(sessionContext, target)
     )
 end
 
+--- @param sessionContext SessionContext
 function GuessIfRogue(sessionContext, target)
     sessionContext.LogI(3, 22, string.format("Guessing if rogue on %s", target))
     local rogueTypes = {
@@ -1365,6 +1394,7 @@ function GuessIfRogue(sessionContext, target)
     )
 end
 
+--- @param sessionContext SessionContext
 function GuessIfRanger(sessionContext, target)
     sessionContext.LogI(3, 22, string.format("Guessing if ranger on %s", target))
     local rogueTypes = {
@@ -1381,6 +1411,7 @@ function GuessIfRanger(sessionContext, target)
     )
 end
 
+--- @param sessionContext SessionContext
 function GuessIfWarlock(sessionContext, target)
     sessionContext.LogI(3, 22, string.format("Guessing if warlock on %s", target))
     local warlockTypes = {
@@ -1397,6 +1428,7 @@ function GuessIfWarlock(sessionContext, target)
     )
 end
 
+--- @param sessionContext SessionContext
 function ComputeNewSpells(sessionContext, target, configType, combatid)
     local selectedSpells = {}
 
@@ -1487,6 +1519,7 @@ function ComputeNewSpells(sessionContext, target, configType, combatid)
     return selectedSpells
 end
 
+--- @param sessionContext SessionContext
 function ComputeActionPointBoost(sessionContext, target, configType, combatid)
     local actionPoints
     local actionPointBoost = ComputeSimpleIncrementalBoost(sessionContext, "ActionPointBoosts", target, configType, combatid)
@@ -1506,6 +1539,7 @@ function ComputeActionPointBoost(sessionContext, target, configType, combatid)
     return actionPoints
 end
 
+--- @param sessionContext SessionContext
 function ComputeBonusActionPointBoost(sessionContext, target, configType, combatid)
     local bonusActionPoints
     local bonusActionPointBoost = ComputeSimpleIncrementalBoost(sessionContext, "BonusActionPointBoosts", target, configType, combatid)
@@ -1518,6 +1552,7 @@ function ComputeBonusActionPointBoost(sessionContext, target, configType, combat
     return bonusActionPoints
 end
 
+--- @param sessionContext SessionContext
 function ComputeRageBoost(sessionContext, target, configType, combatid)
     if (
         tonumber(sessionContext.VarsJson["Lore"]) == 1 and
@@ -1535,6 +1570,7 @@ function ComputeRageBoost(sessionContext, target, configType, combatid)
     return rage
 end
 
+--- @param sessionContext SessionContext
 function ComputeSorceryPointBoost(sessionContext, target, configType, combatid)
     if (
         tonumber(sessionContext.VarsJson["Lore"]) == 1 and
@@ -1552,6 +1588,7 @@ function ComputeSorceryPointBoost(sessionContext, target, configType, combatid)
     return sorceryPoints
 end
 
+--- @param sessionContext SessionContext
 function ComputeTidesOfChaosBoost(sessionContext, target, configType, combatid)
     if (
         tonumber(sessionContext.VarsJson["Lore"]) == 1 and
@@ -1569,6 +1606,7 @@ function ComputeTidesOfChaosBoost(sessionContext, target, configType, combatid)
     return tidesOfChaos
 end
 
+--- @param sessionContext SessionContext
 function ComputeSuperiorityDieBoost(sessionContext, target, configType, combatid)
     if (
         tonumber(sessionContext.VarsJson["Lore"]) == 1 and
@@ -1586,6 +1624,7 @@ function ComputeSuperiorityDieBoost(sessionContext, target, configType, combatid
     return superiorityDie
 end
 
+--- @param sessionContext SessionContext
 function ComputeWildShapeBoost(sessionContext, target, configType, combatid)
     if (
         tonumber(sessionContext.VarsJson["Lore"]) == 1 and
@@ -1603,6 +1642,7 @@ function ComputeWildShapeBoost(sessionContext, target, configType, combatid)
     return wildShape
 end
 
+--- @param sessionContext SessionContext
 function ComputeNaturalRecoveryBoost(sessionContext, target, configType, combatid)
     if (
         tonumber(sessionContext.VarsJson["Lore"]) == 1 and
@@ -1620,6 +1660,7 @@ function ComputeNaturalRecoveryBoost(sessionContext, target, configType, combati
     return naturalRecovery
 end
 
+--- @param sessionContext SessionContext
 function ComputeFungalInfestationBoost(sessionContext, target, configType, combatid)
     if (
         tonumber(sessionContext.VarsJson["Lore"]) == 1 and
@@ -1637,6 +1678,7 @@ function ComputeFungalInfestationBoost(sessionContext, target, configType, comba
     return fungalInfestation
 end
 
+--- @param sessionContext SessionContext
 function ComputeLayOnHandsBoost(sessionContext, target, configType, combatid)
     if (
         tonumber(sessionContext.VarsJson["Lore"]) == 1 and
@@ -1654,6 +1696,7 @@ function ComputeLayOnHandsBoost(sessionContext, target, configType, combatid)
     return layOnHands
 end
 
+--- @param sessionContext SessionContext
 function ComputeChannelOathBoost(sessionContext, target, configType, combatid)
     if (
         tonumber(sessionContext.VarsJson["Lore"]) == 1 and
@@ -1671,6 +1714,7 @@ function ComputeChannelOathBoost(sessionContext, target, configType, combatid)
     return channelOath
 end
 
+--- @param sessionContext SessionContext
 function ComputeChannelDivinityBoost(sessionContext, target, configType, combatid)
     if (
         tonumber(sessionContext.VarsJson["Lore"]) == 1 and
@@ -1688,6 +1732,7 @@ function ComputeChannelDivinityBoost(sessionContext, target, configType, combati
     return channelDivinity
 end
 
+--- @param sessionContext SessionContext
 function ComputeBardicInspirationBoost(sessionContext, target, configType, combatid)
     if (
         tonumber(sessionContext.VarsJson["Lore"]) == 1 and
@@ -1705,6 +1750,7 @@ function ComputeBardicInspirationBoost(sessionContext, target, configType, comba
     return bardicInspiration
 end
 
+--- @param sessionContext SessionContext
 function ComputeKiPointBoost(sessionContext, target, configType, combatid)
     if (
         tonumber(sessionContext.VarsJson["Lore"]) == 1 and
@@ -1722,6 +1768,7 @@ function ComputeKiPointBoost(sessionContext, target, configType, combatid)
     return kiPoints
 end
 
+--- @param sessionContext SessionContext
 function ComputeDeflectMissilesBoost(sessionContext, target, configType, combatid)
     if (
         tonumber(sessionContext.VarsJson["Lore"]) == 1 and
@@ -1739,6 +1786,7 @@ function ComputeDeflectMissilesBoost(sessionContext, target, configType, combati
     return deflectMissilesCharges
 end
 
+--- @param sessionContext SessionContext
 function ComputeSneakAttackBoost(sessionContext, target, configType, combatid)
     if (
         tonumber(sessionContext.VarsJson["Lore"]) == 1 and
@@ -1756,12 +1804,14 @@ function ComputeSneakAttackBoost(sessionContext, target, configType, combatid)
     return sneakAttackCharges
 end
 
+--- @param sessionContext SessionContext
 function ComputeHealthIncrease(sessionContext, target, configType, combatid)
     local hpincrease = ComputeIncrementalBoost(sessionContext, "Health", target, configType, combatid)
 
     return "IncreaseMaxHP(" .. hpincrease .. ")"
 end
 
+--- @param sessionContext SessionContext
 function ComputeSimpleIncrementalBoost(sessionContext, stat, target, configType, combatid)
     local levelMultiplier = Osi.GetLevel(target)
 
@@ -1775,6 +1825,7 @@ function ComputeSimpleIncrementalBoost(sessionContext, stat, target, configType,
     return totalBoost
 end
 
+--- @param sessionContext SessionContext
 function ComputeIncrementalBoost(sessionContext, stat, target, configType, combatid)
     local levelMultiplier = Osi.GetLevel(target)
     local statValueFns = {
@@ -1827,6 +1878,7 @@ function ComputeIncrementalBoost(sessionContext, stat, target, configType, comba
 end
 
 
+--- @param sessionContext SessionContext
 function ComputeMovementBoost(sessionContext, target, configType, combatid)
     local totalMovementBoost = ComputeIncrementalBoost(sessionContext, "Movement", target, configType, combatid)
     local movement = "ActionResource(Movement," .. totalMovementBoost .. ",0)"
@@ -1834,18 +1886,21 @@ function ComputeMovementBoost(sessionContext, target, configType, combatid)
 end
 
 
+--- @param sessionContext SessionContext
 function ComputeACBoost(sessionContext, target, configType, combatid)
     local totalACBoost = ComputeIncrementalBoost(sessionContext, "AC", target, configType, combatid)
     local ac = "AC(" .. totalACBoost .. ")"
     return ac
 end
 
+--- @param sessionContext SessionContext
 function ComputeStrengthBoost(sessionContext, target, configType, combatid)
     local totalStrengthBoost = ComputeIncrementalBoost(sessionContext, "Strength", target, configType, combatid)
     local strength = "Ability(Strength,+" .. totalStrengthBoost .. ")"
     return strength
 end
 
+--- @param sessionContext SessionContext
 function ComputeDexterityBoost(sessionContext, target, configType, combatid)
     local totalDexterityBoost = ComputeIncrementalBoost(sessionContext, "Dexterity", target, configType, combatid)
     local dexterity = "Ability(Dexterity,+" .. totalDexterityBoost .. ")"
@@ -1853,30 +1908,35 @@ function ComputeDexterityBoost(sessionContext, target, configType, combatid)
 end
 
 
+--- @param sessionContext SessionContext
 function ComputeConstitutionBoost(sessionContext, target, configType, combatid)
     local totalConstitutionBoost = ComputeIncrementalBoost(sessionContext, "Constitution", target, configType, combatid)
     local constitution = "Ability(Constitution,+" .. totalConstitutionBoost .. ")"
     return constitution
 end
 
+--- @param sessionContext SessionContext
 function ComputeIntelligenceBoost(sessionContext, target, configType, combatid)
     local totalIntelligenceBoost = ComputeIncrementalBoost(sessionContext, "Intelligence", target, configType, combatid)
     local intelligence = "Ability(Intelligence,+" .. totalIntelligenceBoost .. ")"
     return intelligence
 end
 
+--- @param sessionContext SessionContext
 function ComputeWisdomBoost(sessionContext, target, configType, combatid)
     local totalWisdomBoost = ComputeIncrementalBoost(sessionContext, "Wisdom", target, configType, combatid)
     local wisdom = "Ability(Wisdom,+" .. totalWisdomBoost .. ")"
     return wisdom
 end
 
+--- @param sessionContext SessionContext
 function ComputeCharismaBoost(sessionContext, target, configType, combatid)
     local totalCharismaBoost = ComputeIncrementalBoost(sessionContext, "Charisma", target, configType, combatid)
     local charisma = "Ability(Charisma,+" .. totalCharismaBoost .. ")"
     return charisma
 end
 
+--- @param sessionContext SessionContext
 function ComputeRollBonusBoost(sessionContext, target, configType, combatid)
     local totalRollBonus = ComputeIncrementalBoost(sessionContext, "RollBonus", target, configType, combatid)
     local rollBonus = "RollBonus(Attack," .. totalRollBonus .. ")"
@@ -1885,12 +1945,14 @@ end
 
 
 
+--- @param sessionContext SessionContext
 function ComputeDamageBoost(sessionContext, target, configType, combatid)
     local totalDamageBoost = ComputeIncrementalBoost(sessionContext, "Damage", target, configType, combatid)
     local damageBonus = "DamageBonus(" .. totalDamageBoost .. ")"
     return damageBonus
 end
 
+--- @param sessionContext SessionContext
 function ComputeSpellSlotBoosts(sessionContext, target, configType, combatid)
     local slots = {}
     if (
@@ -1928,6 +1990,7 @@ function ComputeSpellSlotBoosts(sessionContext, target, configType, combatid)
     return slots
 end
 
+--- @param sessionContext SessionContext
 function CalculateLists(sessionContext)
     OverrideBlacklistedAbilities= sessionContext.VarsJson["BlacklistedAbilities"]
     OverrideBlacklistedPassives = sessionContext.VarsJson["BlacklistedPassives"]
@@ -2108,12 +2171,14 @@ Archetypes = {
     "hag_green",
 }
 
+--- @param sessionContext SessionContext
 function _Log(sessionContext, level, str)
     if (tonumber(sessionContext.VarsJson["Verbosity"]) or 0) >= level then
         print(string.format("LoreCombatConfigurator: %s", str))
     end
 end
 
+--- @param sessionContext SessionContext
 function _LogI(sessionContext, level, indent, str)
     local spaces = string.rep(" ", indent)
     _Log(sessionContext, level, string.format("%s%s", spaces, str))
@@ -2395,6 +2460,7 @@ Defaults = {
     },
 }
 
+--- @param sessionContext SessionContext
 function ResetConfigJson(sessionContext)
     sessionContext.ConfigFailed = 0
     local defaultConfig = {
@@ -2477,6 +2543,7 @@ function ResetConfigJson(sessionContext)
     GetVarsJson(sessionContext)
 end
 
+--- @param sessionContext SessionContext
 function GetVarsJson(sessionContext)
     local configStr = Ext.IO.LoadFile("LoreCombatConfigurator.json")
     if (configStr == nil) then
@@ -2498,6 +2565,7 @@ function GetVarsJson(sessionContext)
     CalculateLists(sessionContext)
 end
 
+--- @param sessionContext SessionContext
 function GiveNewSpells(sessionContext, target, configType, combatid)
     local spells = ComputeNewSpells(sessionContext, target, configType, combatid)
     for _, spell in pairs(spells) do
@@ -2507,6 +2575,7 @@ function GiveNewSpells(sessionContext, target, configType, combatid)
     sessionContext.SpellsAdded[combatid][target] = TableCombine(Keys(spells), sessionContext.SpellsAdded[combatid][target])
 end
 
+--- @param sessionContext SessionContext
 function GiveNewPassives(sessionContext, target, configType, combatid)
     local passives = ComputeClassSpecificPassives(sessionContext, target, configType, combatid)
     for _, passive in pairs(passives) do
@@ -2516,6 +2585,7 @@ function GiveNewPassives(sessionContext, target, configType, combatid)
     sessionContext.PassivesAdded[combatid][target] = TableCombine(Keys(passives), sessionContext.PassivesAdded[combatid][target])
 end
 
+--- @param sessionContext SessionContext
 function GiveNewAbilities(sessionContext, target, configType, combatid)
     local abilities = ComputeClassSpecificAbilities(sessionContext, target, configType, combatid)
     for _, ability in pairs(abilities) do
@@ -2525,6 +2595,7 @@ function GiveNewAbilities(sessionContext, target, configType, combatid)
     sessionContext.SpellsAdded[combatid][target] = TableCombine(Keys(abilities), sessionContext.SpellsAdded[combatid][target])
 end
 
+--- @param sessionContext SessionContext
 function GiveComputedBoost(boostFn, sessionContext, target, configType, combatid)
     local boostRes = boostFn(sessionContext, target, configType, combatid)
 
@@ -2546,6 +2617,7 @@ function GiveComputedBoost(boostFn, sessionContext, target, configType, combatid
     end
 end
 
+--- @param sessionContext SessionContext
 function GiveBoosts(sessionContext, guid, configType, combatid)
     sessionContext.LogI(1, 4, string.format("%s applying for Guid: %s\n", configType, guid))
     GiveNewSpells(sessionContext, guid, configType, combatid)
@@ -2605,6 +2677,8 @@ end
 --- @field LogI fun(level: integer, indent: integer, str: string) | nil
 --- @field EntityToKinds (fun(target: string): table<string, boolean>) | nil
 --- @field EntityToRestrictions (fun(target: string): table<string, boolean>) | nil
+--- @field SpellData table<string, SpellData> | nil
+--- @field SpellListsByClass table<string, table<string, string[]>> | nil
 
 local function OnSessionLoaded()
     --- @type SessionContext
