@@ -2515,6 +2515,27 @@ function ResetConfigJson(sessionContext)
         Kinds = {
             Dragonborn_Cleric = {"Cleric"},
         },
+        -- Allows overriding the types of abilities / spells given to inferred classes or kinds of characters by inspecting their `stats` chain
+        Restrictions = {
+            Hag_Green = {
+                Spell = {
+                    School = {
+                        Exclusive = {
+                            "Illusion",
+                            "Enchantment",
+                            "Transmutation",
+                        },
+                    },
+                },
+                Ability = {
+                    Cost = {
+                        Restrict = {
+                            "WildShape",
+                        },
+                    },
+                },
+            },
+        },
         BlacklistedAbilities = {},
         BlacklistedPassives = {},
         BlacklistedAbilitiesByClass = {},
