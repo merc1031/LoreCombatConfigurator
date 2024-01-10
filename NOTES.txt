@@ -886,3 +886,323 @@ UnavailableInDialogs
 NoCameraMove
 -- AIFlags
 CanNotUse -- seems important
+
+
+Character stats have progressions???
+
+
+-- hag pots for _, t in ipairs({"27d74bd9-b852-43fd-98ac-999f33e05aa9", "2a507888-cf2b-425a-8920-dc0ca35cfa2e", "9d98eb5a-08c1-471a-84d5-76dbb098f160", "d4fc499a-945e-4e0b-a4db-ba6157281616", "44da51b6-6d05-488c-9097-99dd6c795ed3", "920dcb59-b732-4d97-ae1a-fadbb5955fe5", "a46558fe-54a8-4720-a12e-7470e072a9d7", "b1b5590b-e246-4e33-acaa-5984b2e2306f", "0e54d347-dffa-4d13-92c0-74c82decefba", "4d37061a-901d-47d7-9c11-4237e34b98a1", "3575950d-c41a-448d-bb2d-cd08c78c88c6"}) do Osi.TemplateAddTo("79dfb371-cd87-48f3-b542-26db2d39cfe2", "S_HAG_Hag_c457d064-83fb-4ec6-b74d-1f30dfafd12d", 3, 1) end
+
+-- local rootTemplate = "742d43ff-b74d-4cbe-9554-51773bbccdc2"
+--                                                x  y  z  playSpawn  finishedEvent
+-- local newItemGuid = Osi.CreateAt(rootTemplate, 0, 0, 0, 0, 0, "")
+-- Osi.IsProficientWith(entityGuid, newItemGuid)
+-- if false
+-- for each group AddBoostAdv(entityGuid, string.format("Proficiency(%s)", template.stat.ProficiencyGroup)
+-- Osi.Equip(entityGuid, newItemGuid)
+
+-- Proficiency Boost
+-- Proficiency(LightArmor)
+
+-- ProficiencyBonus Boost
+-- ProficiencyBonus(SavingThrow, Wisdom)
+
+-- ProficiencyBonus Boost
+-- ProficiencyBonus(Skill, Athletics)
+
+Osi.AddSpell("S_HAG_Hag_c457d064-83fb-4ec6-b74d-1f30dfafd12d", "Projectile_Jump")
+
+AiArchetypeOverride(ainame, priority_integer)
+
+All Template Types
+```
+{
+        "CombinedLight" : true,
+        "LevelTemplate" : true,
+        "Schematic" : true,
+        "Spline" : true,
+        "TileConstruction" : true,
+        "character" : true,
+        "constellation" : true,
+        "constellationHelper" : true,
+        "decal" : true,
+        "fogVolume" : true,
+        "item" : true,
+        "light" : true,
+        "lightProbe" : true,
+        "prefab" : true,
+        "projectile" : true,
+        "scenery" : true,
+        "surface" : true,
+        "terrain" : true,
+        "trigger" : true
+}
+```
+
+
+AI overrides
+```
+S >> _D(Osi.GetActiveArchetype("S_HAG_Hag_c457d064-83fb-4ec6-b74d-1f30dfafd12d"))
+"hag_green"
+S >>
+S >> Mods.LCC.AddBoostsAdv("S_HAG_Hag_c457d064-83fb-4ec6-b74d-1f30dfafd12d", "AiArchetypeOverride(melee_stupid, 1)", "07b97dbc-897a-4c13-a1b0-47f142a47fe8")
+S >> _D(Osi.GetActiveArchetype("S_HAG_Hag_c457d064-83fb-4ec6-b74d-1f30dfafd12d"))
+"melee_stupid"
+S >> Mods.LCC.AddBoostsAdv("S_HAG_Hag_c457d064-83fb-4ec6-b74d-1f30dfafd12d", "AiArchetypeOverride(melee_smart, 99)", "07b97dbc-897a-4c13-a1b0-47f142a47fe8")
+S >> _D(Osi.GetActiveArchetype("S_HAG_Hag_c457d064-83fb-4ec6-b74d-1f30dfafd12d"))
+"melee_smart"
+S >> Mods.LCC.AddBoostsAdv("S_HAG_Hag_c457d064-83fb-4ec6-b74d-1f30dfafd12d", "AiArchetypeOverride(melee_stupid, 1)", "07b97dbc-897a-4c13-a1b0-47f142a47fe8")
+S >> _D(Osi.GetActiveArchetype("S_HAG_Hag_c457d064-83fb-4ec6-b74d-1f30dfafd12d"))
+"melee_smart"
+S >> Mods.LCC.AddBoostsAdv("S_HAG_Hag_c457d064-83fb-4ec6-b74d-1f30dfafd12d", "AiArchetypeOverride(ranged_smart, 1)", "07b97dbc-897a-4c13-a1b0-47f142a47fe8")
+S >> _D(Osi.GetActiveArchetype("S_HAG_Hag_c457d064-83fb-4ec6-b74d-1f30dfafd12d"))
+"melee_smart"
+S >> Mods.LCC.AddBoostsAdv("S_HAG_Hag_c457d064-83fb-4ec6-b74d-1f30dfafd12d", "AiArchetypeOverride(ranged_stupid, 99)", "07b97dbc-897a-4c13-a1b0-47f142a47fe8")
+S >> _D(Osi.GetActiveArchetype("S_HAG_Hag_c457d064-83fb-4ec6-b74d-1f30dfafd12d"))
+"melee_smart"
+S >> Mods.LCC.AddBoostsAdv("S_HAG_Hag_c457d064-83fb-4ec6-b74d-1f30dfafd12d", "AiArchetypeOverride(ranged_smart, 100)", "07b97dbc-897a-4c13-a1b0-47f142a47fe8")
+S >> _D(Osi.GetActiveArchetype("S_HAG_Hag_c457d064-83fb-4ec6-b74d-1f30dfafd12d"))
+"ranged_smart"
+S >> Mods.LCC.AddBoostsAdv("S_HAG_Hag_c457d064-83fb-4ec6-b74d-1f30dfafd12d", "AiArchetypeOverride(mage, 1)", "07b97dbc-897a-4c13-a1b0-47f142a47fe8")
+S >> _D(Osi.GetActiveArchetype("S_HAG_Hag_c457d064-83fb-4ec6-b74d-1f30dfafd12d"))
+"ranged_smart"
+S >> Mods.LCC.AddBoostsAdv("S_HAG_Hag_c457d064-83fb-4ec6-b74d-1f30dfafd12d", "AiArchetypeOverride(mage, 100)", "07b97dbc-897a-4c13-a1b0-47f142a47fe8")
+S >> _D(Osi.GetActiveArchetype("S_HAG_Hag_c457d064-83fb-4ec6-b74d-1f30dfafd12d"))
+"ranged_smart"
+S >> Mods.LCC.AddBoostsAdv("S_HAG_Hag_c457d064-83fb-4ec6-b74d-1f30dfafd12d", "AiArchetypeOverride(mage, 101)", "07b97dbc-897a-4c13-a1b0-47f142a47fe8")
+S >> _D(Osi.GetActiveArchetype("S_HAG_Hag_c457d064-83fb-4ec6-b74d-1f30dfafd12d"))
+"mage"
+```
+
+
+At load in hags cavern these are all archetypes from root templates
+
+```
+{
+        "Act2_COL_Ketheric" : true,
+        "Act2_GLO_Nightsong" : true,
+        "Base" : true,
+        "act1_wyll" : true,
+        "act2_Jaheira" : true,
+        "act2_SHA_LastJusticiar" : true,
+        "act2_TWN_surgeon" : true,
+        "act2_TWN_surgeon_nurse" : true,
+        "act3_LOW_Guildhall_NineFingers" : true,
+        "act3_LOW_Raphael" : true,
+        "act3_LOW_SteelWatcher_Titan" : true,
+        "act3_LOW_cazador" : true,
+        "act3_LOW_ghost_nurse" : true,
+        "act3_WYR_Dribbles_Thug" : true,
+        "act3_WYR_Gortash_ranged" : true,
+        "apostle" : true,
+        "base" : true,
+        "beast" : true,
+        "beast_ranged" : true,
+        "beholder" : true,
+        "cloaker_phantasm" : true,
+        "deathKnight" : true,
+        "deathShepherd" : true,
+        "dragon" : true,
+        "drider" : true,
+        "fey_mastiff" : true,
+        "goblin_mage" : true,
+        "goblin_melee" : true,
+        "goblin_ranged" : true,
+        "golem_adamantine" : true,
+        "hag_green" : true,
+        "healer_melee" : true,
+        "healer_ranged" : true,
+        "hookhorror" : true,
+        "imp_melee" : true,
+        "koboldinventor_drunk" : true,
+        "mage" : true,
+        "mage_no_inventory_items" : true,
+        "mage_smart" : true,
+        "melee" : true,
+        "melee_large" : true,
+        "melee_magic" : true,
+        "melee_magic_smart" : true,
+        "melee_smart" : true,
+        "melee_stupid" : true,
+        "merregon" : true,
+        "mimic" : true,
+        "mindflayer" : true,
+        "minotaur" : true,
+        "monk_melee" : true,
+        "myconid_ranged" : true,
+        "ogre_melee" : true,
+        "orthon_ranged" : true,
+        "owlbear" : true,
+        "ranged" : true,
+        "ranged_smart" : true,
+        "ranged_stupid" : true,
+        "rogue" : true,
+        "scryingeye" : true,
+        "shadow" : true,
+        "shadow_mastiff" : true,
+        "shadow_parents" : true,
+        "steel_watcher_biped" : true,
+        "zombie" : true
+}
+```
+
+
+
+NOT WORKING (doesnt seem to run AND when run manually crashes to desktop)
+```
+
+function OnStatsLoaded()
+    local sessionContext = {
+        VarsJson = {},
+    }
+    if Ext.Debug.IsDeveloperMode() then
+        sessionContext.VarsJson.Verbosity = 4
+    end
+    local Log = function(level, str) _Log(SessionContext, level, str) end
+
+    local allSpellNames = Ext.Stats.GetStats("SpellData")
+    Log(1, string.format("OnStatsLoaded: count %s", #allSpellNames))
+    for _, spellName in ipairs(allSpellNames) do
+        local _spellData = Ext.Stats.Get(spellName)
+
+        local newSpellName = string.format("LCC_%s", spellName)
+
+        Ext.Stats.Create(newSpellName, "SpellData", spellName)
+
+        local newSpell = Ext.Stats.Get(newSpellName)
+
+        if newSpell ~= nil then
+            Log(2, string.format("Create newSpell: %s from %s", newSpellName, spellName))
+            if newSpell.SpellContainerID ~= "" then
+                local newSpellContainerID = string.format("LCC_%s", newSpell.SpellContainerID)
+
+                Log(3, string.format("Setting newSpell: %s SpellContainerID from %s to %s", newSpellName, newSpell.SpellContainerID, newSpellContainerID))
+
+                newSpell.SpellContainerID = newSpellContainerID
+            end
+
+            if newSpell.ContainerSpells ~= "" then
+                local containerSpells = Split(newSpell.ContainerSpells, ";")
+                local newContainerSpells = {}
+                for _, containerSpell in ipairs(containerSpells) do
+                    local newContainerSpell = string.format("LCC_%s", containerSpell)
+                    table.insert(newContainerSpells, newContainerSpell)
+                end
+                Log(3, string.format("Setting newSpell: %s ContainerSpells from %s to %s", newSpellName, newSpell.ContainerSpells, newContainerSpells))
+                newSpell.ContainerSpells = table.concat(newContainerSpells, ";")
+            end
+            newSpell:Sync()
+        end
+    end
+end
+
+Ext.Events.StatsLoaded:Subscribe(OnStatsLoaded)
+```
+
+
+Anothe degenerate
+LoreCombatConfigurator: Give: Guid: c66bc36f-7cb0-41fa-92f0-6d81d7d17ba3
+LoreCombatConfigurator: Give: Guid: c66bc36f-7cb0-41fa-92f0-6d81d7d17ba3; Modified?: false; Party?: false; Follower?: false; Enemy?: false; Origin?: false; Boss?: false; OurSummon?: false
+
+LoreCombatConfigurator: Recomputing lists
+LoreCombatConfigurator: Give: Guid: c66bc36f-7cb0-41fa-92f0-6d81d7d17ba3; Entity (02000001000000c0)
+
+LoreCombatConfigurator: Give: AiHint: 00000000-0000-0000-0000-000000000000 (nil) Archetype: base
+
+LoreCombatConfigurator: Give: Kinds: []; Classes: []; Restrictions []
+
+LoreCombatConfigurator:     Allies applying for Guid: c66bc36f-7cb0-41fa-92f0-6d81d7d17ba3
+
+_D(Mods.LCC.Map(function (e) return e.Passive.PassiveId end, Ext.Entity.Get("S_CHA_Exterior_Bandit_Melee_01_538e38b9-e3a4-452a-8369-60eb1fe8c40d").PassiveContainer.Passives))
+_D(Mods.LCC.Map(function(b) return b:GetAllComponents() end, Mods.LCC.Flatten(Mods.LCC.Map(function (cpp) return Ext.Types.Serialize(cpp) end, Mods.LCC.Values(Ext.Entity.Get("5c5bd50b-147e-42e5-93cb-59a754df91ec").BoostsContainer.Boosts)))))
+
+function OnStatsLoaded()
+    print("OnStatsLoaded")
+    for _, passiveName in ipairs(Ext.Stats.GetStats("PassiveData")) do
+        local passiveData = Ext.Stats.Get(passiveName)
+        if passiveData ~= nil then
+            local newPassiveName = string.format("LCC_%s", passiveName)
+            Ext.Stats.Create(newPassiveName, "PassiveData", passiveName)
+            local newPassiveData = Ext.Stats.Get(newPassiveName)
+            if newPassiveData ~= nil then
+                newPassiveData:Sync()
+            end
+        end
+    end
+end
+
+Ext.Events.StatsLoaded:Subscribe(OnStatsLoaded)
+
+---@param target any The target character EntityProxy
+---@return table|nil
+local function GetCombatEntities(target)
+    if target == nil then return nil end
+    local combatParticipant = target:GetComponent("CombatParticipant") --[[@as CombatParticipantComponent]]
+    if combatParticipant and combatParticipant.CombatHandle then
+        local combatState = combatParticipant.CombatHandle:GetComponent("CombatState") --[[@as CombatStateComponent]]
+        if combatState then
+            return combatState.Participants
+        end
+    end
+end
+
+
+-- local combatCharacters = Osi.DB_Is_InCombat:Get(nil, nil)
+-- DB_Is_InCombat(entityGUID, combatGUID)
+
+-- I think I found a pretty simple way by just using Osi.CombatGetGuidFor(object) ~= nil to check if in combat
+---@param target any The target character EntityProxy
+---@return table|nil
+local function GetCombatEntities(target)
+    if target == nil then return nil end
+    local combatParticipant = target:GetComponent("CombatParticipant") --[[@as CombatParticipantComponent]]
+    if combatParticipant and combatParticipant.CombatHandle then
+        local combatState = combatParticipant.CombatHandle:GetComponent("CombatState") --[[@as CombatStateComponent]]
+        if combatState then
+            return combatState.Participants
+        end
+    end
+end
+
+
+
+
+Order seems to be
+Load Save Game initial
+
+LoadModule -> LoadSession
+...
+OnSessionLoaded
+...
+LoadSession -> LoadLevel
+...
+Sync -> Running
+
+
+Load Save Game from Save game
+....
+
+
+Running -> UnloadLevel
+...
+UnloadSession -> LoadSession
+...
+LoadSession -> LoadLevel
+
+
+
+List Boosts
+_D(Mods.LCC.Filter(function(bi) return bi.Cause.Cause == Mods.LCC.ModName end, Mods.LCC.Map(function(b) return b.BoostInfo end, Mods.LCC.Flatten(Mods.LCC.Map(function(cpp) return Ext.Types.Serialize(cpp) end, Mods.LCC.Values(Ext.Entity.Get("ed103005-fd71-457d-ae6c-39654bbd8f2e").BoostsContainer.Boosts))))))
+
+List Passives
+_D(Mods.LCC.Map(function(p) return p.Passive.PassiveId end, Ext.Entity.Get("5c5bd50b-147e-42e5-93cb-59a754df91ec").PassiveContainer.Passives))
+
+
+Tutorial cambions are
+Stats: { Cambion _Fiend _Base } AiArchetype melee
+
+Zhalk is
+Stats: { TUT_CambionCommander TUT_Cambion_NoCrits Cambion _Fiend _Base } AiArchetype cinematic_melee
+
+Imps in Helm are
+Stats: {Imp_Weak Imp _Devil _Fiend _Base} AiArchetype imp_ranged
