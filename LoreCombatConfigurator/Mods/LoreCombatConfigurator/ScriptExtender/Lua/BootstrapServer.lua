@@ -894,7 +894,7 @@ end
 --- @param sessionContext SessionContext
 function ComputeClassLevelAdditions(sessionContext, sourceTables, var, presenceCheckFn, target, configType, combatid)
     local toAdd = {}
-    local requiredLevels = LevelGate(sessionContext.VarsJson, var, 20, Osi.GetLevel(target), target, configType)
+    local requiredLevels = LevelGate(sessionContext, var, 20, Osi.GetLevel(target), target, configType)
 
     sessionContext.LogI(5, 26, string.format("DBG: Required levels %s for %s", Ext.Json.Stringify(requiredLevels), target))
     local npcTable = {}
@@ -1015,7 +1015,7 @@ function ComputeClassSpecificAbilities(sessionContext, target, configType, comba
                 for _, ability in ipairs(abilities) do
 
                     local allowedByRestrictions = AllowedByRestrictions(sessionContext, restrictions, "Ability", ability)
-                    if allowedByRestrictions and not HasSpellThorough(target, ability) then
+                    if allowedByRestrictions and not HasSpellThorough(sessionContext, target, combatid, ability) then
                         combinedClassAbilities[level][ability] = true
                     end
                 end
@@ -1177,13 +1177,8 @@ function RemoveBoostsAdv(target, val, combatid)
 end
 
 --- @param sessionContext SessionContext
-function HasSpellThorough(sessionContext, target, spell)
-    if Osi.HasSpell(target, spell) == 1 then
-        return true
-    end
-
-    sessionContext.LogI(5, 30, string.format("Has Spell Thorough Check spellbook for spell parent %s on %s", spell, target))
-
+function PrepareSpellBookRoots(sessionContext, target, combatid)
+    local spellRoots = {}
     local entity = Ext.Entity.Get(target)
     local spells = SafeGet(entity, "SpellBook", "Spells")
 
@@ -1193,19 +1188,37 @@ function HasSpellThorough(sessionContext, target, spell)
 
     for _, derivedSpell in pairs(spells) do
         local prototype = SafeGet(derivedSpell, "Id", "Prototype")
+        local lastUsing = nil
         local using = prototype
 
         while using ~= nil do
-            local status, spellData = pcall(Ext.Stats.Get, using)
-            local usingStatus, usingSpell = pcall(function() return spellData.Using end)
+            local spellData = Ext.Stats.Get(using)
 
-            sessionContext.LogI(7, 32, string.format("Has Spell Thorough Checking spell parent %s of %s on %s", usingSpell, using, target))
 
-            if status and usingStatus and usingSpell ~= nil and spell == usingSpell then
-                return true
+            if spellData.RootSpellID ~= nil and spellData.RootSpellID ~= "" then
+                sessionContext.LogI(6, 32, string.format("Found entity spell rootId to cache of %s of parent %s on %s", spellData.RootSpellID, using, target))
+                spellRoots[spellData.RootSpellID] = true
+                using = nil
+            else
+                lastUsing = using
+                using = spellData.Using
             end
-            using = usingSpell
         end
+    end
+    sessionContext.EntityCache[combatid][target].SpellRoots = spellRoots
+end
+
+--- @param sessionContext SessionContext
+function HasSpellThorough(sessionContext, target, combatid, spell)
+    if Osi.HasSpell(target, spell) == 1 then
+        return true
+    end
+
+    sessionContext.LogI(5, 30, string.format("Has Spell Thorough Check spellbook root cache for spell %s on %s", spell, target))
+
+    if sessionContext.EntityCache[combatid][target][spell] then
+        sessionContext.LogI(6, 30, string.format("Has Spell Thorough Check found spellbook root cache for spell %s on %s", spell, target))
+        return true
     end
     return false
 end
@@ -1463,7 +1476,7 @@ function ComputeNewSpells(sessionContext, target, configType, combatid)
                 end
                 for _, spell in ipairs(spells) do
                     local allowedByRestrictions = AllowedByRestrictions(sessionContext, restrictions, "Spell", spell)
-                    if allowedByRestrictions and not HasSpellThorough(target, spell) then
+                    if allowedByRestrictions and not HasSpellThorough(sessionContext, target, combatid, spell) then
                         combinedClassSpells[level][spell] = true
                     end
                 end
@@ -2696,17 +2709,18 @@ end
 
 local function OnSessionLoaded()
     --- @type SessionContext
-    local SessionContext = {
+    SessionContext = {
         VarsJson = {},
         SpellsAdded = {},
         PassivesAdded = {},
         ImplicatedGuids = {},
+        EntityCache = {},
         ActionResources = {},
         Tags = {},
         ConfigFailed = 0,
     }
-    SessionContext.Log = _Log(SessionContext)
-    SessionContext.LogI = _LogI(SessionContext)
+    SessionContext.Log = function(level, str) _Log(SessionContext, level, str) end
+    SessionContext.LogI = function(level, indent, str) _LogI(SessionContext, level, indent, str) end
 
     SessionContext.Log(0, "0.9.0.0")
 
@@ -2731,6 +2745,16 @@ local function OnSessionLoaded()
                 return
             end
 
+            local isPartyMember = CheckIfParty(guid) == 1
+            local isPartyFollower = Osi.IsPartyFollower(guid) == 1
+            local isOurSummon = CheckIfOurSummon(guid) == 1
+            local isEnemy = Osi.IsEnemy(guid, Osi.GetHostCharacter()) == 1
+
+            if isPartyMember and not isPartyFollower and not isOurSummon and not isEnemy then
+                SessionContext.Log(4, string.format("Give: Skipping explicit party member: Guid: %s", guid))
+                return
+            end
+
             local firstEntity = false
             if SessionContext.ImplicatedGuids[combatid] == nil then
                 SessionContext.ImplicatedGuids[combatid] = {}
@@ -2742,6 +2766,10 @@ local function OnSessionLoaded()
             end
             if SessionContext.PassivesAdded[combatid] == nil then
                 SessionContext.PassivesAdded[combatid] = {}
+                firstEntity = true
+            end
+            if SessionContext.EntityCache[combatid] == nil then
+                SessionContext.EntityCache[combatid] = {}
                 firstEntity = true
             end
             -- This is a small hack. Some mods load their spells later than session loaded.
@@ -2757,12 +2785,12 @@ local function OnSessionLoaded()
 
             SessionContext.ImplicatedGuids[combatid][guid] = {}
 
-            local isPartyMember = CheckIfParty(guid) == 1
-            local isPartyFollower = Osi.IsPartyFollower(guid) == 1
-            local isEnemy = Osi.IsEnemy(guid, Osi.GetHostCharacter()) == 1
+            SessionContext.EntityCache[combatid][guid] = {
+                SpellRoots = {},
+            }
+
             local isOrigin = CheckIfOrigin(guid) == 1
             local isBoss = Osi.IsBoss(guid) == 1
-            local isOurSummon = CheckIfOurSummon(guid) == 1
 
             local entity = Ext.Entity.Get(guid)
             local CombatComponent = SafeGet(entity, "ServerCharacter", "Character", "Template", "CombatComponent")
@@ -2779,6 +2807,8 @@ local function OnSessionLoaded()
             end
 
             local restrictions = SessionContext.EntityToRestrictions(guid) or {}
+
+            PrepareSpellBookRoots(SessionContext, guid, combatid)
 
             SessionContext.Log(1, string.format("Give: Guid: %s; Modified?: %s; Party?: %s; Follower?: %s; Enemy?: %s; Origin?: %s; Boss?: %s; OurSummon?: %s\n", guid, alreadyModified, isPartyMember, isPartyFollower, isEnemy, isOrigin, isBoss, isOurSummon))
             SessionContext.Log(1, string.format("Give: Guid: %s; Combatid: %s: %s\n", guid, combatid, entity))
@@ -2862,6 +2892,7 @@ local function OnSessionLoaded()
                 end
                 SessionContext.PassivesAdded[combatid] = {}
             end
+            SessionContext.EntityCache[combatid] = {}
         end
     )
 

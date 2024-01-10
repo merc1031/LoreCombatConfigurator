@@ -69,11 +69,15 @@
 --- @field Passives table<string, boolean>
 --- @field PassivesByLevel table<string, string[]>
 
+--- @class EntityCacheItem
+--- @field SpellRoots table<string, boolean>
+
 --- @class SessionContext
 --- @field VarsJson table
 --- @field SpellsAdded table<Guid, table<Guid, string[]>>
 --- @field PassivesAdded table<Guid, table<Guid, string[]>>
 --- @field ImplicatedGuids table<Guid, table<Guid, string[]>>
+--- @field EntityCache table<Guid, table<Guid, EntityCacheItem>>
 --- @field ActionResources table<string, Guid>
 --- @field Tags table<string, Guid>
 --- @field ConfigFailed integer
