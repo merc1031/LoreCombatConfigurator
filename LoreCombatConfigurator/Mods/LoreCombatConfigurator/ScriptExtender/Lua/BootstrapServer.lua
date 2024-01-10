@@ -2592,7 +2592,22 @@ function GiveBoosts(sessionContext, guid, configType, combatid)
     Osi.ApplyStatus(guid, "LCC_MODIFIED", -1)
 end
 
+
+--- @class SessionContext
+--- @field VarsJson table
+--- @field SpellsAdded table<Guid, table<Guid, string[]>>
+--- @field PassivesAdded table<Guid, table<Guid, string[]>>
+--- @field ImplicatedGuids table<Guid, table<Guid, string[]>>
+--- @field ActionResources table<string, Guid>
+--- @field Tags table<string, Guid>
+--- @field ConfigFailed integer
+--- @field Log fun(level: integer, str: string) | nil
+--- @field LogI fun(level: integer, indent: integer, str: string) | nil
+--- @field EntityToKinds (fun(target: string): table<string, boolean>) | nil
+--- @field EntityToRestrictions (fun(target: string): table<string, boolean>) | nil
+
 local function OnSessionLoaded()
+    --- @type SessionContext
     local SessionContext = {
         VarsJson = {},
         SpellsAdded = {},
