@@ -500,6 +500,7 @@ function DropBlacklistedAbilities(abilities)
 end
 
 --- @param sessionContext SessionContext
+--- @return table<Guid, table<string, Spell>>
 function SpellListsToSpells(sessionContext)
     local allSpellLists = Ext.Definition.GetAll("SpellList")
     local spellListToSpells = {}
@@ -563,6 +564,7 @@ function PassiveListsToPassives(sessionContext)
 end
 
 --- @param sessionContext SessionContext
+--- @return table<Guid, table<integer, Progression>>
 function ProgressionsByTable(sessionContext)
     local spellListToSpells = SpellListsToSpells(sessionContext)
     local passiveListToPassives = PassiveListsToPassives(sessionContext)
@@ -626,6 +628,7 @@ function ProgressionsByTable(sessionContext)
 end
 
 --- @param sessionContext SessionContext
+--- @return table<string, Class>
 function FindRootClasses(sessionContext)
     local progressionsByTable = ProgressionsByTable(sessionContext)
 
@@ -687,6 +690,7 @@ SpellLevelToName = {
 }
 
 --- @param sessionContext SessionContext
+--- @return table<string, ClassSpells>
 function GenerateSpellLists(sessionContext, blacklistedAbilitiesByClass, blacklistedAbilities, blaclistedLists, rootClasses)
     local classToSpellLists = {}
     for className, class in pairs(rootClasses) do
@@ -701,6 +705,7 @@ function GenerateSpellLists(sessionContext, blacklistedAbilitiesByClass, blackli
 end
 
 --- @param sessionContext SessionContext
+--- @return table<string, ClassSpell>, table<string, string[]>, table<string, string[]>
 function GenerateClassSpellLists(sessionContext, blacklistedAbilitiesByClass, blacklistedAbilities, blaclistedLists, class)
     local spells = {}
     for level, progression in pairs(class.Progression) do
@@ -782,6 +787,7 @@ function GenerateClassSpellLists(sessionContext, blacklistedAbilitiesByClass, bl
 end
 
 --- @param sessionContext SessionContext
+--- @return table<string, ClassPassives>
 function GeneratePassiveLists(sessionContext, blacklistedPassivesByClass, blacklistedPassives, blaclistedLists, rootClasses)
     local classToPassiveLists = {}
     for className, class in pairs(rootClasses) do
@@ -795,6 +801,7 @@ function GeneratePassiveLists(sessionContext, blacklistedPassivesByClass, blackl
 end
 
 --- @param sessionContext SessionContext
+--- @return table<string, boolean>, table<string, string[]>
 function GenerateClassPassiveLists(sessionContext, blacklistedPassivesByClass, blacklistedPassives, blaclistedLists, class)
     local passives = {}
     local passivesByLevel = {}
@@ -950,7 +957,7 @@ function ComputeClassSpecificPassives(sessionContext, target, configType, combat
 
     local combinedClassPassives = {}
     for _, class in ipairs(allClasses) do
-        local classPassives = PassiveListsByClass[class].PassivesByLevel or {}
+        local classPassives = sessionContext.PassiveListsByClass[class].PassivesByLevel or {}
         if classPassives ~= nil then
             for level, passives in pairs(classPassives) do
                 if combinedClassPassives[level] == nil then
@@ -1992,11 +1999,11 @@ end
 
 --- @param sessionContext SessionContext
 function CalculateLists(sessionContext)
-    OverrideBlacklistedAbilities= sessionContext.VarsJson["BlacklistedAbilities"]
-    OverrideBlacklistedPassives = sessionContext.VarsJson["BlacklistedPassives"]
-    OverrideBlacklistedAbilitiesByClass = sessionContext.VarsJson["BlacklistedAbilitiesByClass"]
-    OverrideBlacklistedPassivesByClass = sessionContext.VarsJson["BlacklistedPassivesByClass"]
-    OverrideBlacklistedLists = sessionContext.VarsJson["BlacklistedLists"]
+    local overrideBlacklistedAbilities= sessionContext.VarsJson["BlacklistedAbilities"]
+    local overrideBlacklistedPassives = sessionContext.VarsJson["BlacklistedPassives"]
+    local overrideBlacklistedAbilitiesByClass = sessionContext.VarsJson["BlacklistedAbilitiesByClass"]
+    local overrideBlacklistedPassivesByClass = sessionContext.VarsJson["BlacklistedPassivesByClass"]
+    local overrideBlacklistedLists = sessionContext.VarsJson["BlacklistedLists"]
 
     local blacklistedAbilitiesByClass
     local blacklistedPassivesByClass
@@ -2004,43 +2011,43 @@ function CalculateLists(sessionContext)
     local blacklistedPassives
     local blacklistedLists
 
-    if OverrideBlacklistedAbilitiesByClass ~= nil and OverrideBlacklistedAbilitiesByClass ~= {} then
-        blacklistedAbilitiesByClass = OverrideBlacklistedAbilitiesByClass
+    if overrideBlacklistedAbilitiesByClass ~= nil and overrideBlacklistedAbilitiesByClass ~= {} then
+        blacklistedAbilitiesByClass = overrideBlacklistedAbilitiesByClass
     else
         blacklistedAbilitiesByClass = BlacklistedAbilitiesByClass
     end
 
-    if OverrideBlacklistedPassivesByClass ~= nil and OverrideBlacklistedPassivesByClass ~= {} then
-        blacklistedPassivesByClass = OverrideBlacklistedPassivesByClass
+    if overrideBlacklistedPassivesByClass ~= nil and overrideBlacklistedPassivesByClass ~= {} then
+        blacklistedPassivesByClass = overrideBlacklistedPassivesByClass
     else
         blacklistedPassivesByClass = BlacklistedPassivesByClass
     end
 
-    if OverrideBlacklistedAbilities ~= nil and OverrideBlacklistedAbilities ~= {} then
-        blacklistedAbilities = OverrideBlacklistedAbilities
+    if overrideBlacklistedAbilities ~= nil and overrideBlacklistedAbilities ~= {} then
+        blacklistedAbilities = overrideBlacklistedAbilities
     else
         blacklistedAbilities = BlacklistedAbilities
     end
 
-    if OverrideBlacklistedPassives ~= nil and OverrideBlacklistedPassives ~= {} then
-        blacklistedPassives = OverrideBlacklistedPassives
+    if overrideBlacklistedPassives ~= nil and overrideBlacklistedPassives ~= {} then
+        blacklistedPassives = overrideBlacklistedPassives
     else
         blacklistedPassives = BlacklistedPassives
     end
 
-    if OverrideBlacklistedLists ~= nil and OverrideBlacklistedLists ~= {} then
-        blacklistedLists = OverrideBlacklistedLists
+    if overrideBlacklistedLists ~= nil and overrideBlacklistedLists ~= {} then
+        blacklistedLists = overrideBlacklistedLists
     else
         blacklistedLists = BlacklistedLists
     end
 
-    SpellListsByClass = GenerateSpellLists(sessionContext, blacklistedAbilitiesByClass, blacklistedAbilities, blacklistedLists, FindRootClasses(sessionContext))
-    PassiveListsByClass = GeneratePassiveLists(sessionContext, blacklistedPassivesByClass, blacklistedPassives, blacklistedLists, FindRootClasses(sessionContext))
+    sessionContext.SpellListsByClass = GenerateSpellLists(sessionContext, blacklistedAbilitiesByClass, blacklistedAbilities, blacklistedLists, FindRootClasses(sessionContext))
+    sessionContext.PassiveListsByClass = GeneratePassiveLists(sessionContext, blacklistedPassivesByClass, blacklistedPassives, blacklistedLists, FindRootClasses(sessionContext))
 
-    SpellData = {}
-    for _, spells in pairs(SpellListsByClass) do
+    sessionContext.SpellData = {}
+    for _, spells in pairs(sessionContext.SpellListsByClass) do
         for spellName, classSpell in pairs(spells.Spells) do
-            SpellData[spellName] = classSpell.Spell
+            sessionContext.SpellData[spellName] = classSpell.Spell
         end
     end
 
@@ -2664,21 +2671,6 @@ function GiveBoosts(sessionContext, guid, configType, combatid)
     Osi.ApplyStatus(guid, "LCC_MODIFIED", -1)
 end
 
-
---- @class SessionContext
---- @field VarsJson table
---- @field SpellsAdded table<Guid, table<Guid, string[]>>
---- @field PassivesAdded table<Guid, table<Guid, string[]>>
---- @field ImplicatedGuids table<Guid, table<Guid, string[]>>
---- @field ActionResources table<string, Guid>
---- @field Tags table<string, Guid>
---- @field ConfigFailed integer
---- @field Log fun(level: integer, str: string) | nil
---- @field LogI fun(level: integer, indent: integer, str: string) | nil
---- @field EntityToKinds (fun(target: string): table<string, boolean>) | nil
---- @field EntityToRestrictions (fun(target: string): table<string, boolean>) | nil
---- @field SpellData table<string, SpellData> | nil
---- @field SpellListsByClass table<string, table<string, string[]>> | nil
 
 local function OnSessionLoaded()
     --- @type SessionContext
