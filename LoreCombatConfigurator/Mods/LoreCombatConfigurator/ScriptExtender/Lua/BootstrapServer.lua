@@ -866,6 +866,98 @@ function GenerateClassPassiveLists(sessionContext, blacklistedPassivesByClass, b
 end
 
 --- @param sessionContext SessionContext
+--- @return ItemLists
+function GenerateItemLists(sessionContext)
+    local itemsByUseType = {
+        Consumable = {},
+        Armor = {},
+        Weapon = {},
+    }
+    for _, name in ipairs(Ext.Stats.GetStats("Object")) do
+        local stat = Ext.Stats.Get(name)
+        if stat ~= nil and stat.ItemUseType ~= nil and stat.RootTemplate ~= nil and stat.RootTemplate ~= "" then
+            local useCosts = Split(stat.UseCosts, ";")
+            local objectCategory = Split(stat.ObjectCategory, ";")
+            local useConditions = stat.UseConditions
+
+            if itemsByUseType["Consumable"][stat.ItemUseType] == nil then
+                itemsByUseType["Consumable"][stat.ItemUseType] = {}
+            end
+            itemsByUseType["Consumable"][stat.ItemUseType][name] = {
+                Name = name,
+                Using = stat.Using,
+                ItemUseType = stat.ItemUseType,
+                UseCosts = useCosts,
+                RootTemplate = stat.RootTemplate,
+                ObjectCategory = objectCategory,
+                UseConditions = useConditions,
+            }
+        end
+    end
+    for _, name in ipairs(Ext.Stats.GetStats("Armor")) do
+        local stat = Ext.Stats.Get(name)
+        if stat ~= nil and stat.Slot ~= nil and stat.RootTemplate ~= nil and stat.RootTemplate ~= "" then
+            local boosts = Split(stat.Boosts, ";")
+            local passivesOnEquip = Split(stat.PassivesOnEquip, ";")
+            local statusOnEquip = Split(stat.StatusOnEquip, ";")
+
+            if itemsByUseType["Armor"][stat.Slot] == nil then
+                itemsByUseType["Armor"][stat.Slot] = {}
+            end
+            itemsByUseType["Armor"][stat.Slot][name] = {
+                Name = name,
+                Using = stat.Using,
+                Slot = stat.Slot,
+                Boosts = boosts,
+                RootTemplate = stat.RootTemplate,
+                PassivesOnEquip = passivesOnEquip,
+                StatusOnEquip = statusOnEquip,
+                Unique = stat.Unique,
+                ProficiencyGroup = stat["Proficiency Group"],
+            }
+        end
+    end
+    for _, name in ipairs(Ext.Stats.GetStats("Weapon")) do
+        local stat = Ext.Stats.Get(name)
+        if stat ~= nil and stat.Slot ~= nil and stat.RootTemplate ~= nil and stat.RootTemplate ~= "" then
+            local boosts = Split(stat.Boosts, ";")
+            local boostsOnEquipMainHand = Split(stat.BoostsOnEquipMainHand, ";")
+            local boostsOnEquipOffHand = Split(stat.BoostsOnEquipOffHand, ";")
+            local defaultBoosts = Split(stat.DefaultBoosts, ";")
+            local passivesOnEquip = Split(stat.PassivesOnEquip, ";")
+            local statusOnEquip = Split(stat.StatusOnEquip, ";")
+            local personalStatusImmunities = Split(stat.PersonalStatusImmunities, ";")
+            local useConditions = stat.UseConditions
+            -- stat.WeaponFunctors
+
+            if itemsByUseType["Weapon"][stat.Slot] == nil then
+                itemsByUseType["Weapon"][stat.Slot] = {}
+            end
+            itemsByUseType["Weapon"][stat.Slot][name] = {
+                Name = name,
+                Using = stat.Using,
+                Slot = stat.Slot,
+                Boosts = boosts,
+                BoostsOnEquipMainHand = boostsOnEquipMainHand,
+                BoostsOnEquipOffHand = boostsOnEquipOffHand,
+                DefaultBoosts = defaultBoosts,
+                RootTemplate = stat.RootTemplate,
+                PassivesOnEquip = passivesOnEquip,
+                StatusOnEquip = statusOnEquip,
+                Unique = stat.Unique,
+                ProficiencyGroup = stat["Proficiency Group"],
+                UseConditions = useConditions,
+                PersonalStatusImmunities = personalStatusImmunities,
+                WeaponProperties = stat["Weapon Properties"],
+                WeaponGroup = stat["Weapon Group"],
+                DamageType = stat["Damage Type"],
+            }
+        end
+    end
+    return itemsByUseType
+end
+
+--- @param sessionContext SessionContext
 function LevelGate(sessionContext, varSection, max, npcLevel, target, configType)
     local minLevels = {}
     local requiredLevelsChoices = {}
@@ -2064,6 +2156,7 @@ function CalculateLists(sessionContext)
         end
     end
 
+    sessionContext.ItemLists  = GenerateItemLists(sessionContext)
 end
 
 BlacklistedLists = {

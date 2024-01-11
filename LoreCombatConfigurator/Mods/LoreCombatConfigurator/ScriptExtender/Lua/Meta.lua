@@ -69,6 +69,54 @@
 --- @field Passives table<string, boolean>
 --- @field PassivesByLevel table<string, string[]>
 
+--- @alias Consumables "Arrow" | "Consumable" | "Grenade" | "Potion" | "Scroll" | "Throwable"
+--- @alias ArmorSlot "Amulet" | "Boots" | "Breast" | "Cloak" | "Gloves" | "Helmet" | "Melee Offhand Weapon" | "Musical Instrument" | "Ring" | "Underwear" | "VanityBody" | "VanityBoots"
+--- @alias WeaponSlot "Helmet" | "Melee Main Weapon" | "Melee Offhand Weapon" | "Ranged Main Weapon" | "Ranged Offhand Weapon"
+
+--- @class Stat
+--- @field Name string
+--- @field Using string | nil
+
+--- @class (exact) Consumable : Stat
+--- @field ItemUseType Consumables
+--- @field UseCosts string[]
+--- @field RootTemplate Guid
+--- @field ObjectCategory string
+--- @field UseConditions string
+
+--- @alias Unique 1 | 0
+
+--- @class (exact) Armor : Stat
+--- @field Slot ArmorSlot
+--- @field Boosts string[]
+--- @field RootTemplate Guid
+--- @field PassivesOnEquip string[]
+--- @field StatusOnEquip string[]
+--- @field Unique Unique
+--- @field ProficiencyGroup string[]
+
+--- @class (exact) Weapon : Stat
+--- @field Slot WeaponSlot
+--- @field Boosts string[]
+--- @field BoostsOnEquipMainHand string[]
+--- @field BoostsOnEquipOffHand string[]
+--- @field DefaultBoosts string[]
+--- @field RootTemplate Guid
+--- @field PassivesOnEquip string[]
+--- @field StatusOnEquip string[]
+--- @field Unique Unique
+--- @field ProficiencyGroup string[]
+--- @field UseConditions string
+--- @field PersonalStatusImmunities string[]
+--- @field WeaponProperties string[]
+--- @field WeaponGroup string
+--- @field DamageType string
+
+--- @class ItemLists
+--- @field Consumable table<Consumables, Consumable>
+--- @field Armor table<ArmorSlot, Armor>
+--- @field Weapon table<WeaponSlot, Weapon>
+
 --- @class EntityCacheItem
 --- @field SpellRoots table<string, boolean>
 
@@ -88,6 +136,7 @@
 --- @field SpellData table<string, Spell> | nil
 --- @field SpellListsByClass table<string, ClassSpells> | nil
 --- @field PassiveListsByClass table<string, ClassPassives> | nil
+--- @field ItemLists ItemLists | nil
 
 --- @alias Enabled 0 | 1
 
