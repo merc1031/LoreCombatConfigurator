@@ -2692,6 +2692,7 @@ function ResetConfigJson(sessionContext)
         BlacklistedPassives = {},
         BlacklistedAbilitiesByClass = {},
         BlacklistedPassivesByClass = {},
+        BlacklistedLists = {},
         AbilityDependencies = {},
         PassiveDependencies = {},
         -- The following configures the boosts that will be added to normal enemies
