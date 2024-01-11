@@ -223,3 +223,60 @@
 --- @field Damage ScalingLevelScaledConfig
 --- @field AC ScalingLevelScaledConfig
 --- @field Movement ScalingLevelScaledConfig
+
+--- @alias KindsConfig tabled<string, string[]>
+
+--- @class SpellSchoolRestriction
+--- @field Exclusive string[]
+
+--- @class SpellRestriction
+--- @field School SpellSchoolRestriction
+
+--- @class AbilityCostRestriction
+--- @field Restrict string[]
+
+--- @class AbilityRestriction
+--- @field Cost AbilityCostRestriction
+
+--- @class Restriction
+--- @field Spell SpellRestriction
+--- @field Ability AbilityRestriction
+
+--- @alias RestrictionsConfig table<string, Restriction>
+
+--- @alias BlacklistConfig table<string, boolean>
+
+--- @class Config
+--- @field EnemiesEnabled Enabled
+--- @field BossesEnabled Enabled
+--- @field AlliesEnabled Enabled
+--- @field FollowersEnabled Enabled
+--- @field FollowersBossesEnabled Enabled
+--- @field SummonsEnabled Enabled
+--- @field Lore Enabled
+--- @field CasterArchetypeCheck Enabled
+--- @field HealerArchetypeCheck Enabled
+--- @field FighterArchetypeCheck Enabled
+--- @field MonkArchetypeCheck Enabled
+--- @field RogueArchetypeCheck Enabled
+--- @field RangerArchetypeCheck Enabled
+--- @field WarlockArchetypeCheck Enabled
+--- @field ClericArchetypeCheck Enabled
+--- @field DruidArchetypeCheck Enabled
+--- @field BarbarianArchetypeCheck Enabled
+--- @field BardArchetypeCheck Enabled
+--- @field PaladinArchetypeCheck Enabled
+--- @field ConsistentHash Enabled
+--- @field ConsistentHashSalt integer | nil
+--- @field DebugDisableEE Enabled
+--- @field Verbosity integer
+--- @field Kinds KindsConfig
+--- @field Restrictions RestrictionsConfig
+--- @field BlacklistedAbilities BlacklistConfig
+--- @field BlacklistedAbilities BlacklistConfig
+--- @field BlacklistedPassives BlacklistConfig
+--- @field BlacklistedAbilitiesByClass BlacklistConfig
+--- @field BlacklistedPassivesByClass BlacklistConfig
+--- @field BlacklistedLists BlacklistConfig
+--- @field AbilityDependencies table<string, string[]>
+--- @field PassiveDependencies table<string, string[]>

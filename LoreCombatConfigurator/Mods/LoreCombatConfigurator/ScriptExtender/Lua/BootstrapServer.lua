@@ -2622,6 +2622,7 @@ Defaults = {
 --- @param sessionContext SessionContext
 function ResetConfigJson(sessionContext)
     sessionContext.ConfigFailed = 0
+    --- @type Config
     local defaultConfig = {
         -- The following control whether we are allowing the mod to affect these types
         -- Bog Standard Enemies
