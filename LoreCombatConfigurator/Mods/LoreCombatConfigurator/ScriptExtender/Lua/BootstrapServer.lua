@@ -984,7 +984,7 @@ function LevelGate(sessionContext, varSection, max, npcLevel, target, configType
 end
 
 --- @param sessionContext SessionContext
-function ComputeClassLevelAdditions(sessionContext, sourceTables, var, presenceCheckFn, target, configType, combatid)
+function ComputeClassLevelAdditions(sessionContext, sourceTables, deps, var, presenceCheckFn, target, configType, combatid)
     local toAdd = {}
     local requiredLevels = LevelGate(sessionContext, var, 20, Osi.GetLevel(target), target, configType)
 
@@ -1032,7 +1032,16 @@ function ComputeClassLevelAdditions(sessionContext, sourceTables, var, presenceC
         end
     end
 
-    return toAdd
+    local finalToAdd = {}
+    for candidateName, candidateData in pairs(toAdd) do
+        finalToAdd[candidateName] = candidateData
+        for _, depCandidate in ipairs(deps[candidateName] or {}) do
+            if toAdd[depCandidate] == nil and presenceCheckFn(target, depCandidate) == 0 then
+                finalToAdd[depCandidate] = depCandidate
+            end
+        end
+    end
+    return finalToAdd
 end
 
 --- @param sessionContext SessionContext
@@ -1078,7 +1087,7 @@ function ComputeClassSpecificPassives(sessionContext, target, configType, combat
         return passivesToAdd
     end
 
-    return ComputeClassLevelAdditions(sessionContext, passiveTables, "PassivesAdded", Osi.HasPassive, target, configType, combatid)
+    return ComputeClassLevelAdditions(sessionContext, passiveTables, sessionContext.PassiveDependencies, "PassivesAdded", Osi.HasPassive, target, configType, combatid)
 end
 
 --- @param sessionContext SessionContext
@@ -1133,7 +1142,7 @@ function ComputeClassSpecificAbilities(sessionContext, target, configType, comba
     end
     sessionContext.LogI(5, 26, string.format("DBG: Found ability tables %s for %s", Ext.Json.Stringify(abilityTables), target))
 
-    return ComputeClassLevelAdditions(sessionContext, abilityTables, "AbilitiesAdded", Osi.HasSpell, target, configType, combatid)
+    return ComputeClassLevelAdditions(sessionContext, abilityTables, sessionContext.AbilityDependencies, "AbilitiesAdded", Osi.HasSpell, target, configType, combatid)
 end
 
 function CheckIfOrigin(target)
@@ -1628,7 +1637,16 @@ function ComputeNewSpells(sessionContext, target, configType, combatid)
         npcSpells = npcSpells + 1
     end
 
-    return selectedSpells
+    local finalSelectedSpells = {}
+    for spellName, spellData in pairs(selectedSpells) do
+        finalSelectedSpells[spellName] = spellData
+        for _, depSpell in ipairs(sessionContext.AbilityDependencies[spellName] or {}) do
+            if selectedSpells[depSpell] == nil and not HasSpellThorough(sessionContext, target, combatid, depSpell) then
+                finalSelectedSpells[depSpell] = depSpell
+            end
+        end
+    end
+    return finalSelectedSpells
 end
 
 --- @param sessionContext SessionContext
@@ -2109,12 +2127,16 @@ function CalculateLists(sessionContext)
     local overrideBlacklistedAbilitiesByClass = sessionContext.VarsJson["BlacklistedAbilitiesByClass"]
     local overrideBlacklistedPassivesByClass = sessionContext.VarsJson["BlacklistedPassivesByClass"]
     local overrideBlacklistedLists = sessionContext.VarsJson["BlacklistedLists"]
+    local overrideAbilityDependencies = sessionContext.VarsJson["AbilityDependencies"]
+    local overridePassiveDependencies = sessionContext.VarsJson["PassiveDependencies"]
 
     local blacklistedAbilitiesByClass
     local blacklistedPassivesByClass
     local blacklistedAbilities
     local blacklistedPassives
     local blacklistedLists
+    local abilityDependencies
+    local passiveDependencies
 
     if overrideBlacklistedAbilitiesByClass ~= nil and overrideBlacklistedAbilitiesByClass ~= {} then
         blacklistedAbilitiesByClass = overrideBlacklistedAbilitiesByClass
@@ -2146,6 +2168,18 @@ function CalculateLists(sessionContext)
         blacklistedLists = BlacklistedLists
     end
 
+    if overrideAbilityDependencies ~= nil and overrideAbilityDependencies ~= {} then
+        abilityDependencies = overrideAbilityDependencies
+    else
+        abilityDependencies = AbilityDependencies
+    end
+
+    if overridePassiveDependencies ~= nil and overridePassiveDependencies ~= {} then
+        passiveDependencies = overridePassiveDependencies
+    else
+        passiveDependencies = PassiveDependencies
+    end
+
     sessionContext.SpellListsByClass = GenerateSpellLists(sessionContext, blacklistedAbilitiesByClass, blacklistedAbilities, blacklistedLists, FindRootClasses(sessionContext))
     sessionContext.PassiveListsByClass = GeneratePassiveLists(sessionContext, blacklistedPassivesByClass, blacklistedPassives, blacklistedLists, FindRootClasses(sessionContext))
 
@@ -2157,6 +2191,8 @@ function CalculateLists(sessionContext)
     end
 
     sessionContext.ItemLists  = GenerateItemLists(sessionContext)
+    sessionContext.AbilityDependencies = abilityDependencies
+    sessionContext.PassiveDependencies = passiveDependencies
 end
 
 BlacklistedLists = {
@@ -2282,6 +2318,15 @@ Archetypes = {
     "melee",
     "mage",
     "hag_green",
+}
+
+AbilityDependencies = {
+    Target_Jump = {
+        "Projectile_Jump",
+    },
+}
+
+PassiveDependencies = {
 }
 
 --- @param sessionContext SessionContext
@@ -2647,6 +2692,8 @@ function ResetConfigJson(sessionContext)
         BlacklistedPassives = {},
         BlacklistedAbilitiesByClass = {},
         BlacklistedPassivesByClass = {},
+        AbilityDependencies = {},
+        PassiveDependencies = {},
         -- The following configures the boosts that will be added to normal enemies
         Enemies = Defaults,
         -- The following configures the boosts that will be added to bosses

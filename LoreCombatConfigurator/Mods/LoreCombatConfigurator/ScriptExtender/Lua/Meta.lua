@@ -137,6 +137,8 @@
 --- @field SpellListsByClass table<string, ClassSpells> | nil
 --- @field PassiveListsByClass table<string, ClassPassives> | nil
 --- @field ItemLists ItemLists | nil
+--- @field AbilityDependencies table<string, string[]> | nil
+--- @field PassiveDependencies table<string, string[]> | nil
 
 --- @alias Enabled 0 | 1
 
