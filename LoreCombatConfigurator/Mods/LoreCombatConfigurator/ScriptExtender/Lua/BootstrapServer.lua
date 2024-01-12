@@ -2849,6 +2849,121 @@ function GiveBoosts(sessionContext, guid, configType, combatid)
 end
 
 
+function PerformBoosting(sessionContext, guid, combatid)
+    sessionContext.Log(1, string.format("Give: Guid: %s", guid))
+
+    local isCharacter = Osi.IsCharacter(guid) == 1
+    if not isCharacter then
+        sessionContext.Log(4, string.format("Give: Skipping non character: Guid: %s", guid))
+        return
+    end
+
+    local isPartyMember = CheckIfParty(guid) == 1
+    local isPartyFollower = Osi.IsPartyFollower(guid) == 1
+    local isOurSummon = CheckIfOurSummon(guid) == 1
+    local isEnemy = Osi.IsEnemy(guid, Osi.GetHostCharacter()) == 1
+    local isOrigin = CheckIfOrigin(guid) == 1
+    local isBoss = Osi.IsBoss(guid) == 1
+
+    if not isPartyMember and not isPartyFollower and not isOurSummon and not isEnemy and not isOrigin and not isBoss then
+        sessionContext.Log(4, string.format("Give: Skipping degenerate character: Guid: %s", guid))
+        return
+    end
+
+    if isPartyMember and not isPartyFollower and not isOurSummon and not isEnemy then
+        sessionContext.Log(4, string.format("Give: Skipping explicit party member: Guid: %s", guid))
+        return
+    end
+
+    local firstEntity = false
+    if sessionContext.ImplicatedGuids[combatid] == nil then
+        sessionContext.ImplicatedGuids[combatid] = {}
+        firstEntity = true
+    end
+    if sessionContext.SpellsAdded[combatid] == nil then
+        sessionContext.SpellsAdded[combatid] = {}
+        firstEntity = true
+    end
+    if sessionContext.PassivesAdded[combatid] == nil then
+        sessionContext.PassivesAdded[combatid] = {}
+        firstEntity = true
+    end
+    if sessionContext.EntityCache[combatid] == nil then
+        sessionContext.EntityCache[combatid] = {}
+        firstEntity = true
+    end
+    -- This is a small hack. Some mods load their spells later than session loaded.
+    -- Without loading the lists late enough, you will get different consistent hash
+    -- spell results after reloading the game.
+    if firstEntity then
+        sessionContext.Log(1, "Recomputing lists")
+        CalculateLists(sessionContext)
+    end
+
+    sessionContext.SpellsAdded[combatid][guid] = {}
+    sessionContext.PassivesAdded[combatid][guid] = {}
+
+    sessionContext.ImplicatedGuids[combatid][guid] = {}
+
+    sessionContext.EntityCache[combatid][guid] = {
+        SpellRoots = {},
+    }
+
+    local entity = Ext.Entity.Get(guid)
+    local CombatComponent = SafeGet(entity, "ServerCharacter", "Character", "Template", "CombatComponent")
+    local rawAIHint = SafeGet(CombatComponent, "AiHint")
+    local mappedAIHint = SafeGet(AiHints, SafeGet(CombatComponent, "AiHint"))
+    local rawArchetype = SafeGet(CombatComponent, "Archetype")
+    local alreadyModified = Osi.HasAppliedStatus(guid, "LCC_MODIFIED") == 1
+
+    local kinds = sessionContext.EntityToKinds(guid) or {}
+    local allClasses = {}
+    for kind, _ in pairs(kinds) do
+        local classes = KindMapping[kind]
+        allClasses = TableCombine(classes, allClasses)
+    end
+
+    local restrictions = sessionContext.EntityToRestrictions(guid) or {}
+
+    PrepareSpellBookRoots(sessionContext, guid, combatid)
+
+    sessionContext.Log(1, string.format("Give: Guid: %s; Modified?: %s; Party?: %s; Follower?: %s; Enemy?: %s; Origin?: %s; Boss?: %s; OurSummon?: %s\n", guid, alreadyModified, isPartyMember, isPartyFollower, isEnemy, isOrigin, isBoss, isOurSummon))
+    sessionContext.Log(1, string.format("Give: Guid: %s; Combatid: %s: %s\n", guid, combatid, entity))
+    sessionContext.Log(1, string.format("Give: AiHint: %s (%s) Archetype: %s\n", rawAIHint, mappedAIHint, rawArchetype))
+    sessionContext.Log(1, string.format("Give: Kinds: %s; Classes: %s; Restrictions %s\n", Ext.Json.Stringify(kinds), Ext.Json.Stringify(allClasses), Ext.Json.Stringify(restrictions)))
+
+    if sessionContext.VarsJson["EnemiesEnabled"] == 1 then
+        if not alreadyModified and (not isPartyMember and isEnemy and not isBoss and not isOrigin) then
+            GiveBoosts(sessionContext, guid, "Enemies", combatid)
+        end
+    end
+    if sessionContext.VarsJson["BossesEnabled"] == 1 then
+        if not alreadyModified and (not isPartyMember and isEnemy and isBoss and not isOrigin) then
+            GiveBoosts(sessionContext, guid, "Bosses", combatid)
+        end
+    end
+    if sessionContext.VarsJson["AlliesEnabled"] == 1 then
+        if not alreadyModified and (not isPartyMember and not isEnemy and not isOrigin and not isBoss) then
+            GiveBoosts(sessionContext, guid, "Allies", combatid)
+        end
+    end
+    if sessionContext.VarsJson["FollowersEnabled"] == 1 then
+        if not alreadyModified and (not isEnemy and not isOrigin and isPartyFollower and not isBoss) then
+            GiveBoosts(sessionContext, guid, "Followers", combatid)
+        end
+    end
+    if sessionContext.VarsJson["FollowersBossesEnabled"] == 1 then
+        if not alreadyModified and (not isEnemy and not isOrigin and isPartyFollower and isBoss) then
+            GiveBoosts(sessionContext, guid, "FollowersBosses", combatid)
+        end
+    end
+    if sessionContext.VarsJson["SummonsEnabled"] == 1 then
+        if not alreadyModified and (isPartyMember and isOurSummon) then
+            GiveBoosts(sessionContext, guid, "Summons", combatid)
+        end
+    end
+end
+
 local function OnSessionLoaded()
     --- @type SessionContext
     SessionContext = {
@@ -2897,115 +3012,14 @@ local function OnSessionLoaded()
 
     GetVarsJson(SessionContext)
 
+    Ext.Osiris.RegisterListener("EnteredLevel", 3, "before", function(guid, _objectRootTemplate, _level)
+        SessionContext.Log(1, string.format("EnteredLevel: Guid: %s", guid))
+        PerformBoosting(SessionContext, guid, "")
+        end
+    )
     Ext.Osiris.RegisterListener("EnteredCombat", 2, "after", function(guid, combatid)
-            SessionContext.Log(1, string.format("Give: Guid: %s", guid))
-
-            local isCharacter = Osi.IsCharacter(guid) == 1
-            if not isCharacter then
-                SessionContext.Log(4, string.format("Give: Skipping non character: Guid: %s", guid))
-                return
-            end
-
-            local isPartyMember = CheckIfParty(guid) == 1
-            local isPartyFollower = Osi.IsPartyFollower(guid) == 1
-            local isOurSummon = CheckIfOurSummon(guid) == 1
-            local isEnemy = Osi.IsEnemy(guid, Osi.GetHostCharacter()) == 1
-
-            if isPartyMember and not isPartyFollower and not isOurSummon and not isEnemy then
-                SessionContext.Log(4, string.format("Give: Skipping explicit party member: Guid: %s", guid))
-                return
-            end
-
-            local firstEntity = false
-            if SessionContext.ImplicatedGuids[combatid] == nil then
-                SessionContext.ImplicatedGuids[combatid] = {}
-                firstEntity = true
-            end
-            if SessionContext.SpellsAdded[combatid] == nil then
-                SessionContext.SpellsAdded[combatid] = {}
-                firstEntity = true
-            end
-            if SessionContext.PassivesAdded[combatid] == nil then
-                SessionContext.PassivesAdded[combatid] = {}
-                firstEntity = true
-            end
-            if SessionContext.EntityCache[combatid] == nil then
-                SessionContext.EntityCache[combatid] = {}
-                firstEntity = true
-            end
-            -- This is a small hack. Some mods load their spells later than session loaded.
-            -- Without loading the lists late enough, you will get different consistent hash
-            -- spell results after reloading the game.
-            if firstEntity then
-                SessionContext.Log(1, "Recomputing lists")
-                CalculateLists(SessionContext)
-            end
-
-            SessionContext.SpellsAdded[combatid][guid] = {}
-            SessionContext.PassivesAdded[combatid][guid] = {}
-
-            SessionContext.ImplicatedGuids[combatid][guid] = {}
-
-            SessionContext.EntityCache[combatid][guid] = {
-                SpellRoots = {},
-            }
-
-            local isOrigin = CheckIfOrigin(guid) == 1
-            local isBoss = Osi.IsBoss(guid) == 1
-
-            local entity = Ext.Entity.Get(guid)
-            local CombatComponent = SafeGet(entity, "ServerCharacter", "Character", "Template", "CombatComponent")
-            local rawAIHint = SafeGet(CombatComponent, "AiHint")
-            local mappedAIHint = SafeGet(AiHints, SafeGet(CombatComponent, "AiHint"))
-            local rawArchetype = SafeGet(CombatComponent, "Archetype")
-            local alreadyModified = Osi.HasAppliedStatus(guid, "LCC_MODIFIED") == 1
-
-            local kinds = SessionContext.EntityToKinds(guid) or {}
-            local allClasses = {}
-            for kind, _ in pairs(kinds) do
-                local classes = KindMapping[kind]
-                allClasses = TableCombine(classes, allClasses)
-            end
-
-            local restrictions = SessionContext.EntityToRestrictions(guid) or {}
-
-            PrepareSpellBookRoots(SessionContext, guid, combatid)
-
-            SessionContext.Log(1, string.format("Give: Guid: %s; Modified?: %s; Party?: %s; Follower?: %s; Enemy?: %s; Origin?: %s; Boss?: %s; OurSummon?: %s\n", guid, alreadyModified, isPartyMember, isPartyFollower, isEnemy, isOrigin, isBoss, isOurSummon))
-            SessionContext.Log(1, string.format("Give: Guid: %s; Combatid: %s: %s\n", guid, combatid, entity))
-            SessionContext.Log(1, string.format("Give: AiHint: %s (%s) Archetype: %s\n", rawAIHint, mappedAIHint, rawArchetype))
-            SessionContext.Log(1, string.format("Give: Kinds: %s; Classes: %s; Restrictions %s\n", Ext.Json.Stringify(kinds), Ext.Json.Stringify(allClasses), Ext.Json.Stringify(restrictions)))
-
-            if SessionContext.VarsJson["EnemiesEnabled"] == 1 then
-                if not alreadyModified and (not isPartyMember and isEnemy and not isBoss and not isOrigin) then
-                    GiveBoosts(SessionContext, guid, "Enemies", combatid)
-                end
-            end
-            if SessionContext.VarsJson["BossesEnabled"] == 1 then
-                if not alreadyModified and (not isPartyMember and isEnemy and isBoss and not isOrigin) then
-                    GiveBoosts(SessionContext, guid, "Bosses", combatid)
-                end
-            end
-            if SessionContext.VarsJson["AlliesEnabled"] == 1 then
-                if not alreadyModified and (not isPartyMember and not isEnemy and not isOrigin and not isBoss) then
-                    GiveBoosts(SessionContext, guid, "Allies", combatid)
-                end
-            end
-            if SessionContext.VarsJson["FollowersEnabled"] == 1 then
-                if not alreadyModified and (not isEnemy and not isOrigin and isPartyFollower and not isBoss) then
-                    GiveBoosts(SessionContext, guid, "Followers", combatid)
-                end
-            end
-            if SessionContext.VarsJson["FollowersBossesEnabled"] == 1 then
-                if not alreadyModified and (not isEnemy and not isOrigin and isPartyFollower and isBoss) then
-                    GiveBoosts(SessionContext, guid, "FollowersBosses", combatid)
-                end
-            end
-            if SessionContext.VarsJson["SummonsEnabled"] == 1 then
-                if not alreadyModified and (isPartyMember and isOurSummon) then
-                    GiveBoosts(SessionContext, guid, "Summons", combatid)
-                end
-            end
+        SessionContext.Log(1, string.format("EnteredCombat: Guid: %s", guid))
+        PerformBoosting(SessionContext, guid, "")
         end
     )
 
