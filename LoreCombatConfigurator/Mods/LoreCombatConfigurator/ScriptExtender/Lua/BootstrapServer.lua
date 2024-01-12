@@ -2859,6 +2859,7 @@ local function OnSessionLoaded()
         EntityCache = {},
         ActionResources = {},
         Tags = {},
+        Archetypes = {},
         ConfigFailed = 0,
     }
     SessionContext.Log = function(level, str) _Log(SessionContext, level, str) end
@@ -2875,6 +2876,24 @@ local function OnSessionLoaded()
         local tag = Ext.StaticData.Get(tagGuid, "Tag")
         SessionContext.Tags[tag.Name] = tagGuid
     end
+
+    local rootTemplates = Ext.Template.GetAllRootTemplates()
+    for _, template in pairs(rootTemplates) do
+        if ({item = true, character = true})[template.TemplateType] then
+            SessionContext.Archetypes[template.CombatComponent.Archetype] = true
+        end
+    end
+    local stats = Ext.Stats.GetStats("StatusData")
+    for _, statName in pairs(stats) do
+        local stat = Ext.Stats.Get(statName)
+        if ({BOOST = true, POLYMORPHED = true})[stat.StatusType] then
+            local val = string.match(stat.Boosts, "AiArchetypeOverride[(](.-),[0-9]+[)]")
+            if val ~= nil then
+                SessionContext.Archetypes[val] = true
+            end
+        end
+    end
+
 
     GetVarsJson(SessionContext)
 

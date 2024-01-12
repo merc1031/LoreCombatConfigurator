@@ -139,6 +139,7 @@
 --- @field ItemLists ItemLists | nil
 --- @field AbilityDependencies table<string, string[]> | nil
 --- @field PassiveDependencies table<string, string[]> | nil
+---  @field Archetypes table<string>
 
 --- @alias Enabled 0 | 1
 
