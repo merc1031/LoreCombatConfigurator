@@ -5,4 +5,9 @@
 	<content contentuid="fcb120fb-7459-4943-962f-5acc1d2523e3" version="1">LCC Modified End</content>
 	<content contentuid="6a0d9340-b87d-438a-9fa8-5326ec9327ab" version="1">LCC Modified Passived</content>
 	<content contentuid="f437287b-c48e-45b0-9c1f-11adc0f26622" version="1">LCC Modified Boosted</content>
+	<content contentuid="30e42bca-a328-414f-a4a2-9e5e1b7bf6f4" version="1">General indicator that this entity was modified by LoreCombatConfigurator</content>
+	<content contentuid="3bd414b9-e91f-4f78-9fb5-697429fe195e" version="1">Hack index indicator that identifies where LoreCombatConfigurator passives begin</content>
+	<content contentuid="506ae32c-e416-42e4-afe9-3cdf363d7e39" version="1">Hack index indicator that identifies where LoreCombatConfigurator passives end</content>
+	<content contentuid="fd961982-1050-4dd7-a9ac-ff642572c5fb" version="1">Indicator that passive on this entity were modified by LoreCombatConfigurator</content>
+	<content contentuid="cbefff5d-818f-443f-940b-7909b4d54c54" version="1">Indicator that boosts on this entity were modified by LoreCombatConfigurator</content>
 </contentList>
