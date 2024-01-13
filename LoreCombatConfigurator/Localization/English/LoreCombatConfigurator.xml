@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <contentList>
 	<content contentuid="f71bfb20-8f75-4f8f-9e97-50188accaac4" version="1">LCC Modified</content>
+	<content contentuid="ee9cfffe-d3fa-46ee-aff6-ec057cc453e2" version="1">LCC Modified Start</content>
+	<content contentuid="fcb120fb-7459-4943-962f-5acc1d2523e3" version="1">LCC Modified End</content>
+	<content contentuid="6a0d9340-b87d-438a-9fa8-5326ec9327ab" version="1">LCC Modified Passived</content>
+	<content contentuid="f437287b-c48e-45b0-9c1f-11adc0f26622" version="1">LCC Modified Boosted</content>
 </contentList>
