@@ -189,6 +189,7 @@ function CharacterGetStats(target)
 end
 
 Restrictions = {
+    Cambion = {},
     DarkJusticiar_Caster = {},
     DarkJusticiar_Melee = {},
     DarkJusticiar_Ranger = {},
@@ -332,7 +333,8 @@ Restrictions = {
     Tiefling_Melee = {},
     Tiefling_Ranger = {},
     Tiefling_Rogue = {},
-    _Fey= {
+    _Fiend = {},
+    _Fey = {
         Spell = {
             School = {
                 Exclusive = {
@@ -345,6 +347,7 @@ Restrictions = {
 }
 
 Kinds = {
+    Cambion = {"Fighter"},
     DarkJusticiar_Caster = {"Caster", "Fighter"},
     DarkJusticiar_Melee = {"Fighter"},
     DarkJusticiar_Ranger = {"Fighter", "Ranger"},
@@ -459,6 +462,7 @@ Kinds = {
     Tiefling_Melee = {"Fighter"},
     Tiefling_Ranger = {"Ranger"},
     Tiefling_Rogue = {"Rogue"},
+    TUT_CambionCommander = {"Fighter"},
 }
 
 KindMapping = {
