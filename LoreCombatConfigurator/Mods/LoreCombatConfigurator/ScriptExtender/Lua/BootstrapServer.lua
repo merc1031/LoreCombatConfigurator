@@ -177,6 +177,17 @@ function DropBlacklisted(blacklist, elems)
     return filteredElems
 end
 
+function CharacterGetStats(target)
+    local entity = Ext.Entity.Get(target)
+    local res, stat = pcall(function () return entity["ServerCharacter"]["Character"]["Template"]["Stats"] end)
+    local stats = {}
+    while stat ~= nil do
+        table.insert(stats, stat)
+        res, stat = pcall(function() return Ext.Stats.Get(stat).Using end)
+    end
+    return stats
+end
+
 Restrictions = {
     DarkJusticiar_Caster = {},
     DarkJusticiar_Melee = {},
