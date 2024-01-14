@@ -3185,18 +3185,19 @@ PassiveBookkeepingPassives = {LCC_PASSIVE_START, LCC_PASSIVE_END, LCC_PASSIVE_PA
 
 BookkeepingPassivesSet = ToSet(TableCombine(TableCombine(BookkeepingPassives, BoostBookkeepingPassives), PassiveBookkeepingPassives))
 
-function RemovePassives(sessionContext)
+function RemovePassives(sessionContext, combat)
     for _, e in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
         local guid = string.sub(e.Uuid.EntityUuid, -36)
         local modified = Osi.HasPassive(guid, LCC_PASSIVE) == 1
-        if modified then
+        if modified and (not combat or (combat and Osi.IsInCombat(guid) == 1)) then
             sessionContext.Log(2, string.format("Removing Passives for Guid: %s", guid))
-            sessionContext.Log(3, string.format("Passives: %s", Map(function (p) return p.Passive.PassiveId end, e.PassiveContainer.Passives)))
+            sessionContext.Log(3, string.format("Passives: %s", Ext.Json.Stringify(Map(function (p) return p.Passive.PassiveId end, e.PassiveContainer.Passives))))
             local focus = function (passive) return passive.Passive.PassiveId end
             local start = IndexOf(e.PassiveContainer.Passives, focus, LCC_PASSIVE_START)
             local stop = IndexOf(e.PassiveContainer.Passives, focus, LCC_PASSIVE_END)
 
             if start ~= nil and stop ~= nil then
+                sessionContext.Log(2, string.format("Removing Passive: start %s to end: %s from %s", start, stop, guid))
                 local ourPassives = table.move(Ext.Types.Serialize(e.PassiveContainer.Passives), start + 1, stop - 1, 1, {})
                 for _, passive in ipairs(ourPassives) do
                     if not BookkeepingPassivesSet[passive.Passive.PassiveId] then
@@ -3217,7 +3218,7 @@ function RemoveBoosting(sessionContext)
     sessionContext.Log(1, "Removing Boosting")
     -- Yes this does 2 iterations, but it allows removing passives which are hacky seperately sooooo....
     RemoveBoosts(sessionContext)
-    RemovePassives(sessionContext)
+    RemovePassives(sessionContext, false)
 
     Osi.RemovePassive(guid, LCC_PASSIVE)
 end
@@ -3276,7 +3277,7 @@ local function OnSessionLoaded()
         end
     )
     Ext.Osiris.RegisterListener("EnteredCombat", 2, "after", function(guid, combatid)
-            SessionContext.Log(1, string.format("EnteredCombat: Guid: %s", guid))
+            SessionContext.Log(1, string.format("EnteredCombat: Guid: %s; combatid: %s", guid, combatid))
 
             PerformBoosting(SessionContext, guid)
         end
@@ -3287,7 +3288,7 @@ local function OnSessionLoaded()
 
             -- After fleeing and staring combat again passive order seems to change, making removal
             -- without some hacky persistent vars or files impossible, so remove them now
-            RemovePassives(SessionContext)
+            RemovePassives(SessionContext, true)
         end
     )
 
