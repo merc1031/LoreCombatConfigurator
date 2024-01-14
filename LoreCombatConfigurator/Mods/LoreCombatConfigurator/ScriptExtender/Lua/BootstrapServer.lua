@@ -29,6 +29,35 @@ function SafeGet(object, ...)
     return result, nil
 end
 
+-- Courtesy to @Eralyne on Discord
+---Delay a function call by the given time
+---@param ms integer
+---@param func function
+function DelayedCall(ms, func)
+    local Time = 0
+    local handler
+    handler = Ext.Events.Tick:Subscribe(function(e)
+        Time = Time + e.Time.DeltaTime * 1000
+        if (Time >= ms) then
+            func()
+            Ext.Events.Tick:Unsubscribe(handler)
+        end
+    end)
+end
+
+---Delay a function call by the given time
+---@param pred function
+---@param func function
+function DelayedCallUntil(pred, func)
+    local handler
+    handler = Ext.Events.Tick:Subscribe(function(e)
+        if (pred()) then
+            func()
+            Ext.Events.Tick:Unsubscribe(handler)
+        end
+    end)
+end
+
 function ConsistentHash(salt, buckets, str, ...)
     local params = {...}
     for _, v in ipairs(params) do
@@ -2816,6 +2845,7 @@ function GiveNewPassives(sessionContext, target, configType)
         sessionContext.LogI(3, 24, string.format("Adding passive %s to %s", passive, target))
         Osi.AddPassive(target, passive)
     end
+    return passives
 end
 
 --- @param sessionContext SessionContext
@@ -2852,13 +2882,47 @@ function GiveBoosts(sessionContext, modifyState, guid, configType)
     sessionContext.LogI(1, 4, string.format("%s applying for Guid: %s State: %s\n", configType, guid, Ext.Json.Stringify(modifyState)))
 
     if not modifyState.Passived then
-        Osi.AddPassive(guid, "LCC_PASSIVE_START")
+        Osi.AddPassive(guid, LCC_PASSIVE_START)
 
-        GiveNewPassives(sessionContext, guid, configType)
+        DelayedCallUntil(
+            function()
+                local passives = ToSet(Map(function(p) return p.Passive.PassiveId end, Ext.Entity.Get(guid).PassiveContainer.Passives))
+                sessionContext.LogI(1, 4, string.format("Waiting for passive to be added: %s %s", guid, Ext.Json.Stringify(passives)))
+                return passives[LCC_PASSIVE_START]
+            end,
+            function()
+                local addedPassives = GiveNewPassives(sessionContext, guid, configType)
 
-        Osi.AddPassive(guid, "LCC_PASSIVE_END")
+                DelayedCallUntil(
+                    function()
+                        local passives = ToSet(Map(function(p) return p.Passive.PassiveId end, Ext.Entity.Get(guid).PassiveContainer.Passives))
+                        sessionContext.LogI(1, 4, string.format("Waiting for passive %s to be added: %s %s", Ext.Json.Stringify(addedPassives), guid, Ext.Json.Stringify(passives)))
+                        local allAdded = true
+                        for _, passive in pairs(addedPassives) do
+                            if not passives[passive] then
+                                allAdded = false
+                                break
+                            end
+                        end
+                        return allAdded
+                    end,
+                    function()
+                        Osi.AddPassive(guid, LCC_PASSIVE_END)
 
-        Osi.AddPassive(guid, "LCC_PASSIVE_PASSIVED")
+                        DelayedCallUntil(
+                            function()
+                                local passives = ToSet(Map(function(p) return p.Passive.PassiveId end, Ext.Entity.Get(guid).PassiveContainer.Passives))
+                                sessionContext.LogI(1, 4, string.format("Waiting for passive to be added: %s %s", guid, Ext.Json.Stringify(passives)))
+                                return passives[LCC_PASSIVE_END]
+                            end,
+                            function ()
+                                Osi.AddPassive(guid, LCC_PASSIVE_PASSIVED)
+                            end
+                        )
+                    end
+                )
+            end
+        )
     end
 
     if not modifyState.Boosted then
@@ -2901,11 +2965,11 @@ function GiveBoosts(sessionContext, modifyState, guid, configType)
             GiveComputedBoost(boostFn, sessionContext, guid, configType)
         end
 
-        Osi.AddPassive(guid, "LCC_PASSIVE_BOOSTED")
+        Osi.AddPassive(guid, LCC_PASSIVE_BOOSTED)
     end
 
     if not modifyState.Passived or not modifyState.Boosted then
-        Osi.AddPassive(guid, "LCC_PASSIVE")
+        Osi.AddPassive(guid, LCC_PASSIVE)
     end
 end
 
@@ -2927,9 +2991,9 @@ function PerformBoosting(sessionContext, guid)
     local isEnemy = Osi.IsEnemy(guid, Osi.GetHostCharacter()) == 1
     local isOrigin = CheckIfOrigin(guid) == 1
     local isBoss = Osi.IsBoss(guid) == 1
-    local alreadyModified = Osi.HasPassive(guid, "LCC_PASSIVE") == 1
-    local alreadyModifiedBoosted = Osi.HasPassive(guid, "LCC_PASSIVE_BOOSTED") == 1
-    local alreadyModifiedPassived = Osi.HasPassive(guid, "LCC_PASSIVE_PASSIVED") == 1
+    local alreadyModified = Osi.HasPassive(guid, LCC_PASSIVE) == 1
+    local alreadyModifiedBoosted = Osi.HasPassive(guid, LCC_PASSIVE_BOOSTED) == 1
+    local alreadyModifiedPassived = Osi.HasPassive(guid, LCC_PASSIVE_PASSIVED) == 1
 
     sessionContext.Log(1, string.format("Give: Guid: %s; Modified(b, p)?: %s; Party?: %s(%s, %s); Follower?: %s; Enemy?: %s; Origin?: %s; Boss?: %s; OurSummon?: %s\n", guid, alreadyModified, alreadyModifiedBoosted, alreadyModifiedPassived, isPartyMember, isPartyFollower, isEnemy, isOrigin, isBoss, isOurSummon))
 
@@ -3020,38 +3084,53 @@ end
 function RemoveBoosts(sessionContext)
     for _, e in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
         local guid = string.sub(e.Uuid.EntityUuid, -36)
-        local modified = Osi.HasPassive(guid, "LCC_PASSIVE") == 1
+        local modified = Osi.HasPassive(guid, LCC_PASSIVE) == 1
         if modified then
             for _boostType, boostEntities in pairs(e.BoostsContainer.Boosts) do
                 for _, boostEntity in ipairs(boostEntities) do
                     RemoveBoostsAdv(sessionContext, guid, boostEntity)
                 end
             end
-            Osi.RemovePassive(guid, "LCC_PASSIVE_BOOSTED")
+            Osi.RemovePassive(guid, LCC_PASSIVE_BOOSTED)
         end
     end
 end
 
+LCC_PASSIVE = "LCC_PASSIVE"
+LCC_PASSIVE_BOOSTED = "LCC_PASSIVE_BOOSTED"
+LCC_PASSIVE_PASSIVED = "LCC_PASSIVE_PASSIVED"
+LCC_PASSIVE_START = "LCC_PASSIVE_START"
+LCC_PASSIVE_END = "LCC_PASSIVE_END"
+
+BookkeepingPassives = {LCC_PASSIVE}
+BoostBookkeepingPassives = {LCC_PASSIVE_BOOSTED}
+
+PassiveBookkeepingPassives = {LCC_PASSIVE_START, LCC_PASSIVE_END, LCC_PASSIVE_PASSIVED}
+
+BookkeepingPassivesSet = ToSet(TableCombine(TableCombine(BookkeepingPassives, BoostBookkeepingPassives), PassiveBookkeepingPassives))
+
 function RemovePassives(sessionContext)
     for _, e in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
         local guid = string.sub(e.Uuid.EntityUuid, -36)
-        local modified = Osi.HasPassive(guid, "LCC_PASSIVE") == 1
+        local modified = Osi.HasPassive(guid, LCC_PASSIVE) == 1
         if modified then
             sessionContext.Log(2, string.format("Removing Passives for Guid: %s", guid))
             sessionContext.Log(3, string.format("Passives: %s", Map(function (p) return p.Passive.PassiveId end, e.PassiveContainer.Passives)))
             local focus = function (passive) return passive.Passive.PassiveId end
-            local start = IndexOf(e.PassiveContainer.Passives, focus, "LCC_PASSIVE_START")
-            local stop = IndexOf(e.PassiveContainer.Passives, focus, "LCC_PASSIVE_END")
+            local start = IndexOf(e.PassiveContainer.Passives, focus, LCC_PASSIVE_START)
+            local stop = IndexOf(e.PassiveContainer.Passives, focus, LCC_PASSIVE_END)
 
             if start ~= nil and stop ~= nil then
                 local ourPassives = table.move(Ext.Types.Serialize(e.PassiveContainer.Passives), start + 1, stop - 1, 1, {})
                 for _, passive in ipairs(ourPassives) do
-                    sessionContext.Log(3, string.format("Removing Passive: %s from %s", passive.Passive.PassiveId, guid))
-                    Osi.RemovePassive(guid, passive.Passive.PassiveId)
+                    if not BookkeepingPassivesSet[passive.Passive.PassiveId] then
+                        sessionContext.Log(3, string.format("Removing Passive: %s from %s", passive.Passive.PassiveId, guid))
+                        Osi.RemovePassive(guid, passive.Passive.PassiveId)
+                    end
                 end
             end
             sessionContext.EntityCache[guid] = {}
-            for _, passive in ipairs({"LCC_PASSIVE_START", "LCC_PASSIVE_END", "LCC_PASSIVE_PASSIVED"}) do
+            for _, passive in ipairs(PassiveBookkeepingPassives) do
                 Osi.RemovePassive(guid, passive)
             end
         end
@@ -3064,7 +3143,7 @@ function RemoveBoosting(sessionContext)
     RemoveBoosts(sessionContext)
     RemovePassives(sessionContext)
 
-    Osi.RemovePassive(guid, "LCC_PASSIVE")
+    Osi.RemovePassive(guid, LCC_PASSIVE)
 end
 
 local function OnSessionLoaded()
@@ -3175,7 +3254,7 @@ function DBG_GetAffected()
     local affected = {}
     for _, e in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
         local guid = string.sub(e.Uuid.EntityUuid, -36)
-        local modified = Osi.HasPassive(guid, "LCC_PASSIVE") == 1
+        local modified = Osi.HasPassive(guid, LCC_PASSIVE) == 1
         if modified then
             affected[guid] = {
                 Name = e.ServerCharacter.Character.Template.Name,
@@ -3194,8 +3273,8 @@ function DBG_GetAffected()
                 end
             end
             local focus = function (passive) return passive.Passive.PassiveId end
-            local start = IndexOf(e.PassiveContainer.Passives, focus, "LCC_PASSIVE_START")
-            local stop = IndexOf(e.PassiveContainer.Passives, focus, "LCC_PASSIVE_END")
+            local start = IndexOf(e.PassiveContainer.Passives, focus, LCC_PASSIVE_START)
+            local stop = IndexOf(e.PassiveContainer.Passives, focus, LCC_PASSIVE_END)
 
             if start ~= nil and stop ~= nil then
                 local ourPassives = table.move(Ext.Types.Serialize(e.PassiveContainer.Passives), start + 1, stop - 1, 1, {})
