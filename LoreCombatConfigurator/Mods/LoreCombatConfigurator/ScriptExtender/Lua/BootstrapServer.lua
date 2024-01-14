@@ -1210,12 +1210,38 @@ function ComputeClassSpecificAbilities(sessionContext, target, configType)
 end
 
 function CheckIfOrigin(target)
-    for i=#ExcludedNPCs,1,-1 do
-        if (ExcludedNPCs[i] == target) then
-            return 1
+    local entity = Ext.Entity.Get(target)
+    local name = SafeGet(entity, "ServerCharacter", "Template", "Name")
+    if name ~= nil then
+        local fullGuid = string.format("%s_%s", name, target)
+        for i=#ExcludedNPCs,1,-1 do
+            if (ExcludedNPCs[i] == fullGuid) then
+                return 1
+            end
         end
+        return 0
+    else
+        for i=#ExcludedNPCs,1,-1 do
+            if (string.sub(ExcludedNPCs[i], -36) == target) then
+                return 1
+            end
+        end
+        return 0
     end
-    return 0
+end
+
+function HasPlayerData(target)
+    local entity = Ext.Entity.Get(target)
+    -- TODO: Can remove Character after v13
+    local playerData = SafeGet(entity, "ServerCharacter", "Character", "PlayerData")
+    return playerData ~= nil
+end
+
+function IsPlayer(target)
+    local entity = Ext.Entity.Get(target)
+    -- TODO: Can remove Character after v13
+    local playerData = SafeGet(entity, "ServerCharacter", "Character", "IsPlayer")
+    return playerData ~= nil and playerData
 end
 
 function InSpellTable(spellTable, candidate)
@@ -2991,11 +3017,13 @@ function PerformBoosting(sessionContext, guid)
     local isEnemy = Osi.IsEnemy(guid, Osi.GetHostCharacter()) == 1
     local isOrigin = CheckIfOrigin(guid) == 1
     local isBoss = Osi.IsBoss(guid) == 1
+    local hasPlayerData = HasPlayerData(guid)
+    local isPlayer = IsPlayer(guid)
     local alreadyModified = Osi.HasPassive(guid, LCC_PASSIVE) == 1
     local alreadyModifiedBoosted = Osi.HasPassive(guid, LCC_PASSIVE_BOOSTED) == 1
     local alreadyModifiedPassived = Osi.HasPassive(guid, LCC_PASSIVE_PASSIVED) == 1
 
-    sessionContext.Log(1, string.format("Give: Guid: %s; Modified(b, p)?: %s; Party?: %s(%s, %s); Follower?: %s; Enemy?: %s; Origin?: %s; Boss?: %s; OurSummon?: %s\n", guid, alreadyModified, alreadyModifiedBoosted, alreadyModifiedPassived, isPartyMember, isPartyFollower, isEnemy, isOrigin, isBoss, isOurSummon))
+    sessionContext.Log(1, string.format("Give: Guid: %s; Modified(b, p)?: %s(%s, %s); Party?: %s; Follower?: %s; Enemy?: %s; Origin?: %s; Boss?: %s; OurSummon?: %s; HasPlayerData?: %s; IsPlayer?: %s;\n", guid, alreadyModified, alreadyModifiedBoosted, alreadyModifiedPassived, isPartyMember, isPartyFollower, isEnemy, isOrigin, isBoss, isOurSummon, hasPlayerData, isPlayer))
 
     if not isPartyMember and not isPartyFollower and not isOurSummon and not isEnemy and not isOrigin and not isBoss then
         local res, component = pcall(function() return Ext.Entity.Get(guid).ServerCharacter end)
@@ -3007,6 +3035,11 @@ function PerformBoosting(sessionContext, guid)
 
     if isPartyMember and not isPartyFollower and not isOurSummon and not isEnemy then
         sessionContext.Log(4, string.format("Give: Skipping explicit party member: Guid: %s", guid))
+        return
+    end
+
+    if isPlayer or hasPlayerData then
+        sessionContext.Log(4, string.format("Give: Skipping playerlike(isPlayer %s, hasPlayerData %s): Guid: %s", isPlayer, hasPlayerData, guid))
         return
     end
 
