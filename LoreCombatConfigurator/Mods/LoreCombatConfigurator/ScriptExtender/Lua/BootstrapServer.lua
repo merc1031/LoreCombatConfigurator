@@ -3363,3 +3363,15 @@ function DBG_GetAffected()
     end
     return affected
 end
+
+function DBG_BoostsAndPassives(guid)
+    local entity = Ext.Entity.Get(guid)
+    return {
+        Guid = guid,
+        Name = entity.ServerCharacter.Character.Template.Name,
+        ShortGuid = entity.Uuid.EntityUuid,
+        FullGuid = string.format("%s_%s", entity.ServerCharacter.Character.Template.Name, entity.Uuid.EntityUuid),
+        Boosts = Mods.LCC.Map(function(p) return FormatBoost(p) end, Mods.LCC.Flatten(Mods.LCC.Map(function(p) return Ext.Types.Serialize(p) end, Mods.LCC.Values(entity.BoostsContainer.Boosts)))),
+        Passives = Mods.LCC.Map(function(p) return p.Passive.PassiveId end, entity.PassiveContainer.Passives),
+    }
+end
