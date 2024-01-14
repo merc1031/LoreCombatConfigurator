@@ -58,6 +58,19 @@ function DelayedCallUntil(pred, func)
     end)
 end
 
+---Delay a function call by the given time
+---@param pred function
+---@param func function
+function DelayedCallWhile(pred, func)
+    local handler
+    handler = Ext.Events.Tick:Subscribe(function(e)
+        func()
+        if (pred()) then
+            Ext.Events.Tick:Unsubscribe(handler)
+        end
+    end)
+end
+
 function ConsistentHash(salt, buckets, str, ...)
     local params = {...}
     for _, v in ipairs(params) do
@@ -2991,11 +3004,26 @@ function GiveBoosts(sessionContext, modifyState, guid, configType)
             GiveComputedBoost(boostFn, sessionContext, guid, configType)
         end
 
-        Osi.AddPassive(guid, LCC_PASSIVE_BOOSTED)
+        DelayedCallWhile(
+            function()
+                return Osi.HasPassive(guid, LCC_PASSIVE_BOOSTED) == 1
+            end,
+            function()
+                Osi.AddPassive(guid, LCC_PASSIVE_BOOSTED)
+            end
+        )
+
     end
 
     if not modifyState.Passived or not modifyState.Boosted then
-        Osi.AddPassive(guid, LCC_PASSIVE)
+        DelayedCallWhile(
+            function()
+                return Osi.HasPassive(guid, LCC_PASSIVE) == 1
+            end,
+            function()
+                Osi.AddPassive(guid, LCC_PASSIVE)
+            end
+        )
     end
 end
 
