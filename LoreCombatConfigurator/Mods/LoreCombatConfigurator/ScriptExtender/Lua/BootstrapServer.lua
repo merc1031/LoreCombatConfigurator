@@ -45,7 +45,7 @@ function DelayedCall(ms, func)
     end)
 end
 
----Delay a function call by the given time
+---Delay a function call to wait to run once when the predicate holds true
 ---@param pred function
 ---@param func function
 function DelayedCallUntil(pred, func)
@@ -58,7 +58,7 @@ function DelayedCallUntil(pred, func)
     end)
 end
 
----Delay a function call by the given time
+---Delay a function call to run continuously until the predicate holds true
 ---@param pred function
 ---@param func function
 function DelayedCallWhile(pred, func)
@@ -90,6 +90,16 @@ function Map(fn, listlike)
     local result = {}
     for _, val in ipairs(listlike) do
         table.insert(result, fn(val))
+    end
+    return result
+end
+
+function Filter(fn, listlike)
+    local result = {}
+    for _, val in ipairs(listlike) do
+        if fn(val) then
+            table.insert(result, val)
+        end
     end
     return result
 end
@@ -137,7 +147,7 @@ end
 function Flatten(listOfLists)
     local flatterList = {}
     for _, list in pairs(listOfLists) do
-        flatterList = Mods.LCC.TableCombine(list, flatterList)
+        flatterList = TableCombine(list, flatterList)
     end
     return flatterList
 end
@@ -186,6 +196,48 @@ function CharacterGetStats(target)
         res, stat = pcall(function() return Ext.Stats.Get(stat).Using end)
     end
     return stats
+end
+
+--- @param boost Boost
+--- @param candidateBoost BoostParams
+--- @return boolean
+function CompareBoost(boost, candidateBoost)
+    if not boost.BoostInfo.Cause.Cause == ModName then
+        return false
+    end
+
+    if boost.BoostInfo.Params.Boost ~= candidateBoost.Boost then
+        return false
+    end
+
+    if boost.BoostInfo.Params.Boost == "ActionResource" and candidateBoost.Boost == "ActionResource" then
+        local paramsList = Split(boost.BoostInfo.Params.Params, ",")
+        local candidateParamsList = Split(candidateBoost.Params, ",")
+        if paramsList[1] ~= candidateParamsList[1] then
+            return false
+        end
+
+        if paramsList[1] == "SpellSlot" then
+            if paramsList[3] == candidateParamsList[3] then
+                return true
+            else
+                return false
+            end
+        end
+        return true
+    end
+
+    if boost.BoostInfo.Params.Boost == "Ability" and candidateBoost.Boost == "Ability" then
+        local paramsList = Split(boost.BoostInfo.Params.Params, ",")
+        local candidateParamsList = Split(candidateBoost.Params, ",")
+        if paramsList[1] == candidateParamsList[1] then
+            return true
+        else
+            return false
+        end
+    end
+
+    return true
 end
 
 Restrictions = {
@@ -290,6 +342,7 @@ Restrictions = {
     Human_Melee = {},
     Human_Ranger = {},
     Human_Rogue = {},
+    Imp = {}, -- spells Fire?
     KillerReplica_Barbarian = {},
     KillerReplica_Cleric = {},
     KillerReplica_Druid = {},
@@ -333,6 +386,7 @@ Restrictions = {
     Tiefling_Melee = {},
     Tiefling_Ranger = {},
     Tiefling_Rogue = {},
+    _Devil = {},
     _Fiend = {},
     _Fey = {
         Spell = {
@@ -431,6 +485,7 @@ Kinds = {
     Human_Melee = {"Fighter"},
     Human_Ranger = {"Ranger"},
     Human_Rogue = {"Rogue"},
+    Imp = {"Caster", "Fighter"},
     KillerReplica_Barbarian = {"Barbarian"},
     KillerReplica_Cleric = {"Cleric"},
     KillerReplica_Druid = {"Druid"},
@@ -2362,6 +2417,7 @@ BlacklistedPassives = {
     ClericsVOA4 = true,
     ClericsVOA5 = true,
     ClericsVOA6 = true,
+    EchoAvatar = true, -- TODO: never adds, goes infinite
     FeralInstict = true,
     MageHandLegerdemain = true,
     MoonDomainCastCheckFaerieFire = true,
@@ -3219,13 +3275,11 @@ function RemoveBoosting(sessionContext)
     -- Yes this does 2 iterations, but it allows removing passives which are hacky seperately sooooo....
     RemoveBoosts(sessionContext)
     RemovePassives(sessionContext, false)
-
-    Osi.RemovePassive(guid, LCC_PASSIVE)
 end
 
-local function OnSessionLoaded()
-    --- @type SessionContext
-    SessionContext = {
+--- @return SessionContext
+function CreateSessionContext()
+    local sessionContext = {
         VarsJson = {},
         SpellsAdded = {},
         PassivesAdded = {},
@@ -3236,25 +3290,24 @@ local function OnSessionLoaded()
         Archetypes = {},
         ConfigFailed = 0,
     }
-    SessionContext.Log = function(level, str) _Log(SessionContext, level, str) end
-    SessionContext.LogI = function(level, indent, str) _LogI(SessionContext, level, indent, str) end
+    sessionContext.Log = function(level, str) _Log(sessionContext, level, str) end
+    sessionContext.LogI = function(level, indent, str) _LogI(sessionContext, level, indent, str) end
 
-    SessionContext.Log(0, "0.9.0.0")
 
     for _, resourceGuid in pairs(Ext.StaticData.GetAll("ActionResource")) do
         local resource = Ext.StaticData.Get(resourceGuid, "ActionResource")
-        SessionContext.ActionResources[resource.Name] = resourceGuid
+        sessionContext.ActionResources[resource.Name] = resourceGuid
     end
 
     for _, tagGuid in pairs(Ext.StaticData.GetAll("Tag")) do
         local tag = Ext.StaticData.Get(tagGuid, "Tag")
-        SessionContext.Tags[tag.Name] = tagGuid
+        sessionContext.Tags[tag.Name] = tagGuid
     end
 
     local rootTemplates = Ext.Template.GetAllRootTemplates()
     for _, template in pairs(rootTemplates) do
         if ({item = true, character = true})[template.TemplateType] then
-            SessionContext.Archetypes[template.CombatComponent.Archetype] = true
+            sessionContext.Archetypes[template.CombatComponent.Archetype] = true
         end
     end
     local stats = Ext.Stats.GetStats("StatusData")
@@ -3263,10 +3316,23 @@ local function OnSessionLoaded()
         if ({BOOST = true, POLYMORPHED = true})[stat.StatusType] then
             local val = string.match(stat.Boosts, "AiArchetypeOverride[(](.-),[0-9]+[)]")
             if val ~= nil then
-                SessionContext.Archetypes[val] = true
+                sessionContext.Archetypes[val] = true
             end
         end
     end
+    return sessionContext
+end
+
+--- @return SessionContext
+function DummySessionContext()
+    return {VarsJson = {}}
+end
+
+local function OnSessionLoaded()
+    _Log(DummySessionContext(), 0, "0.9.0.0")
+
+    --- @type SessionContext
+    SessionContext = CreateSessionContext()
 
     GetVarsJson(SessionContext)
 
@@ -3323,9 +3389,28 @@ local function OnSessionLoaded()
             CalculateLists(SessionContext)
         end
     )
+    SessionContext.SessionLoaded = true
 end
 
 Ext.Events.SessionLoaded:Subscribe(OnSessionLoaded)
+
+Ext.Events.GameStateChanged:Subscribe(function(event)
+        if event.FromState == "Sync" and event.ToState == "Running" then
+            _Log(DummySessionContext(), 0, "Game state loaded")
+
+            GetVarsJson(SessionContext)
+
+            RemoveBoosting(SessionContext)
+
+            -- After removing passives, it takes some time for them to actually disappear
+            Osi.TimerLaunch("BoostAllServerCharacters",500)
+        end
+
+        if event.FromState == "UnloadSession" and event.ToState == "LoadSession" then
+            SessionContext.SessionLoaded = false
+        end
+    end
+)
 
 function DBG_GetAffected()
     local affected = {}
@@ -3371,7 +3456,27 @@ function DBG_BoostsAndPassives(guid)
         Name = entity.ServerCharacter.Character.Template.Name,
         ShortGuid = entity.Uuid.EntityUuid,
         FullGuid = string.format("%s_%s", entity.ServerCharacter.Character.Template.Name, entity.Uuid.EntityUuid),
-        Boosts = Mods.LCC.Map(function(p) return FormatBoost(p) end, Mods.LCC.Flatten(Mods.LCC.Map(function(p) return Ext.Types.Serialize(p) end, Mods.LCC.Values(entity.BoostsContainer.Boosts)))),
-        Passives = Mods.LCC.Map(function(p) return p.Passive.PassiveId end, entity.PassiveContainer.Passives),
+        Boosts = Map(function(p) return FormatBoost(p) end, Flatten(Map(function(p) return Ext.Types.Serialize(p) end, Values(entity.BoostsContainer.Boosts)))),
+        Passives = Map(function(p) return p.Passive.PassiveId end, entity.PassiveContainer.Passives),
     }
 end
+
+function DBG_Passives(_cmd, guid)
+    local entity = Ext.Entity.Get(guid)
+    local focus = function (passive) return passive.Passive.PassiveId end
+    local start = IndexOf(entity.PassiveContainer.Passives, focus, LCC_PASSIVE_START)
+    local stop = IndexOf(entity.PassiveContainer.Passives, focus, LCC_PASSIVE_END)
+
+    if start ~= nil and stop ~= nil then
+        local ourPassives = Filter(function(p) return not BookkeepingPassivesSet[p.Passive.PassiveId] end, table.move(Ext.Types.Serialize(entity.PassiveContainer.Passives), start + 1, stop - 1, 1, {}))
+        _D(Map(function(p) return p.Passive.PassiveId end, ourPassives))
+    end
+end
+
+Ext.RegisterConsoleCommand("LCC_PassivesFor", DBG_Passives);
+
+function DBG_Boosts(_cmd, guid)
+    _D(Filter(function(bi) return bi.Cause.Cause == ModName end, Map(function(b) return b.BoostInfo end, Flatten(Map(function(cpp) return Ext.Types.Serialize(cpp) end, Values(Ext.Entity.Get(guid).BoostsContainer.Boosts))))))
+end
+
+Ext.RegisterConsoleCommand("LCC_BoostsFor", DBG_Boosts);

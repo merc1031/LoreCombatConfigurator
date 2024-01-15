@@ -140,6 +140,7 @@
 --- @field AbilityDependencies table<string, string[]> | nil
 --- @field PassiveDependencies table<string, string[]> | nil
 --- @field Archetypes table<string>
+--- @field SessionLoaded boolean
 
 --- @alias Enabled 0 | 1
 
@@ -281,3 +282,25 @@
 --- @field BlacklistedLists BlacklistConfig
 --- @field AbilityDependencies table<string, string[]>
 --- @field PassiveDependencies table<string, string[]>
+
+
+
+-- Might belong in MetaExtender.lua
+
+--- @class Entity
+
+--- @class BoostCause
+--- @field Cause string
+
+--- @class BoostParams
+--- @field Boost string
+--- @field Params string
+--- @field Params2 string
+
+--- @class BoostInfo
+--- @field Cause BoostCause
+--- @field Owner Entity
+--- @field Params BoostParams
+
+--- @class Boost
+--- @field BoostInfo BoostInfo
