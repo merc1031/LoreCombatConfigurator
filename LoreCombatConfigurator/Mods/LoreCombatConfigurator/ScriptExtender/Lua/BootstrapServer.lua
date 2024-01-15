@@ -3454,6 +3454,10 @@ local function OnSessionLoaded()
                     end
                 end
             end
+            RemoveBoosting(SessionContext)
+
+            -- After removing passives, it takes some time for them to actually disappear
+            Osi.TimerLaunch("BoostAllServerCharacters",500)
         end
     )
     SessionContext.SessionLoaded = true
@@ -3464,13 +3468,6 @@ Ext.Events.SessionLoaded:Subscribe(OnSessionLoaded)
 Ext.Events.GameStateChanged:Subscribe(function(event)
         if event.FromState == "Sync" and event.ToState == "Running" then
             _Log(DummySessionContext(), 0, "Game state loaded")
-
-            GetVarsJson(SessionContext)
-
-            RemoveBoosting(SessionContext)
-
-            -- After removing passives, it takes some time for them to actually disappear
-            Osi.TimerLaunch("BoostAllServerCharacters",500)
         end
 
         if event.FromState == "UnloadSession" and event.ToState == "LoadSession" then
