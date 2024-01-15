@@ -3289,7 +3289,7 @@ function RemovePassives(sessionContext, combat)
     for _, e in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
         local guid = string.sub(e.Uuid.EntityUuid, -36)
         local modified = Osi.HasPassive(guid, LCC_PASSIVE) == 1
-        if modified and (not combat or (combat and Osi.IsInCombat(guid) == 1)) then
+        if modified and (combat == nil or (combat ~= nil and combat[guid])) then
             sessionContext.Log(2, string.format("Removing Passives for Guid: %s", guid))
             sessionContext.Log(3, string.format("Passives: %s", Ext.Json.Stringify(Map(function (p) return p.Passive.PassiveId end, e.PassiveContainer.Passives))))
             local focus = function (passive) return passive.Passive.PassiveId end
@@ -3318,7 +3318,7 @@ function RemoveBoosting(sessionContext)
     sessionContext.Log(1, "Removing Boosting")
     -- Yes this does 2 iterations, but it allows removing passives which are hacky seperately sooooo....
     RemoveBoosts(sessionContext)
-    RemovePassives(sessionContext, false)
+    RemovePassives(sessionContext, nil)
 end
 
 --- @return SessionContext
@@ -3400,9 +3400,13 @@ local function OnSessionLoaded()
     Ext.Osiris.RegisterListener("CombatEnded",1,"after",function(combatid)
             SessionContext.Log(1, string.format("CombatEnded: combatid: %s\n", combatid))
 
+            local entitiesInCombat = {}
+            for _, combatData in ipairs(Osi.DB_Was_InCombat:Get(nil, combatid)) do
+                entitiesInCombat[string.sub(combatData[1], -36)] = true
+            end
             -- After fleeing and staring combat again passive order seems to change, making removal
             -- without some hacky persistent vars or files impossible, so remove them now
-            RemovePassives(SessionContext, true)
+            RemovePassives(SessionContext, entitiesInCombat)
         end
     )
 
