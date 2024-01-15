@@ -255,7 +255,6 @@
 --- @field FollowersEnabled Enabled
 --- @field FollowersBossesEnabled Enabled
 --- @field SummonsEnabled Enabled
---- @field Lore Enabled
 --- @field CasterArchetypeCheck Enabled
 --- @field HealerArchetypeCheck Enabled
 --- @field FighterArchetypeCheck Enabled

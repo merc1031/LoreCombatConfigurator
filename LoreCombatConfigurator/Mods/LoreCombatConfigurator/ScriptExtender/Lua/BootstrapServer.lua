@@ -1870,10 +1870,9 @@ end
 --- @param sessionContext SessionContext
 function ComputeRageBoost(sessionContext, target, configType)
     if (
-        tonumber(sessionContext.VarsJson["Lore"]) == 1 and
         not GuessIfBarbarian(sessionContext, target)
     ) then
-        sessionContext.LogI(2, 22, "Lore on, couldnt guess if target is barbarian")
+        sessionContext.LogI(2, 22, "Computing Rage, couldnt guess if target is barbarian")
         return nil
     end
 
@@ -1888,10 +1887,9 @@ end
 --- @param sessionContext SessionContext
 function ComputeSorceryPointBoost(sessionContext, target, configType)
     if (
-        tonumber(sessionContext.VarsJson["Lore"]) == 1 and
         not GuessIfCaster(sessionContext, target)
     ) then
-        sessionContext.LogI(2, 22, "Lore on, couldnt guess if target is caster")
+        sessionContext.LogI(2, 22, "Computing Sorcery Points, couldnt guess if target is caster")
         return nil
     end
 
@@ -1906,10 +1904,9 @@ end
 --- @param sessionContext SessionContext
 function ComputeTidesOfChaosBoost(sessionContext, target, configType)
     if (
-        tonumber(sessionContext.VarsJson["Lore"]) == 1 and
         not GuessIfCaster(sessionContext, target)
     ) then
-        sessionContext.LogI(2, 22, "Lore on, couldnt guess if target is caster")
+        sessionContext.LogI(2, 22, "Computing Tides Of Chaos, couldnt guess if target is caster")
         return nil
     end
 
@@ -1924,10 +1921,9 @@ end
 --- @param sessionContext SessionContext
 function ComputeSuperiorityDieBoost(sessionContext, target, configType)
     if (
-        tonumber(sessionContext.VarsJson["Lore"]) == 1 and
         not GuessIfFighter(sessionContext, target)
     ) then
-        sessionContext.LogI(2, 22, "Lore on, couldnt guess if target is fighter")
+        sessionContext.LogI(2, 22, "Computing Superiority Die, couldnt guess if target is fighter")
         return nil
     end
 
@@ -1942,10 +1938,9 @@ end
 --- @param sessionContext SessionContext
 function ComputeWildShapeBoost(sessionContext, target, configType)
     if (
-        tonumber(sessionContext.VarsJson["Lore"]) == 1 and
         not GuessIfDruid(sessionContext, target)
     ) then
-        sessionContext.LogI(2, 22, "Lore on, couldnt guess if target is druid")
+        sessionContext.LogI(2, 22, "Computing Wild Shape, couldnt guess if target is druid")
         return nil
     end
 
@@ -1960,10 +1955,9 @@ end
 --- @param sessionContext SessionContext
 function ComputeNaturalRecoveryBoost(sessionContext, target, configType)
     if (
-        tonumber(sessionContext.VarsJson["Lore"]) == 1 and
         not GuessIfDruid(sessionContext, target)
     ) then
-        sessionContext.LogI(2, 22, "Lore on, couldnt guess if target is druid")
+        sessionContext.LogI(2, 22, "Computing Natural Recovery, couldnt guess if target is druid")
         return nil
     end
 
@@ -1978,10 +1972,9 @@ end
 --- @param sessionContext SessionContext
 function ComputeFungalInfestationBoost(sessionContext, target, configType)
     if (
-        tonumber(sessionContext.VarsJson["Lore"]) == 1 and
         not GuessIfDruid(sessionContext, target)
     ) then
-        sessionContext.LogI(2, 22, "Lore on, couldnt guess if target is druid")
+        sessionContext.LogI(2, 22, "Computing Fungal Infestation, couldnt guess if target is druid")
         return nil
     end
 
@@ -1996,10 +1989,9 @@ end
 --- @param sessionContext SessionContext
 function ComputeLayOnHandsBoost(sessionContext, target, configType)
     if (
-        tonumber(sessionContext.VarsJson["Lore"]) == 1 and
         not GuessIfPaladin(sessionContext, target)
     ) then
-        sessionContext.LogI(2, 22, "Lore on, couldnt guess if target is paladin")
+        sessionContext.LogI(2, 22, "Computing Lay On Hands, couldnt guess if target is paladin")
         return nil
     end
 
@@ -2014,10 +2006,9 @@ end
 --- @param sessionContext SessionContext
 function ComputeChannelOathBoost(sessionContext, target, configType)
     if (
-        tonumber(sessionContext.VarsJson["Lore"]) == 1 and
         not GuessIfPaladin(sessionContext, target)
     ) then
-        sessionContext.LogI(2, 22, "Lore on, couldnt guess if target is paladin")
+        sessionContext.LogI(2, 22, "Computing Channel Oath, couldnt guess if target is paladin")
         return nil
     end
 
@@ -2032,10 +2023,9 @@ end
 --- @param sessionContext SessionContext
 function ComputeChannelDivinityBoost(sessionContext, target, configType)
     if (
-        tonumber(sessionContext.VarsJson["Lore"]) == 1 and
         not GuessIfCleric(sessionContext, target)
     ) then
-        sessionContext.LogI(2, 22, "Lore on, couldnt guess if target is cleric")
+        sessionContext.LogI(2, 22, "Computing Channel Divinity, couldnt guess if target is cleric")
         return nil
     end
 
@@ -2050,10 +2040,9 @@ end
 --- @param sessionContext SessionContext
 function ComputeBardicInspirationBoost(sessionContext, target, configType)
     if (
-        tonumber(sessionContext.VarsJson["Lore"]) == 1 and
         not GuessIfBard(sessionContext, target)
     ) then
-        sessionContext.LogI(2, 22, "Lore on, couldnt guess if target is bard")
+        sessionContext.LogI(2, 22, "Computing Bardic Inspiration, couldnt guess if target is bard")
         return nil
     end
 
@@ -2068,10 +2057,9 @@ end
 --- @param sessionContext SessionContext
 function ComputeKiPointBoost(sessionContext, target, configType)
     if (
-        tonumber(sessionContext.VarsJson["Lore"]) == 1 and
         not GuessIfMonk(sessionContext, target)
     ) then
-        sessionContext.LogI(2, 22, "Lore on, couldnt guess if target is monk")
+        sessionContext.LogI(2, 22, "Computing Ki Point, couldnt guess if target is monk")
         return nil
     end
 
@@ -2086,10 +2074,9 @@ end
 --- @param sessionContext SessionContext
 function ComputeDeflectMissilesBoost(sessionContext, target, configType)
     if (
-        tonumber(sessionContext.VarsJson["Lore"]) == 1 and
         not GuessIfMonk(sessionContext, target)
     ) then
-        sessionContext.LogI(2, 22, "Lore on, couldnt guess if target is monk")
+        sessionContext.LogI(2, 22, "Computing Deflect Missiles, couldnt guess if target is monk")
         return nil
     end
 
@@ -2104,10 +2091,9 @@ end
 --- @param sessionContext SessionContext
 function ComputeSneakAttackBoost(sessionContext, target, configType)
     if (
-        tonumber(sessionContext.VarsJson["Lore"]) == 1 and
         not GuessIfRogue(sessionContext, target)
     ) then
-        sessionContext.LogI(2, 22, "Lore on, couldnt guess if target is rogue")
+        sessionContext.LogI(2, 22, "Computing Sneak Attack, couldnt guess if target is rogue")
         return nil
     end
 
@@ -2310,7 +2296,6 @@ end
 function ComputeSpellSlotBoosts(sessionContext, target, configType)
     local slots = {}
     if (
-        tonumber(sessionContext.VarsJson["Lore"]) == 1 and
         not (
             GuessIfCaster(sessionContext, target) or
             GuessIfDruid(sessionContext, target) or
@@ -2321,7 +2306,7 @@ function ComputeSpellSlotBoosts(sessionContext, target, configType)
             GuessIfPaladin(sessionContext, target)
         )
     ) then
-        sessionContext.LogI(2, 22, "Lore on, couldnt guess if target needs spell slots")
+        sessionContext.LogI(2, 22, "Computing Spell Slot, couldnt guess if target needs spell slots")
         return slots
     end
 
@@ -2591,12 +2576,12 @@ Defaults = {
             MinCharLevelForLevel9 = 13,
         },
     },
-    -- Controls How many class specific passives will be added with `Lore = 1`. Scales with level if wanted
+    -- Controls How many class specific passives will be added. Scales with level if wanted
     PassivesAdded = {
         StaticBoost = 0,
         LevelStepToIncrementOn = 1,
         ValueToIncrementByOnLevel = 0,
-        -- Controls the minimum level the character must be to get class specific passives of the specified level with `Lore = 1`
+        -- Controls the minimum level the character must be to get class specific passives of the specified level
         LevelGate = {
             MinCharLevelForLevel1 = 13,
             MinCharLevelForLevel2 = 13,
@@ -2625,7 +2610,7 @@ Defaults = {
         StaticBoost = 0,
         LevelStepToIncrementOn = 1,
         ValueToIncrementByOnLevel = 0,
-        -- Controls the minimum level the character must be to get class specific abiltiies (isSpell = False) of the specified level with `Lore = 1`
+        -- Controls the minimum level the character must be to get class specific abiltiies (isSpell = False) of the specified level
         LevelGate = {
             MinCharLevelForLevel1 = 13,
             MinCharLevelForLevel2 = 13,
@@ -2649,7 +2634,7 @@ Defaults = {
             MinCharLevelForLevel20 = 13,
         },
     },
-    -- Controls How many max spell slots will be added (to casters with `Lore = 1`). Scales with level if wanted. Each lower level added will have 1 more spell slot, incrementally.
+    -- Controls How many max spell slots will be added (to caster likes). Scales with level if wanted. Each lower level added will have 1 more spell slot, incrementally.
     SpellSlotBoosts = {
         StaticBoost = 0,
         LevelStepToIncrementOn = 1,
@@ -2667,79 +2652,79 @@ Defaults = {
         LevelStepToIncrementOn = 1,
         ValueToIncrementByOnLevel = 0,
     },
-    -- Controls How many rage charges will be added (to barbarians with `Lore = 1`). Scales with level if wanted
+    -- Controls How many rage charges will be added (to barbarians). Scales with level if wanted
     RageBoosts = {
         StaticBoost = 0,
         LevelStepToIncrementOn = 1,
         ValueToIncrementByOnLevel = 0,
     },
-    -- Controls How many sorcery points will be added (to casters with `Lore = 1`). Scales with level if wanted
+    -- Controls How many sorcery points will be added (to casters). Scales with level if wanted
     SorceryPointBoosts = {
         StaticBoost = 0,
         LevelStepToIncrementOn = 1,
         ValueToIncrementByOnLevel = 0,
     },
-    -- Controls How many tides of chaos will be added (to casters with `Lore = 1`). Scales with level if wanted
+    -- Controls How many tides of chaos will be added (to casters). Scales with level if wanted
     TidesOfChaosBoosts = {
         StaticBoost = 0,
         LevelStepToIncrementOn = 1,
         ValueToIncrementByOnLevel = 0,
     },
-    -- Controls How many superiority die will be added (to fighters with `Lore = 1`). Scales with level if wanted
+    -- Controls How many superiority die will be added (to fighters). Scales with level if wanted
     SuperiorityDieBoosts = {
         StaticBoost = 0,
         LevelStepToIncrementOn = 1,
         ValueToIncrementByOnLevel = 0,
     },
-    -- Controls How many wild shape charges will be added (to druids with `Lore = 1`). Scales with level if wanted
+    -- Controls How many wild shape charges will be added (to druids). Scales with level if wanted
     WildShapeBoosts = {
         StaticBoost = 0,
         LevelStepToIncrementOn = 1,
         ValueToIncrementByOnLevel = 0,
     },
-    -- Controls How many natural recovery points will be added (to druids with `Lore = 1`). Scales with level if wanted
+    -- Controls How many natural recovery points will be added (to druids). Scales with level if wanted
     NaturalRecoveryBoosts = {
         StaticBoost = 0,
         LevelStepToIncrementOn = 1,
         ValueToIncrementByOnLevel = 0,
     },
-    -- Controls How many fungal infestation charges will be added (to druids with `Lore = 1`). Scales with level if wanted
+    -- Controls How many fungal infestation charges will be added (to druids). Scales with level if wanted
     FungalInfestationBoosts = {
         StaticBoost = 0,
         LevelStepToIncrementOn = 1,
         ValueToIncrementByOnLevel = 0,
     },
-    -- Controls How many lay on hands charges will be added (to paladins with `Lore = 1`). Scales with level if wanted
+    -- Controls How many lay on hands charges will be added (to paladins). Scales with level if wanted
     LayOnHandsBoosts = {
         StaticBoost = 0,
         LevelStepToIncrementOn = 1,
         ValueToIncrementByOnLevel = 0,
     },
-    -- Controls How many channel oath charges will be added (to paladins with `Lore = 1`). Scales with level if wanted
+    -- Controls How many channel oath charges will be added (to paladins). Scales with level if wanted
     ChannelOathBoosts = {
         StaticBoost = 0,
         LevelStepToIncrementOn = 1,
         ValueToIncrementByOnLevel = 0,
     },
-    -- Controls How many channel divinty charges will be added (to clerics with `Lore = 1`). Scales with level if wanted
+    -- Controls How many channel divinty charges will be added (to clerics). Scales with level if wanted
     ChannelDivinityBoosts = {
         StaticBoost = 0,
         LevelStepToIncrementOn = 1,
         ValueToIncrementByOnLevel = 0,
     },
-    -- Controls How many ki points will be added (to monks with `Lore = 1`). Scales with level if wanted
+    -- Controls How many ki points will be added (to monks). Scales with level if wanted
     KiPointBoosts = {
         StaticBoost = 0,
         LevelStepToIncrementOn = 1,
         ValueToIncrementByOnLevel = 0,
     },
-    -- Controls How many deflect missiles charges will be added (to monks with `Lore = 1`). Scales with level if wanted
+    -- Controls How many deflect missiles charges will be added (to monks). Scales with level if wanted
     DeflectMissilesBoosts = {
         StaticBoost = 0,
         LevelStepToIncrementOn = 1,
         ValueToIncrementByOnLevel = 0,
     },
-    -- Controls How many sneak attack charges will be added (to rogues with `Lore = 1`). Scales with level if wanted
+    -- Controls How many sneak attack charges will be added (to rogues). Scales with level if wanted
     SneakAttackBoosts = {
         StaticBoost = 0,
         LevelStepToIncrementOn = 1,
@@ -2864,13 +2849,6 @@ function ResetConfigJson(sessionContext)
         FollowersBossesEnabled = 0,
         -- Characters that we have summoned
         SummonsEnabled = 0,
-        -- This toggle attempts to be more lore friendly.
-        -- It enables many checks and guards such as:
-        -- - Apply class specific resources additions and ability / passive additions by inspecting the inferred class of the target
-        -- - Only add spells that the inferred class could theoretically have in their spell lists
-        -- The classes inferred may be overridden by the `Kinds` top level key. The Key is the `stats` object in the `stats` chain for the character in question
-        -- There are also archetype checks that may be turned on or off with the .+ArchetypeCheck keys. These inspect the Stats.Archetype value for the character in question
-        Lore = 0,
         CasterArchetypeCheck = 0,
         HealerArchetypeCheck = 0,
         FighterArchetypeCheck = 0,
