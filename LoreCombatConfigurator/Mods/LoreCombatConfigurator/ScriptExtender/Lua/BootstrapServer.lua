@@ -1344,6 +1344,10 @@ function IsEnemiesEnhancedLoaded(sessionContext)
     return eeDisabled == 0 and Ext.Mod.IsModLoaded("7deea48e-8b9d-45e4-8685-5acfd0ce39ad")
 end
 
+function IsCriticalMissLoaded()
+    return Ext.Mod.IsModLoaded("17c00eba-2727-474e-a914-652cc5f85b59")
+end
+
 function CheckIfParty(target)
     if (Osi.IsPartyMember(target,1) == 1) then
         return 1
@@ -2513,6 +2517,8 @@ BlacklistedPassives = {
     ["4"] = true,
 }
 
+ProtectedPassives = {}
+
 ExcludedNPCs = {
     "S_GLO_Halsin_7628bc0e-52b8-42a7-856a-13a6fd413323",
     "S_GOB_DrowCommander_25721313-0c15-4935-8176-9f134385451b",
@@ -3290,7 +3296,7 @@ function RemovePassives(sessionContext, combat)
                 sessionContext.Log(2, string.format("Removing Passive: start %s to end: %s from %s", start, stop, guid))
                 local ourPassives = table.move(Ext.Types.Serialize(e.PassiveContainer.Passives), start + 1, stop - 1, 1, {})
                 for _, passive in ipairs(ourPassives) do
-                    if not BookkeepingPassivesSet[passive.Passive.PassiveId] then
+                    if not BookkeepingPassivesSet[passive.Passive.PassiveId] and not ProtectedPassives[passive.Passive.PassiveId] then
                         sessionContext.Log(3, string.format("Removing Passive: %s from %s", passive.Passive.PassiveId, guid))
                         Osi.RemovePassive(guid, passive.Passive.PassiveId)
                     end
@@ -3364,6 +3370,10 @@ end
 
 local function OnSessionLoaded()
     _Log(DummySessionContext(), 0, "0.9.0.0")
+
+    if IsCriticalMissLoaded() then
+        ProtectedPassives["Passive_CriticalMiss"] = true
+    end
 
     --- @type SessionContext
     SessionContext = CreateSessionContext()
