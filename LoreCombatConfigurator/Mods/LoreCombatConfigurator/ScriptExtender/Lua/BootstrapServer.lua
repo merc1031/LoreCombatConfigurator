@@ -2854,6 +2854,7 @@ function ResetConfigJson(sessionContext)
         DebugDisableEE = 0,
         -- Controls the verbosity of logging for debugging
         Verbosity = 0,
+        DebugMode = false,
         -- Allows overriding the inferred classes or kinds of characters by inspecting their `stats` chain
         Kinds = {
             Dragonborn_Cleric = {"Cleric"},
@@ -3388,6 +3389,21 @@ local function OnSessionLoaded()
 
             SessionContext.EntityCache = {}
             CalculateLists(SessionContext)
+
+            if SessionContext.VarsJson["DebugMode"] then
+                for _, guid in ipairs(Flatten(Osi.DB_PartyMembers:Get(nil))) do
+                    local charTemplate = Ext.Template.GetTemplate(string.sub(guid, -36))
+                    if charTemplate == nil then
+                        local charTemplateGuid = Osi.GetTemplate(string.sub(guid, -36))
+                        if charTemplateGuid ~= nil then
+                            charTemplate = Ext.Template.GetTemplate(string.sub(charTemplateGuid, -36))
+                        end
+                    end
+                    if charTemplate ~= nil then
+                        charTemplate["MovementSpeedRun"] = 10
+                    end
+                end
+            end
         end
     )
     SessionContext.SessionLoaded = true

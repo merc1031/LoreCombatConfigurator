@@ -272,6 +272,7 @@
 --- @field ConsistentHashSalt integer | nil
 --- @field DebugDisableEE Enabled
 --- @field Verbosity integer
+--- @field DebugMode boolean
 --- @field Kinds KindsConfig
 --- @field Restrictions RestrictionsConfig
 --- @field BlacklistedAbilities BlacklistConfig
