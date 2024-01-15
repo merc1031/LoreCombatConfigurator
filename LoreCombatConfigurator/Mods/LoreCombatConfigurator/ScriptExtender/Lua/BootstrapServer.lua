@@ -1834,7 +1834,6 @@ end
 
 --- @param sessionContext SessionContext
 function ComputeActionPointBoost(sessionContext, target, configType)
-    local actionPoints
     local actionPointBoost = ComputeSimpleIncrementalBoost(sessionContext, "ActionPointBoosts", target, configType)
     if (Osi.HasPassive(target, "Boost_Action") and IsEnemiesEnhancedLoaded(sessionContext)) and actionPointBoost > 0 then
         actionPointBoost = actionPointBoost - 1
@@ -1843,26 +1842,25 @@ function ComputeActionPointBoost(sessionContext, target, configType)
     if Osi.HasPassive(target, "ExtraAttack") and GetVar(sessionContext, "ConservativeActionPointBoosts", target, configType) == 1 and actionPointBoost > 0 then
         actionPointBoost = actionPointBoost - 1
     end
-    if actionPointBoost <= 0 then
+    if actionPointBoost > 0 then
+        return "ActionResource(ActionPoint," .. tonumber(actionPointBoost) .. ",0)"
+    else
         return nil
     end
-
-    actionPoints = "ActionResource(ActionPoint," .. tonumber(actionPointBoost) .. ",0)"
-
-    return actionPoints
 end
 
 --- @param sessionContext SessionContext
 function ComputeBonusActionPointBoost(sessionContext, target, configType)
-    local bonusActionPoints
     local bonusActionPointBoost = ComputeSimpleIncrementalBoost(sessionContext, "BonusActionPointBoosts", target, configType)
     if (Osi.HasPassive(target, "Boost_BonusAction") and IsEnemiesEnhancedLoaded(sessionContext)) and bonusActionPointBoost > 2 then
         bonusActionPointBoost = bonusActionPointBoost - 1
     end
 
-    bonusActionPoints = "ActionResource(BonusActionPoint," .. tonumber(bonusActionPointBoost) .. ",0)"
-
-    return bonusActionPoints
+    if bonusActionPointBoost > 0 then
+        return "ActionResource(BonusActionPoint," .. tonumber(bonusActionPointBoost) .. ",0)"
+    else
+        return nil
+    end
 end
 
 --- @param sessionContext SessionContext
@@ -1875,12 +1873,12 @@ function ComputeRageBoost(sessionContext, target, configType)
         return nil
     end
 
-    local rage
-
     local rageBoost = ComputeSimpleIncrementalBoost(sessionContext, "RageBoosts", target, configType)
-    rage = "ActionResource(Rage," .. rageBoost .. ",0)"
-
-    return rage
+    if rageBoost > 0 then
+        return "ActionResource(Rage," .. rageBoost .. ",0)"
+    else
+        return nil
+    end
 end
 
 --- @param sessionContext SessionContext
@@ -1893,12 +1891,12 @@ function ComputeSorceryPointBoost(sessionContext, target, configType)
         return nil
     end
 
-    local sorceryPoints
-
     local sorcerPointBoost = ComputeSimpleIncrementalBoost(sessionContext, "SorceryPointBoosts", target, configType)
-    sorceryPoints = "ActionResource(SorceryPoint," .. sorcerPointBoost .. ",0)"
-
-    return sorceryPoints
+    if sorcerPointBoost > 0 then
+        return "ActionResource(SorceryPoint," .. sorcerPointBoost .. ",0)"
+    else
+        return nil
+    end
 end
 
 --- @param sessionContext SessionContext
@@ -1911,12 +1909,12 @@ function ComputeTidesOfChaosBoost(sessionContext, target, configType)
         return nil
     end
 
-    local tidesOfChaos
-
     local tidesOfChaosBoost = ComputeSimpleIncrementalBoost(sessionContext, "TidesOfChaosBoosts", target, configType)
-    tidesOfChaos = "ActionResource(TidesOfChaos," .. tidesOfChaosBoost .. ",0)"
-
-    return tidesOfChaos
+    if tidesOfChaosBoost > 0 then
+        return "ActionResource(TidesOfChaos," .. tidesOfChaosBoost .. ",0)"
+    else
+        return nil
+    end
 end
 
 --- @param sessionContext SessionContext
@@ -1929,12 +1927,12 @@ function ComputeSuperiorityDieBoost(sessionContext, target, configType)
         return nil
     end
 
-    local superiorityDie
-
     local superiorityDieBoost = ComputeSimpleIncrementalBoost(sessionContext, "SuperiorityDieBoosts", target, configType)
-    superiorityDie = "ActionResource(SuperiorityDie," .. superiorityDieBoost .. ",0)"
-
-    return superiorityDie
+    if superiorityDieBoost > 0 then
+        return "ActionResource(SuperiorityDie," .. superiorityDieBoost .. ",0)"
+    else
+        return nil
+    end
 end
 
 --- @param sessionContext SessionContext
@@ -1947,12 +1945,12 @@ function ComputeWildShapeBoost(sessionContext, target, configType)
         return nil
     end
 
-    local wildShape
-
     local wildShapeBoost = ComputeSimpleIncrementalBoost(sessionContext, "WildShapeBoosts", target, configType)
-    wildShape = "ActionResource(WildShape," .. wildShapeBoost .. ",0)"
-
-    return wildShape
+    if wildShapeBoost > 0 then
+        return "ActionResource(WildShape," .. wildShapeBoost .. ",0)"
+    else
+        return nil
+    end
 end
 
 --- @param sessionContext SessionContext
@@ -1965,12 +1963,12 @@ function ComputeNaturalRecoveryBoost(sessionContext, target, configType)
         return nil
     end
 
-    local naturalRecovery
-
     local naturalRecoveryBoost = ComputeSimpleIncrementalBoost(sessionContext, "NaturalRecoveryBoosts", target, configType)
-    naturalRecovery = "ActionResource(NaturalRecoveryPoint," .. naturalRecoveryBoost .. ",0)"
-
-    return naturalRecovery
+    if naturalRecoveryBoost > 0 then
+        return "ActionResource(NaturalRecoveryPoint," .. naturalRecoveryBoost .. ",0)"
+    else
+        return nil
+    end
 end
 
 --- @param sessionContext SessionContext
@@ -1983,12 +1981,12 @@ function ComputeFungalInfestationBoost(sessionContext, target, configType)
         return nil
     end
 
-    local fungalInfestation
-
     local fungalInfestationBoost = ComputeSimpleIncrementalBoost(sessionContext, "FungalInfestationBoosts", target, configType)
-    fungalInfestation = "ActionResource(FungalInfestationCharge," .. fungalInfestationBoost .. ",0)"
-
-    return fungalInfestation
+    if fungalInfestationBoost > 0 then
+        return "ActionResource(FungalInfestationCharge," .. fungalInfestationBoost .. ",0)"
+    else
+        return nil
+    end
 end
 
 --- @param sessionContext SessionContext
@@ -2001,12 +1999,12 @@ function ComputeLayOnHandsBoost(sessionContext, target, configType)
         return nil
     end
 
-    local layOnHands
-
     local layOnHandsBoost = ComputeSimpleIncrementalBoost(sessionContext, "LayOnHandsBoosts", target, configType)
-    layOnHands = "ActionResource(LayOnHandsCharge," .. layOnHandsBoost .. ",0)"
-
-    return layOnHands
+    if layOnHandsBoost > 0 then
+        return "ActionResource(LayOnHandsCharge," .. layOnHandsBoost .. ",0)"
+    else
+        return nil
+    end
 end
 
 --- @param sessionContext SessionContext
@@ -2019,12 +2017,12 @@ function ComputeChannelOathBoost(sessionContext, target, configType)
         return nil
     end
 
-    local channelOath
-
     local channelOathBoost = ComputeSimpleIncrementalBoost(sessionContext, "ChannelOathBoosts", target, configType)
-    channelOath = "ActionResource(ChannelOath," .. channelOathBoost .. ",0)"
-
-    return channelOath
+    if channelOathBoost > 0 then
+        return "ActionResource(ChannelOath," .. channelOathBoost .. ",0)"
+    else
+        return nil
+    end
 end
 
 --- @param sessionContext SessionContext
@@ -2037,12 +2035,12 @@ function ComputeChannelDivinityBoost(sessionContext, target, configType)
         return nil
     end
 
-    local channelDivinity
-
     local channelDivinityBoost = ComputeSimpleIncrementalBoost(sessionContext, "ChannelDivinityBoosts", target, configType)
-    channelDivinity = "ActionResource(ChannelDivinity," .. channelDivinityBoost .. ",0)"
-
-    return channelDivinity
+    if channelDivinityBoost > 0 then
+        return "ActionResource(ChannelDivinity," .. channelDivinityBoost .. ",0)"
+    else
+        return nil
+    end
 end
 
 --- @param sessionContext SessionContext
@@ -2055,12 +2053,12 @@ function ComputeBardicInspirationBoost(sessionContext, target, configType)
         return nil
     end
 
-    local bardicInspiration
-
     local bardicInspirationBoost = ComputeSimpleIncrementalBoost(sessionContext, "BardicInspirationBoosts", target, configType)
-    bardicInspiration = "ActionResource(BardicInspiration," .. bardicInspirationBoost .. ",0)"
-
-    return bardicInspiration
+    if bardicInspirationBoost > 0 then
+        return "ActionResource(BardicInspiration," .. bardicInspirationBoost .. ",0)"
+    else
+        return nil
+    end
 end
 
 --- @param sessionContext SessionContext
@@ -2073,12 +2071,12 @@ function ComputeKiPointBoost(sessionContext, target, configType)
         return nil
     end
 
-    local kiPoints
-
     local kiPointBoost = ComputeSimpleIncrementalBoost(sessionContext, "KiPointBoosts", target, configType)
-    kiPoints = "ActionResource(KiPoint," .. kiPointBoost .. ",0)"
-
-    return kiPoints
+    if kiPointBoost > 0 then
+        return "ActionResource(KiPoint," .. kiPointBoost .. ",0)"
+    else
+        return nil
+    end
 end
 
 --- @param sessionContext SessionContext
@@ -2091,12 +2089,12 @@ function ComputeDeflectMissilesBoost(sessionContext, target, configType)
         return nil
     end
 
-    local deflectMissilesCharges
-
     local deflectMissilesBoost = ComputeSimpleIncrementalBoost(sessionContext, "DeflectMissilesBoosts", target, configType)
-    deflectMissilesCharges = "ActionResource(DeflectMissiles_Charge," .. deflectMissilesBoost .. ",0)"
-
-    return deflectMissilesCharges
+    if deflectMissilesBoost > 0 then
+        return "ActionResource(DeflectMissiles_Charge," .. deflectMissilesBoost .. ",0)"
+    else
+        return nil
+    end
 end
 
 --- @param sessionContext SessionContext
@@ -2109,19 +2107,23 @@ function ComputeSneakAttackBoost(sessionContext, target, configType)
         return nil
     end
 
-    local sneakAttackCharges
-
     local sneakAttackChargeBoost = ComputeSimpleIncrementalBoost(sessionContext, "SneakAttackBoosts", target, configType)
-    sneakAttackCharges = "ActionResource(SneakAttack_Charge," .. sneakAttackChargeBoost .. ",0)"
-
-    return sneakAttackCharges
+    if sneakAttackChargeBoost > 0 then
+        return "ActionResource(SneakAttack_Charge," .. sneakAttackChargeBoost .. ",0)"
+    else
+        return nil
+    end
 end
 
 --- @param sessionContext SessionContext
 function ComputeHealthIncrease(sessionContext, target, configType)
     local hpincrease = ComputeIncrementalBoost(sessionContext, "Health", target, configType)
 
-    return "IncreaseMaxHP(" .. hpincrease .. ")"
+    if hpincrease > 0 then
+        return "IncreaseMaxHP(" .. hpincrease .. ")"
+    else
+        return nil
+    end
 end
 
 --- @param sessionContext SessionContext
@@ -2199,66 +2201,93 @@ end
 --- @param sessionContext SessionContext
 function ComputeMovementBoost(sessionContext, target, configType)
     local totalMovementBoost = ComputeIncrementalBoost(sessionContext, "Movement", target, configType)
-    local movement = "ActionResource(Movement," .. totalMovementBoost .. ",0)"
-    return movement
+    if totalMovementBoost > 0 then
+        return "ActionResource(Movement," .. totalMovementBoost .. ",0)"
+    else
+        return nil
+    end
 end
 
 
 --- @param sessionContext SessionContext
 function ComputeACBoost(sessionContext, target, configType)
     local totalACBoost = ComputeIncrementalBoost(sessionContext, "AC", target, configType)
-    local ac = "AC(" .. totalACBoost .. ")"
-    return ac
+    if totalACBoost > 0 then
+        return "AC(" .. totalACBoost .. ")"
+    else
+        return nil
+    end
 end
 
 --- @param sessionContext SessionContext
 function ComputeStrengthBoost(sessionContext, target, configType)
     local totalStrengthBoost = ComputeIncrementalBoost(sessionContext, "Strength", target, configType)
-    local strength = "Ability(Strength,+" .. totalStrengthBoost .. ")"
-    return strength
+    if totalStrengthBoost > 0 then
+        return "Ability(Strength,+" .. totalStrengthBoost .. ")"
+    else
+        return nil
+    end
 end
 
 --- @param sessionContext SessionContext
 function ComputeDexterityBoost(sessionContext, target, configType)
     local totalDexterityBoost = ComputeIncrementalBoost(sessionContext, "Dexterity", target, configType)
-    local dexterity = "Ability(Dexterity,+" .. totalDexterityBoost .. ")"
-    return dexterity
+    if totalDexterityBoost > 0 then
+        return "Ability(Dexterity,+" .. totalDexterityBoost .. ")"
+    else
+        return nil
+    end
 end
 
 
 --- @param sessionContext SessionContext
 function ComputeConstitutionBoost(sessionContext, target, configType)
     local totalConstitutionBoost = ComputeIncrementalBoost(sessionContext, "Constitution", target, configType)
-    local constitution = "Ability(Constitution,+" .. totalConstitutionBoost .. ")"
-    return constitution
+    if totalConstitutionBoost > 0 then
+        return "Ability(Constitution,+" .. totalConstitutionBoost .. ")"
+    else
+        return nil
+    end
 end
 
 --- @param sessionContext SessionContext
 function ComputeIntelligenceBoost(sessionContext, target, configType)
     local totalIntelligenceBoost = ComputeIncrementalBoost(sessionContext, "Intelligence", target, configType)
-    local intelligence = "Ability(Intelligence,+" .. totalIntelligenceBoost .. ")"
-    return intelligence
+    if totalIntelligenceBoost > 0 then
+        return "Ability(Intelligence,+" .. totalIntelligenceBoost .. ")"
+    else
+        return nil
+    end
 end
 
 --- @param sessionContext SessionContext
 function ComputeWisdomBoost(sessionContext, target, configType)
     local totalWisdomBoost = ComputeIncrementalBoost(sessionContext, "Wisdom", target, configType)
-    local wisdom = "Ability(Wisdom,+" .. totalWisdomBoost .. ")"
-    return wisdom
+    if totalWisdomBoost > 0 then
+        return "Ability(Wisdom,+" .. totalWisdomBoost .. ")"
+    else
+        return nil
+    end
 end
 
 --- @param sessionContext SessionContext
 function ComputeCharismaBoost(sessionContext, target, configType)
     local totalCharismaBoost = ComputeIncrementalBoost(sessionContext, "Charisma", target, configType)
-    local charisma = "Ability(Charisma,+" .. totalCharismaBoost .. ")"
-    return charisma
+    if totalCharismaBoost > 0 then
+        return "Ability(Charisma,+" .. totalCharismaBoost .. ")"
+    else
+        return nil
+    end
 end
 
 --- @param sessionContext SessionContext
 function ComputeRollBonusBoost(sessionContext, target, configType)
     local totalRollBonus = ComputeIncrementalBoost(sessionContext, "RollBonus", target, configType)
-    local rollBonus = "RollBonus(Attack," .. totalRollBonus .. ")"
-    return rollBonus
+    if totalRollBonus > 0 then
+        return "RollBonus(Attack," .. totalRollBonus .. ")"
+    else
+        return nil
+    end
 end
 
 
@@ -2266,8 +2295,11 @@ end
 --- @param sessionContext SessionContext
 function ComputeDamageBoost(sessionContext, target, configType)
     local totalDamageBoost = ComputeIncrementalBoost(sessionContext, "Damage", target, configType)
-    local damageBonus = "DamageBonus(" .. totalDamageBoost .. ")"
-    return damageBonus
+    if totalDamageBoost > 0 then
+        return "DamageBonus(" .. totalDamageBoost .. ")"
+    else
+        return nil
+    end
 end
 
 --- @param sessionContext SessionContext
@@ -2299,9 +2331,9 @@ function ComputeSpellSlotBoosts(sessionContext, target, configType)
     for _, level in ipairs(requiredSpellLevels) do
         sessionContext.LogI(4, 10, string.format("SpellSlotBoost Increase for %s: %s at level %s", target, spellSlotBoost, level))
 
-        local spellSlot = "ActionResource(SpellSlot," .. spellSlotBoost .. "," .. level .. ")"
-
-        slots[level] = spellSlot
+        if spellSlotBoost > 0 then
+            slots[level] = "ActionResource(SpellSlot," .. spellSlotBoost .. "," .. level .. ")"
+        end
 
         spellSlotBoost = spellSlotBoost + 1
     end
