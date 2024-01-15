@@ -2846,9 +2846,10 @@ function ResetConfigJson(sessionContext)
         BardArchetypeCheck = 0,
         PaladinArchetypeCheck = 0,
         -- This changes the selection function from random to a consistent hash based on primarilly the target guid
-        ConsistentHash = 0,
+        -- - Note that disabling this will cause some strange behaviour in the mod due to reloading the enemy state on game load. Use at your own risk
+        ConsistentHash = 1,
         -- Integer that allows the salt for the consistent hash to be modified to allow for different results
-        ConsistentHashSalt = nil,
+        ConsistentHashSalt = 0,
         -- Disables detection of EnhancedEnemies mod and its Passives for Lore inference when set to `1`
         DebugDisableEE = 0,
         -- Controls the verbosity of logging for debugging
