@@ -3032,45 +3032,49 @@ function GiveBoosts(sessionContext, modifyState, guid, configType)
     sessionContext.LogI(1, 4, string.format("%s applying for Guid: %s State: %s\n", configType, guid, Ext.Json.Stringify(modifyState)))
 
     if not modifyState.Passived then
-        Osi.AddPassive(guid, LCC_PASSIVE_START)
+        DelayedCall(400, function()
+            sessionContext.LogI(2, 6, string.format("%s applying passives async for Guid: %s\n", configType, guid))
+            Osi.AddPassive(guid, LCC_PASSIVE_START)
 
-        DelayedCallUntil(
-            function()
-                local passives = ToSet(Map(function(p) return p.Passive.PassiveId end, Ext.Entity.Get(guid).PassiveContainer.Passives))
-                sessionContext.LogI(1, 4, string.format("Waiting for passive to be added: %s %s", guid, Ext.Json.Stringify(passives)))
-                return passives[LCC_PASSIVE_START]
-            end,
-            function()
-                local addedPassives = GiveNewPassives(sessionContext, guid, configType)
+            DelayedCallUntil(
+                function()
+                    local passives = ToSet(Map(function(p) return p.Passive.PassiveId end, Ext.Entity.Get(guid).PassiveContainer.Passives))
+                    sessionContext.LogI(1, 4, string.format("Waiting for passive to be added: %s %s", guid, Ext.Json.Stringify(passives)))
+                    return passives[LCC_PASSIVE_START]
+                end,
+                function()
+                    local addedPassives = GiveNewPassives(sessionContext, guid, configType)
 
-                DelayedCallUntil(
-                    function()
-                        local passives = ToSet(Map(function(p) return p.Passive.PassiveId end, Ext.Entity.Get(guid).PassiveContainer.Passives))
-                        sessionContext.LogI(1, 4, string.format("Waiting for passive %s to be added: %s %s", Ext.Json.Stringify(addedPassives), guid, Ext.Json.Stringify(passives)))
-                        local allAdded = true
-                        for _, passive in pairs(addedPassives) do
-                            if not passives[passive] then
-                                allAdded = false
-                                break
+                    DelayedCallUntil(
+                        function()
+                            local passives = ToSet(Map(function(p) return p.Passive.PassiveId end, Ext.Entity.Get(guid).PassiveContainer.Passives))
+                            sessionContext.LogI(1, 4, string.format("Waiting for passive %s to be added: %s %s", Ext.Json.Stringify(addedPassives), guid, Ext.Json.Stringify(passives)))
+                            local allAdded = true
+                            for _, passive in pairs(addedPassives) do
+                                if not passives[passive] then
+                                    allAdded = false
+                                    break
+                                end
                             end
+                            return allAdded
+                        end,
+                        function()
+                            Osi.AddPassive(guid, LCC_PASSIVE_END)
+
+                            DelayedCallUntil(
+                                function()
+                                    local passives = ToSet(Map(function(p) return p.Passive.PassiveId end, Ext.Entity.Get(guid).PassiveContainer.Passives))
+                                    sessionContext.LogI(1, 4, string.format("Waiting for passive to be added: %s %s", guid, Ext.Json.Stringify(passives)))
+                                    return passives[LCC_PASSIVE_END]
+                                end,
+                                function ()
+                                    Osi.AddPassive(guid, LCC_PASSIVE_PASSIVED)
+                                end
+                            )
                         end
-                        return allAdded
-                    end,
-                    function()
-                        Osi.AddPassive(guid, LCC_PASSIVE_END)
-
-                        DelayedCallUntil(
-                            function()
-                                local passives = ToSet(Map(function(p) return p.Passive.PassiveId end, Ext.Entity.Get(guid).PassiveContainer.Passives))
-                                sessionContext.LogI(1, 4, string.format("Waiting for passive to be added: %s %s", guid, Ext.Json.Stringify(passives)))
-                                return passives[LCC_PASSIVE_END]
-                            end,
-                            function ()
-                                Osi.AddPassive(guid, LCC_PASSIVE_PASSIVED)
-                            end
-                        )
-                    end
-                )
+                    )
+                end
+            )
             end
         )
     end
