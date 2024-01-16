@@ -104,6 +104,14 @@ function Filter(fn, listlike)
     return result
 end
 
+function MapTableValues(fn, tablelike)
+    local result = {}
+    for key, val in pairs(tablelike) do
+        result[key] = fn(val)
+    end
+    return result
+end
+
 function FilterTable(fn, tablelike)
     local result = {}
     for key, val in pairs(tablelike) do
@@ -195,6 +203,16 @@ function DropBlacklisted(blacklist, elems)
         end
     end
     return filteredElems
+end
+
+function J(any)
+    local opts = {
+        Beautify = true,
+        StringifyInternalTypes = true,
+        IterateUserdata = true,
+        AvoidRecursion = true
+    }
+    return Ext.Json.Stringify(any, opts)
 end
 
 function CharacterGetStats(target)
@@ -1330,7 +1348,18 @@ function ComputeClassSpecificAbilities(sessionContext, target, configType)
     end
     sessionContext.LogI(7, 26, string.format("DBG: Found ability tables %s for %s", Ext.Json.Stringify(abilityTables), target))
 
-    return ComputeClassLevelAdditions(sessionContext, abilityTables, sessionContext.AbilityDependencies, "AbilitiesAdded", Osi.HasSpell, target, configType)
+    return MapTableValues(
+        function(abilityVal) return string.format("UnlockSpell(%s)", abilityVal) end,
+        ComputeClassLevelAdditions(
+            sessionContext,
+            abilityTables,
+            sessionContext.AbilityDependencies,
+            "AbilitiesAdded",
+            Osi.HasSpell,
+            target,
+            configType
+        )
+    )
 end
 
 function CheckIfOrigin(target)
@@ -1874,7 +1903,7 @@ function ComputeNewSpells(sessionContext, target, configType)
             end
         end
     end
-    return finalSelectedSpells
+    return MapTableValues(function(spellVal) return string.format("UnlockSpell(%s)", spellVal) end, finalSelectedSpells)
 end
 
 --- @param sessionContext SessionContext
@@ -2998,16 +3027,6 @@ function GetVarsJson(sessionContext)
 end
 
 --- @param sessionContext SessionContext
-function GiveNewSpells(sessionContext, target, configType)
-    local spells = ComputeNewSpells(sessionContext, target, configType)
-    for _, spell in pairs(spells) do
-        local boost = string.format("UnlockSpell(%s)", spell)
-        sessionContext.LogI(3, 24, string.format("Adding spell %s to %s", boost, target))
-        AddBoostsAdv(target, boost)
-    end
-end
-
---- @param sessionContext SessionContext
 function GiveNewPassives(sessionContext, target, configType)
     local passives = ComputeClassSpecificPassives(sessionContext, target, configType)
     for _, passive in pairs(passives) do
@@ -3019,17 +3038,7 @@ function GiveNewPassives(sessionContext, target, configType)
 end
 
 --- @param sessionContext SessionContext
-function GiveNewAbilities(sessionContext, target, configType)
-    local abilities = ComputeClassSpecificAbilities(sessionContext, target, configType)
-    for _, ability in pairs(abilities) do
-        local boost = string.format("UnlockSpell(%s)", ability)
-        sessionContext.LogI(3, 24, string.format("Adding ability %s to %s", boost, target))
-        AddBoostsAdv(target, boost)
-    end
-end
-
---- @param sessionContext SessionContext
-function GiveComputedBoost(boostFn, sessionContext, target, configType)
+function ComputedBoost(boostFn, sessionContext, target, configType)
     local boostRes = boostFn(sessionContext, target, configType)
 
     if boostRes ~= nil then
@@ -3041,89 +3050,89 @@ function GiveComputedBoost(boostFn, sessionContext, target, configType)
             boosts = boostRes
         end
 
-        for _, boost in ipairs(boosts) do
-            AddBoostsAdv(target, boost)
-        end
+        return boosts
     end
+    return {}
 end
 
 --- @param sessionContext SessionContext
-function GiveBoosts(sessionContext, modifyState, guid, configType)
-    sessionContext.LogI(1, 4, string.format("%s applying for Guid: %s State: %s\n", configType, guid, Ext.Json.Stringify(modifyState)))
+function GiveBoosts(sessionContext, guid, configType)
+    sessionContext.LogI(1, 4, string.format("%s applying for Guid: %s\n", configType, guid))
+    local entity = Ext.Entity.Get(guid)
 
-    if not modifyState.Passived then
-        GiveNewPassives(sessionContext, guid, configType)
-        DelayedCallWhile(
-            function()
-                return Osi.HasPassive(guid, LCC_PASSIVE_PASSIVED) == 1
-            end,
-            function()
-                Osi.AddPassive(guid, LCC_PASSIVE_PASSIVED)
-            end
-        )
-    end
-
-    if not modifyState.Boosted then
-        GiveNewSpells(sessionContext, guid, configType)
-
-        GiveNewAbilities(sessionContext, guid, configType)
-
-        local boosts = {
-            ComputeHealthIncrease,
-            ComputeActionPointBoost,
-            ComputeBonusActionPointBoost,
-            ComputeRageBoost,
-            ComputeSorceryPointBoost,
-            ComputeTidesOfChaosBoost,
-            ComputeSuperiorityDieBoost,
-            ComputeWildShapeBoost,
-            ComputeNaturalRecoveryBoost,
-            ComputeFungalInfestationBoost,
-            ComputeLayOnHandsBoost,
-            ComputeChannelOathBoost,
-            ComputeChannelDivinityBoost,
-            ComputeBardicInspirationBoost,
-            ComputeKiPointBoost,
-            ComputeDeflectMissilesBoost,
-            ComputeSneakAttackBoost,
-            ComputeMovementBoost,
-            ComputeACBoost,
-            ComputeStrengthBoost,
-            ComputeDexterityBoost,
-            ComputeConstitutionBoost,
-            ComputeIntelligenceBoost,
-            ComputeWisdomBoost,
-            ComputeCharismaBoost,
-            ComputeRollBonusBoost,
-            ComputeDamageBoost,
-            ComputeSpellSlotBoosts,
-        }
-
-        for _, boostFn in ipairs(boosts) do
-            GiveComputedBoost(boostFn, sessionContext, guid, configType)
+    GiveNewPassives(sessionContext, guid, configType)
+    DelayedCallWhile(
+        function()
+            return Osi.HasPassive(guid, LCC_PASSIVE_PASSIVED) == 1
+        end,
+        function()
+            Osi.AddPassive(guid, LCC_PASSIVE_PASSIVED)
         end
+    )
 
-        DelayedCallWhile(
-            function()
-                return Osi.HasPassive(guid, LCC_PASSIVE_BOOSTED) == 1
-            end,
-            function()
-                Osi.AddPassive(guid, LCC_PASSIVE_BOOSTED)
-            end
-        )
+    local allBoosts = {}
+    allBoosts = TableCombine(Values(ComputeNewSpells(sessionContext, guid, configType)), allBoosts)
 
+    allBoosts = TableCombine(Values(ComputeClassSpecificAbilities(sessionContext, guid, configType)), allBoosts)
+
+    local boosts = {
+        ComputeHealthIncrease,
+        ComputeActionPointBoost,
+        ComputeBonusActionPointBoost,
+        ComputeRageBoost,
+        ComputeSorceryPointBoost,
+        ComputeTidesOfChaosBoost,
+        ComputeSuperiorityDieBoost,
+        ComputeWildShapeBoost,
+        ComputeNaturalRecoveryBoost,
+        ComputeFungalInfestationBoost,
+        ComputeLayOnHandsBoost,
+        ComputeChannelOathBoost,
+        ComputeChannelDivinityBoost,
+        ComputeBardicInspirationBoost,
+        ComputeKiPointBoost,
+        ComputeDeflectMissilesBoost,
+        ComputeSneakAttackBoost,
+        ComputeMovementBoost,
+        ComputeACBoost,
+        ComputeStrengthBoost,
+        ComputeDexterityBoost,
+        ComputeConstitutionBoost,
+        ComputeIntelligenceBoost,
+        ComputeWisdomBoost,
+        ComputeCharismaBoost,
+        ComputeRollBonusBoost,
+        ComputeDamageBoost,
+        ComputeSpellSlotBoosts,
+    }
+
+    for _, boostFn in ipairs(boosts) do
+        allBoosts = TableCombine(ComputedBoost(boostFn, sessionContext, guid, configType), allBoosts)
     end
 
-    if not modifyState.Passived or not modifyState.Boosted then
-        DelayedCallWhile(
-            function()
-                return Osi.HasPassive(guid, LCC_PASSIVE) == 1
-            end,
-            function()
-                Osi.AddPassive(guid, LCC_PASSIVE)
-            end
-        )
+    for _, boost in ipairs(allBoosts) do
+        SessionContext.LogI(3, 24, string.format("Adding boost %s to %s", boost, guid))
+        AddBoostsAdv(guid, boost)
     end
+
+    DelayedCallWhile(
+        function()
+            return Osi.HasPassive(guid, LCC_PASSIVE_BOOSTED) == 1
+        end,
+        function()
+            Osi.AddPassive(guid, LCC_PASSIVE_BOOSTED)
+        end
+    )
+
+    DelayedCallWhile(
+        function()
+            return Osi.HasPassive(guid, LCC_PASSIVE) == 1 and entity.Vars.LCC_Boosted.General
+        end,
+        function()
+            Osi.AddPassive(guid, LCC_PASSIVE)
+            entity.Vars.LCC_Boosted = {General = true}
+        end
+    )
 end
 
 
@@ -3138,6 +3147,13 @@ function PerformBoosting(sessionContext, guid)
         return
     end
 
+    local entity = Ext.Entity.Get(guid)
+    if entity.Vars.LCC_Boosted == nil then
+        entity.Vars.LCC_Boosted = {
+            General = false,
+        }
+    end
+
     local isPartyMember = CheckIfParty(guid) == 1
     local isPartyFollower = Osi.IsPartyFollower(guid) == 1
     local isOurSummon = CheckIfOurSummon(guid) == 1
@@ -3146,11 +3162,9 @@ function PerformBoosting(sessionContext, guid)
     local isBoss = Osi.IsBoss(guid) == 1
     local hasPlayerData = HasPlayerData(guid)
     local isPlayer = IsPlayer(guid)
-    local alreadyModified = Osi.HasPassive(guid, LCC_PASSIVE) == 1
-    local alreadyModifiedBoosted = Osi.HasPassive(guid, LCC_PASSIVE_BOOSTED) == 1
-    local alreadyModifiedPassived = Osi.HasPassive(guid, LCC_PASSIVE_PASSIVED) == 1
+    local alreadyModified = entity.Vars.LCC_Boosted.General
 
-    sessionContext.Log(1, string.format("Give: Guid: %s; Modified(b, p)?: %s(%s, %s); Party?: %s; Follower?: %s; Enemy?: %s; Origin?: %s; Boss?: %s; OurSummon?: %s; HasPlayerData?: %s; IsPlayer?: %s;\n", guid, alreadyModified, alreadyModifiedBoosted, alreadyModifiedPassived, isPartyMember, isPartyFollower, isEnemy, isOrigin, isBoss, isOurSummon, hasPlayerData, isPlayer))
+    sessionContext.Log(1, string.format("Give: Guid: %s; Modified?: %s; Party?: %s; Follower?: %s; Enemy?: %s; Origin?: %s; Boss?: %s; OurSummon?: %s; HasPlayerData?: %s; IsPlayer?: %s;\n", guid, alreadyModified, isPartyMember, isPartyFollower, isEnemy, isOrigin, isBoss, isOurSummon, hasPlayerData, isPlayer))
 
     if not isPartyMember and not isPartyFollower and not isOurSummon and not isEnemy and not isOrigin and not isBoss then
         local res, component = pcall(function() return Ext.Entity.Get(guid).ServerCharacter end)
@@ -3178,7 +3192,6 @@ function PerformBoosting(sessionContext, guid)
         SpellRoots = {},
     }
 
-    local entity = Ext.Entity.Get(guid)
     local CombatComponent = SafeGet(entity, "ServerCharacter", "Character", "Template", "CombatComponent")
     local rawAIHint = SafeGet(CombatComponent, "AiHint")
     local mappedAIHint = SafeGet(AiHints, SafeGet(CombatComponent, "AiHint"))
@@ -3198,45 +3211,36 @@ function PerformBoosting(sessionContext, guid)
     sessionContext.Log(2, string.format("Give: AiHint: %s (%s) Archetype: %s\n", rawAIHint, mappedAIHint, rawArchetype))
     sessionContext.Log(2, string.format("Give: Kinds: %s; Classes: %s; Restrictions %s\n", Ext.Json.Stringify(kinds), Ext.Json.Stringify(allClasses), Ext.Json.Stringify(restrictions)))
 
-    local modifyState = {
-        General = alreadyModified,
-        Boosted = alreadyModifiedBoosted,
-        Passived = alreadyModifiedPassived,
-    }
-    if alreadyModified and (not alreadyModifiedBoosted and not alreadyModifiedPassived) then
-        sessionContext.Log(1, string.format("Modify State inconsistent for Guid: %s: %s", guid, Ext.Json.Stringify(modifyState)))
-    end
-
-    local shouldTryToModify = not alreadyModified or not alreadyModifiedBoosted or not alreadyModifiedPassived
+    local shouldTryToModify = not alreadyModified
 
     if sessionContext.VarsJson["EnemiesEnabled"] == 1 then
         if shouldTryToModify and (not isPartyMember and isEnemy and not isBoss and not isOrigin) then
-            GiveBoosts(sessionContext, modifyState, guid, "Enemies")
+            GiveBoosts(sessionContext, guid, "Enemies")
         end
     end
     if sessionContext.VarsJson["BossesEnabled"] == 1 then
         if shouldTryToModify and (not isPartyMember and isEnemy and isBoss and not isOrigin) then
-            GiveBoosts(sessionContext, modifyState, guid, "Bosses")
+            GiveBoosts(sessionContext, guid, "Bosses")
         end
     end
     if sessionContext.VarsJson["AlliesEnabled"] == 1 then
         if shouldTryToModify and (not isPartyMember and not isEnemy and not isOrigin and not isBoss) then
-            GiveBoosts(sessionContext, modifyState, guid, "Allies")
+            GiveBoosts(sessionContext, guid, "Allies")
         end
     end
     if sessionContext.VarsJson["FollowersEnabled"] == 1 then
         if shouldTryToModify and (not isEnemy and not isOrigin and isPartyFollower and not isBoss) then
-            GiveBoosts(sessionContext, modifyState, guid, "Followers")
+            GiveBoosts(sessionContext, guid, "Followers")
         end
     end
     if sessionContext.VarsJson["FollowersBossesEnabled"] == 1 then
         if shouldTryToModify and (not isEnemy and not isOrigin and isPartyFollower and isBoss) then
-            GiveBoosts(sessionContext, modifyState, guid, "FollowersBosses")
+            GiveBoosts(sessionContext, guid, "FollowersBosses")
         end
     end
     if sessionContext.VarsJson["SummonsEnabled"] == 1 then
         if shouldTryToModify and (isPartyMember and isOurSummon) then
-            GiveBoosts(sessionContext, modifyState, guid, "Summons")
+            GiveBoosts(sessionContext, guid, "Summons")
         end
     end
 end
@@ -3245,6 +3249,8 @@ function RemoveBoosts(sessionContext, entity)
     local guid = string.sub(entity.Uuid.EntityUuid, -36)
     local modified = Osi.HasPassive(guid, LCC_PASSIVE) == 1
     if modified then
+        sessionContext.Log(2, string.format("Removing Boosts for Guid: %s because LCC_PASSIVE", guid))
+        sessionContext.Log(3, string.format("Our Boosts: %s", J(OurBoosts(guid))))
         for _boostType, boostEntities in pairs(entity.BoostsContainer.Boosts) do
             for _, boostEntity in ipairs(boostEntities) do
                 RemoveBoostsAdv(sessionContext, guid, boostEntity)
@@ -3287,21 +3293,37 @@ function RemovePassives(sessionContext, entity, combat)
 end
 
 function RemoveAllFromEntity(sessionContext, entity)
+    if entity.Vars.LCC_Boosted == nil then
+        entity.Vars.LCC_Boosted = {
+            General = false,
+        }
+    end
+
+    local shortGuid = string.sub(entity.Uuid.EntityUuid, -36)
+    sessionContext.Log(2, string.format("Removing All for Guid: %s", shortGuid))
+
+    sessionContext.Log(3, string.format("Removing boost for Guid: %s", shortGuid))
     RemoveBoosts(sessionContext, entity)
+
+    sessionContext.Log(3, string.format("Removing passives for Guid: %s", shortGuid))
     RemovePassives(sessionContext, entity, nil)
 
     DelayedCallWhile(
         function()
-            return Osi.HasPassive(entity.Uuid.EntityUuid, LCC_PASSIVE) == 0
+            local noMoreLCCPassive = Osi.HasPassive(shortGuid, LCC_PASSIVE) == 0
+            sessionContext.Log(4, string.format("Checking LCC_PASSIVE Unil its gone for Guid: %s %s", shortGuid, noMoreLCCPassive))
+            return noMoreLCCPassive and not entity.Vars.LCC_Boosted.General
         end,
         function()
-            Osi.RemovePassive(entity.Uuid.EntityUuid, LCC_PASSIVE)
+            sessionContext.Log(4, string.format("Calling Remove LCC_PASSIVE Unil its gone for Guid: %s", shortGuid))
+            Osi.RemovePassive(shortGuid, LCC_PASSIVE)
+            entity.Vars.LCC_Boosted = {General = false}
         end
     )
 end
 
 function RemoveAllBoosting(sessionContext)
-    sessionContext.Log(1, "Removing Boosting")
+    sessionContext.Log(1, "Removing ALL Boosting")
 
     for _, e in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
         RemoveAllFromEntity(sessionContext, e)
@@ -3449,13 +3471,10 @@ local function OnSessionLoaded()
             if statusID == "LCC_REBOOST" then
                 local entity = Ext.Entity.Get(string.sub(target, -36))
 
-                RemoveBoosts(SessionContext, entity)
-                RemovePassives(SessionContext, entity, nil)
+                RemoveAllFromEntity(SessionContext, entity)
 
-                DelayedCallUntil(
-                    function()
-                        return Osi.HasPassive(target, LCC_PASSIVE) == 0
-                    end,
+                DelayedCall(
+                    500,
                     function()
                         PerformBoosting(SessionContext, entity.Uuid.EntityUuid)
                     end
@@ -3490,6 +3509,7 @@ function DebugMode(characterGuid)
 end
 
 Ext.Vars.RegisterUserVariable("LCC_PassivesAdded", {Server=true, Persistent=true, DontCache=true})
+Ext.Vars.RegisterUserVariable("LCC_Boosted", {Server=true, Persistent=true, DontCache=true})
 
 Ext.Events.SessionLoaded:Subscribe(OnSessionLoaded)
 
@@ -3552,8 +3572,24 @@ end
 
 Ext.RegisterConsoleCommand("LCC_PassivesFor", DBG_Passives);
 
+function OurBoosts(guid)
+    return Filter(
+        function(bi) return bi.Cause.Cause == ModName end,
+        Map(
+            function(b) return b.BoostInfo end,
+            Flatten(
+                    Map(
+                        function(cpp) return Ext.Types.Serialize(cpp) end,
+                        Values(Ext.Entity.Get(guid).BoostsContainer.Boosts
+                    )
+                )
+            )
+        )
+    )
+end
+
 function DBG_Boosts(_cmd, guid)
-    _D(Filter(function(bi) return bi.Cause.Cause == ModName end, Map(function(b) return b.BoostInfo end, Flatten(Map(function(cpp) return Ext.Types.Serialize(cpp) end, Values(Ext.Entity.Get(guid).BoostsContainer.Boosts))))))
+    _D(OurBoosts(guid))
 end
 
 Ext.RegisterConsoleCommand("LCC_BoostsFor", DBG_Boosts);
