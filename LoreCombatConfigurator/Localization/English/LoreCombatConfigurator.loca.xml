@@ -6,4 +6,8 @@
 	<content contentuid="30e42bca-a328-414f-a4a2-9e5e1b7bf6f4" version="1">General indicator that this entity was modified by LoreCombatConfigurator</content>
 	<content contentuid="fd961982-1050-4dd7-a9ac-ff642572c5fb" version="1">Indicator that passive on this entity were modified by LoreCombatConfigurator</content>
 	<content contentuid="cbefff5d-818f-443f-940b-7909b4d54c54" version="1">Indicator that boosts on this entity were modified by LoreCombatConfigurator</content>
+	<content contentuid="7239edee-417f-4f42-8253-30020f6088bb" version="1">LCC Developer Spells</content>
+	<content contentuid="86d3a7c7-06b1-43b1-90e5-71c2e6879823" version="1">Holds developer tools to make it easier to test LCC</content>
+	<content contentuid="bb6b2e96-4dfd-42a1-8e6f-d6277bfa4d29" version="1">Reboost</content>
+	<content contentuid="0b659a67-3f1e-4fd3-b77c-281abd09c96d" version="1">Forces the target to recaclulate all its boosts</content>
 </contentList>

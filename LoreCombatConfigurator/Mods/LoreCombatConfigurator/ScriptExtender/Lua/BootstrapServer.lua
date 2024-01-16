@@ -3241,18 +3241,16 @@ function PerformBoosting(sessionContext, guid)
     end
 end
 
-function RemoveBoosts(sessionContext)
-    for _, e in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
-        local guid = string.sub(e.Uuid.EntityUuid, -36)
-        local modified = Osi.HasPassive(guid, LCC_PASSIVE) == 1
-        if modified then
-            for _boostType, boostEntities in pairs(e.BoostsContainer.Boosts) do
-                for _, boostEntity in ipairs(boostEntities) do
-                    RemoveBoostsAdv(sessionContext, guid, boostEntity)
-                end
+function RemoveBoosts(sessionContext, entity)
+    local guid = string.sub(entity.Uuid.EntityUuid, -36)
+    local modified = Osi.HasPassive(guid, LCC_PASSIVE) == 1
+    if modified then
+        for _boostType, boostEntities in pairs(entity.BoostsContainer.Boosts) do
+            for _, boostEntity in ipairs(boostEntities) do
+                RemoveBoostsAdv(sessionContext, guid, boostEntity)
             end
-            Osi.RemovePassive(guid, LCC_PASSIVE_BOOSTED)
         end
+        Osi.RemovePassive(guid, LCC_PASSIVE_BOOSTED)
     end
 end
 
@@ -3267,34 +3265,34 @@ PassiveBookkeepingPassives = {LCC_PASSIVE_PASSIVED}
 
 BookkeepingPassivesSet = ToSet(TableCombine(TableCombine(BookkeepingPassives, BoostBookkeepingPassives), PassiveBookkeepingPassives))
 
-function RemovePassives(sessionContext, combat)
-    for _, e in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
-        local guid = string.sub(e.Uuid.EntityUuid, -36)
-        local modified = Osi.HasPassive(guid, LCC_PASSIVE) == 1
-        if modified and (combat == nil or (combat ~= nil and combat[guid])) then
-            sessionContext.Log(2, string.format("Removing Passives for Guid: %s because combatants %s", guid, combat))
-            sessionContext.Log(3, string.format("Passives: %s", Ext.Json.Stringify(Map(function (p) return p.Passive.PassiveId end, e.PassiveContainer.Passives))))
-            local ourPassives = Keys(e.Vars.LCC_PassivesAdded)
-            for _, passive in ipairs(ourPassives) do
-                if not BookkeepingPassivesSet[passive] and not ProtectedPassives[passive] then
-                    sessionContext.Log(3, string.format("Removing Passive: %s from %s", passive, guid))
-                    Osi.RemovePassive(guid, passive)
-                end
-            end
-            e.Vars.LCC_PassivesAdded = {}
-            sessionContext.EntityCache[guid] = {}
-            for _, passive in ipairs(PassiveBookkeepingPassives) do
+function RemovePassives(sessionContext, entity, combat)
+    local guid = string.sub(entity.Uuid.EntityUuid, -36)
+    local modified = Osi.HasPassive(guid, LCC_PASSIVE) == 1
+    if modified and (combat == nil or (combat ~= nil and combat[guid])) then
+        sessionContext.Log(2, string.format("Removing Passives for Guid: %s because combatants %s", guid, combat))
+        sessionContext.Log(3, string.format("Passives: %s", Ext.Json.Stringify(Map(function (p) return p.Passive.PassiveId end, entity.PassiveContainer.Passives))))
+        local ourPassives = Keys(entity.Vars.LCC_PassivesAdded)
+        for _, passive in ipairs(ourPassives) do
+            if not BookkeepingPassivesSet[passive] and not ProtectedPassives[passive] then
+                sessionContext.Log(3, string.format("Removing Passive: %s from %s", passive, guid))
                 Osi.RemovePassive(guid, passive)
             end
+        end
+        entity.Vars.LCC_PassivesAdded = {}
+        sessionContext.EntityCache[guid] = {}
+        for _, passive in ipairs(PassiveBookkeepingPassives) do
+            Osi.RemovePassive(guid, passive)
         end
     end
 end
 
 function RemoveBoosting(sessionContext)
     sessionContext.Log(1, "Removing Boosting")
-    -- Yes this does 2 iterations, but it allows removing passives which are hacky seperately sooooo....
-    RemoveBoosts(sessionContext)
-    RemovePassives(sessionContext, nil)
+
+    for _, e in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
+        RemoveBoosts(sessionContext, e)
+        RemovePassives(sessionContext, e, nil)
+    end
 end
 
 --- @return SessionContext
@@ -3419,16 +3417,7 @@ local function OnSessionLoaded()
 
             if SessionContext.VarsJson["DebugMode"] then
                 for _, guid in ipairs(Flatten(Osi.DB_PartyMembers:Get(nil))) do
-                    local charTemplate = Ext.Template.GetTemplate(string.sub(guid, -36))
-                    if charTemplate == nil then
-                        local charTemplateGuid = Osi.GetTemplate(string.sub(guid, -36))
-                        if charTemplateGuid ~= nil then
-                            charTemplate = Ext.Template.GetTemplate(string.sub(charTemplateGuid, -36))
-                        end
-                    end
-                    if charTemplate ~= nil then
-                        charTemplate["MovementSpeedRun"] = 10
-                    end
+                    DebugMode(guid)
                 end
             end
             RemoveBoosting(SessionContext)
@@ -3437,6 +3426,54 @@ local function OnSessionLoaded()
             Osi.TimerLaunch("BoostAllServerCharacters",500)
         end
     )
+    Ext.Osiris.RegisterListener("CharacterJoinedParty", 1, "after", function(character)
+            if SessionContext.VarsJson["DebugMode"] then
+                DebugMode(character)
+            end
+        end
+    )
+    Ext.Osiris.RegisterListener("StatusApplied", 4, "after", function(target, statusID, _, _)
+            if statusID == "LCC_REBOOST" then
+                local entity = Ext.Entity.Get(string.sub(target, -36))
+
+                RemoveBoosts(SessionContext, entity)
+                RemovePassives(SessionContext, entity, nil)
+
+                DelayedCallUntil(
+                    function()
+                        return Osi.HasPassive(target, LCC_PASSIVE) == 0
+                    end,
+                    function()
+                        PerformBoosting(SessionContext, entity.Uuid.EntityUuid)
+                    end
+                )
+            end
+        end
+    )
+end
+
+function AddDeveloperSpells(target)
+    local container = "Target_LCC_DeveloperContainer"
+    if Osi.HasSpell(target, container) == 0 then
+        Osi.AddSpell(target, container, 1, 1)
+    end
+end
+
+function DebugMode(characterGuid)
+    local shortGuid = string.sub(characterGuid, -36)
+
+    local charTemplate = Ext.Template.GetTemplate(shortGuid)
+    if charTemplate == nil then
+        local charTemplateGuid = Osi.GetTemplate(shortGuid)
+        if charTemplateGuid ~= nil then
+            charTemplate = Ext.Template.GetTemplate(string.sub(charTemplateGuid, -36))
+        end
+    end
+    if charTemplate ~= nil then
+        charTemplate["MovementSpeedRun"] = 10
+    end
+
+    AddDeveloperSpells(shortGuid)
 end
 
 Ext.Vars.RegisterUserVariable("LCC_PassivesAdded", {Server=true, Persistent=true, DontCache=true})

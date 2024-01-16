@@ -24,3 +24,8 @@ data "Boosts" ""
 data "Icon" "statIcons_WildMagic_Barbarian_Teleport"
 data "Properties" "IsHidden"
 data "StatusPropertyFlags" "IgnoreResting;ApplyToDead;DisableOverhead;DisableCombatlog"
+
+new entry "LCC_REBOOST"
+type "StatusData"
+data "StatusType" "BOOST"
+data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;DisablePortraitIndicator"
