@@ -104,6 +104,16 @@ function Filter(fn, listlike)
     return result
 end
 
+function FilterTable(fn, tablelike)
+    local result = {}
+    for key, val in pairs(tablelike) do
+        if fn(key, val) then
+            result[key] = val
+        end
+    end
+    return result
+end
+
 function ToSet(list)
     local tab = {}
     for _, l in ipairs(list) do
@@ -1136,18 +1146,19 @@ function ComputeClassLevelAdditions(sessionContext, sourceTables, deps, var, pre
     local requiredLevels = LevelGate(sessionContext, var, 20, Osi.GetLevel(target), target, configType)
 
     sessionContext.LogI(5, 26, string.format("DBG: Required levels %s for %s", Ext.Json.Stringify(requiredLevels), target))
-    local npcTable = {}
+    local npcPresenceTable = {}
     for _, level in ipairs(requiredLevels) do
         local levels = sourceTables["Level" .. level]
 
         if levels then
             for _, addition in pairs(levels) do
-                if presenceCheckFn(target, addition) == 0 then
-                    table.insert(npcTable, addition)
-                end
+                npcPresenceTable[addition] = presenceCheckFn(target, addition) == 0
             end
         end
     end
+    sessionContext.LogI(5, 26, string.format("DBG: Found %s additions presence table for %s", Ext.Json.Stringify(npcPresenceTable), target))
+    local npcTable = Keys(FilterTable(function(key, val) return val end, npcPresenceTable))
+    table.sort(npcTable)
 
     sessionContext.LogI(5, 26, string.format("DBG: Found %s %s additions table for %s", #npcTable, Ext.Json.Stringify(npcTable), target))
     local lookupFn = function(range, ...)
@@ -1191,9 +1202,9 @@ function ComputeClassLevelAdditions(sessionContext, sourceTables, deps, var, pre
     return finalToAdd
 end
 
+
 --- @param sessionContext SessionContext
-function ComputeClassSpecificPassives(sessionContext, target, configType)
-    local passivesToAdd = {}
+function PreparePassivesTables(sessionContext, target)
     local passiveTables = {}
 
     local kinds = sessionContext.EntityToKinds(target) or {}
@@ -1202,6 +1213,7 @@ function ComputeClassSpecificPassives(sessionContext, target, configType)
         local classes = KindMapping[kind]
         allClasses = TableCombine(classes, allClasses)
     end
+    sessionContext.LogI(5, 26, string.format("DBG: In passives Found classes %s for %s", Ext.Json.Stringify(allClasses), target))
 
     local combinedClassPassives = {}
     for _, class in ipairs(allClasses) do
@@ -1217,6 +1229,21 @@ function ComputeClassSpecificPassives(sessionContext, target, configType)
             end
         end
     end
+    sessionContext.LogI(5, 26, string.format("DBG: Found passives %s for %s", Ext.Json.Stringify(combinedClassPassives), target))
+    local seenPassives = {}
+    for level=1, 20, 1 do
+        local combinedPassivesForLevel = combinedClassPassives["Level" .. level]
+        if combinedPassivesForLevel ~= nil then
+            for passive, _ in pairs(combinedPassivesForLevel) do
+                if not seenPassives[passive] then
+                    seenPassives[passive] = true
+                else
+                    combinedPassivesForLevel[passive] = nil
+                end
+            end
+        end
+    end
+    sessionContext.LogI(5, 26, string.format("DBG: Found filtered passives %s for %s", Ext.Json.Stringify(combinedClassPassives), target))
 
     local passivesCount = 0
     for level, passives in pairs(combinedClassPassives) do
@@ -1228,18 +1255,25 @@ function ComputeClassSpecificPassives(sessionContext, target, configType)
         table.sort(passiveTable)
         passiveTables[level] = passiveTable
     end
+    return passiveTables, passivesCount
+end
+
+--- @param sessionContext SessionContext
+function ComputeClassSpecificPassives(sessionContext, target, configType)
+    local passivesToAdd = {}
+    local passiveTables, passivesCount = PreparePassivesTables(sessionContext, target)
 
     if passivesCount == 0 then
         sessionContext.LogI(2, 18, "No passives available, please check config")
         return passivesToAdd
     end
+    sessionContext.LogI(5, 26, string.format("DBG: Found passive tables %s for %s", Ext.Json.Stringify(passiveTables), target))
 
     return ComputeClassLevelAdditions(sessionContext, passiveTables, sessionContext.PassiveDependencies, "PassivesAdded", Osi.HasPassive, target, configType)
 end
 
 --- @param sessionContext SessionContext
-function ComputeClassSpecificAbilities(sessionContext, target, configType)
-    local abiltiesToAdd = {}
+function PrepareAbilityTables(sessionContext, target)
     local abilityTables = {}
 
     local kinds = sessionContext.EntityToKinds(target) or {}
@@ -1250,7 +1284,7 @@ function ComputeClassSpecificAbilities(sessionContext, target, configType)
     end
     local restrictions = sessionContext.EntityToRestrictions(target) or {}
 
-    sessionContext.LogI(5, 26, string.format("DBG: Found classes %s for %s", Ext.Json.Stringify(allClasses), target))
+    sessionContext.LogI(5, 26, string.format("DBG: In abilities Found classes %s for %s", Ext.Json.Stringify(allClasses), target))
 
     local combinedClassAbilities = {}
     for _, class in ipairs(allClasses) do
@@ -1282,6 +1316,13 @@ function ComputeClassSpecificAbilities(sessionContext, target, configType)
         table.sort(abilityTable)
         abilityTables[level] = abilityTable
     end
+    return abilityTables, abilitiesCount
+end
+
+--- @param sessionContext SessionContext
+function ComputeClassSpecificAbilities(sessionContext, target, configType)
+    local abiltiesToAdd = {}
+    local abilityTables, abilitiesCount = PrepareAbilityTables(sessionContext, target)
 
     if abilitiesCount == 0 then
         sessionContext.LogI(2, 18, "No abilities available, please check config")
@@ -2973,6 +3014,7 @@ function GiveNewPassives(sessionContext, target, configType)
         sessionContext.LogI(3, 24, string.format("Adding passive %s to %s", passive, target))
         Osi.AddPassive(target, passive)
     end
+    Ext.Entity.Get(target).Vars.LCC_PassivesAdded = passives
     return passives
 end
 
@@ -3010,49 +3052,13 @@ function GiveBoosts(sessionContext, modifyState, guid, configType)
     sessionContext.LogI(1, 4, string.format("%s applying for Guid: %s State: %s\n", configType, guid, Ext.Json.Stringify(modifyState)))
 
     if not modifyState.Passived then
-        DelayedCall(400, function()
-            sessionContext.LogI(2, 6, string.format("%s applying passives async for Guid: %s\n", configType, guid))
-            Osi.AddPassive(guid, LCC_PASSIVE_START)
-
-            DelayedCallUntil(
-                function()
-                    local passives = ToSet(Map(function(p) return p.Passive.PassiveId end, Ext.Entity.Get(guid).PassiveContainer.Passives))
-                    sessionContext.LogI(1, 4, string.format("Waiting for passive to be added: %s %s", guid, Ext.Json.Stringify(passives)))
-                    return passives[LCC_PASSIVE_START]
-                end,
-                function()
-                    local addedPassives = GiveNewPassives(sessionContext, guid, configType)
-
-                    DelayedCallUntil(
-                        function()
-                            local passives = ToSet(Map(function(p) return p.Passive.PassiveId end, Ext.Entity.Get(guid).PassiveContainer.Passives))
-                            sessionContext.LogI(1, 4, string.format("Waiting for passive %s to be added: %s %s", Ext.Json.Stringify(addedPassives), guid, Ext.Json.Stringify(passives)))
-                            local allAdded = true
-                            for _, passive in pairs(addedPassives) do
-                                if not passives[passive] then
-                                    allAdded = false
-                                    break
-                                end
-                            end
-                            return allAdded
-                        end,
-                        function()
-                            Osi.AddPassive(guid, LCC_PASSIVE_END)
-
-                            DelayedCallUntil(
-                                function()
-                                    local passives = ToSet(Map(function(p) return p.Passive.PassiveId end, Ext.Entity.Get(guid).PassiveContainer.Passives))
-                                    sessionContext.LogI(1, 4, string.format("Waiting for passive to be added: %s %s", guid, Ext.Json.Stringify(passives)))
-                                    return passives[LCC_PASSIVE_END]
-                                end,
-                                function ()
-                                    Osi.AddPassive(guid, LCC_PASSIVE_PASSIVED)
-                                end
-                            )
-                        end
-                    )
-                end
-            )
+        GiveNewPassives(sessionContext, guid, configType)
+        DelayedCallWhile(
+            function()
+                return Osi.HasPassive(guid, LCC_PASSIVE_PASSIVED) == 1
+            end,
+            function()
+                Osi.AddPassive(guid, LCC_PASSIVE_PASSIVED)
             end
         )
     end
@@ -3253,13 +3259,11 @@ end
 LCC_PASSIVE = "LCC_PASSIVE"
 LCC_PASSIVE_BOOSTED = "LCC_PASSIVE_BOOSTED"
 LCC_PASSIVE_PASSIVED = "LCC_PASSIVE_PASSIVED"
-LCC_PASSIVE_START = "LCC_PASSIVE_START"
-LCC_PASSIVE_END = "LCC_PASSIVE_END"
 
 BookkeepingPassives = {LCC_PASSIVE}
 BoostBookkeepingPassives = {LCC_PASSIVE_BOOSTED}
 
-PassiveBookkeepingPassives = {LCC_PASSIVE_START, LCC_PASSIVE_END, LCC_PASSIVE_PASSIVED}
+PassiveBookkeepingPassives = {LCC_PASSIVE_PASSIVED}
 
 BookkeepingPassivesSet = ToSet(TableCombine(TableCombine(BookkeepingPassives, BoostBookkeepingPassives), PassiveBookkeepingPassives))
 
@@ -3268,22 +3272,16 @@ function RemovePassives(sessionContext, combat)
         local guid = string.sub(e.Uuid.EntityUuid, -36)
         local modified = Osi.HasPassive(guid, LCC_PASSIVE) == 1
         if modified and (combat == nil or (combat ~= nil and combat[guid])) then
-            sessionContext.Log(2, string.format("Removing Passives for Guid: %s", guid))
+            sessionContext.Log(2, string.format("Removing Passives for Guid: %s because combatants %s", guid, combat))
             sessionContext.Log(3, string.format("Passives: %s", Ext.Json.Stringify(Map(function (p) return p.Passive.PassiveId end, e.PassiveContainer.Passives))))
-            local focus = function (passive) return passive.Passive.PassiveId end
-            local start = IndexOf(e.PassiveContainer.Passives, focus, LCC_PASSIVE_START)
-            local stop = IndexOf(e.PassiveContainer.Passives, focus, LCC_PASSIVE_END)
-
-            if start ~= nil and stop ~= nil then
-                sessionContext.Log(2, string.format("Removing Passive: start %s to end: %s from %s", start, stop, guid))
-                local ourPassives = table.move(Ext.Types.Serialize(e.PassiveContainer.Passives), start + 1, stop - 1, 1, {})
-                for _, passive in ipairs(ourPassives) do
-                    if not BookkeepingPassivesSet[passive.Passive.PassiveId] and not ProtectedPassives[passive.Passive.PassiveId] then
-                        sessionContext.Log(3, string.format("Removing Passive: %s from %s", passive.Passive.PassiveId, guid))
-                        Osi.RemovePassive(guid, passive.Passive.PassiveId)
-                    end
+            local ourPassives = Keys(e.Vars.LCC_PassivesAdded)
+            for _, passive in ipairs(ourPassives) do
+                if not BookkeepingPassivesSet[passive] and not ProtectedPassives[passive] then
+                    sessionContext.Log(3, string.format("Removing Passive: %s from %s", passive, guid))
+                    Osi.RemovePassive(guid, passive)
                 end
             end
+            e.Vars.LCC_PassivesAdded = {}
             sessionContext.EntityCache[guid] = {}
             for _, passive in ipairs(PassiveBookkeepingPassives) do
                 Osi.RemovePassive(guid, passive)
@@ -3377,14 +3375,6 @@ local function OnSessionLoaded()
 
     Ext.Osiris.RegisterListener("CombatEnded",1,"after",function(combatid)
             SessionContext.Log(1, string.format("CombatEnded: combatid: %s\n", combatid))
-
-            local entitiesInCombat = {}
-            for _, combatData in ipairs(Osi.DB_Was_InCombat:Get(nil, combatid)) do
-                entitiesInCombat[string.sub(combatData[1], -36)] = true
-            end
-            -- After fleeing and staring combat again passive order seems to change, making removal
-            -- without some hacky persistent vars or files impossible, so remove them now
-            RemovePassives(SessionContext, entitiesInCombat)
         end
     )
 
@@ -3417,6 +3407,7 @@ local function OnSessionLoaded()
 
             SessionContext.EntityCache = {}
             CalculateLists(SessionContext)
+            Ext.IO.LoadFile(string.format("%s.json", ModName))
 
             if SessionContext.VarsJson["DebugMode"] then
                 for _, guid in ipairs(Flatten(Osi.DB_PartyMembers:Get(nil))) do
@@ -3438,8 +3429,9 @@ local function OnSessionLoaded()
             Osi.TimerLaunch("BoostAllServerCharacters",500)
         end
     )
-    SessionContext.SessionLoaded = true
 end
+
+Ext.Vars.RegisterUserVariable("LCC_PassivesAdded", {Server=true, Persistent=true, DontCache=true})
 
 Ext.Events.SessionLoaded:Subscribe(OnSessionLoaded)
 
@@ -3449,7 +3441,7 @@ Ext.Events.GameStateChanged:Subscribe(function(event)
         end
 
         if event.FromState == "UnloadSession" and event.ToState == "LoadSession" then
-            SessionContext.SessionLoaded = false
+            _Log(DummySessionContext(), 0, "Session Loading")
         end
     end
 )
@@ -3476,16 +3468,7 @@ function DBG_GetAffected()
                     end
                 end
             end
-            local focus = function (passive) return passive.Passive.PassiveId end
-            local start = IndexOf(e.PassiveContainer.Passives, focus, LCC_PASSIVE_START)
-            local stop = IndexOf(e.PassiveContainer.Passives, focus, LCC_PASSIVE_END)
-
-            if start ~= nil and stop ~= nil then
-                local ourPassives = table.move(Ext.Types.Serialize(e.PassiveContainer.Passives), start + 1, stop - 1, 1, {})
-                for _, passive in ipairs(ourPassives) do
-                    table.insert(affected[guid].Passives, passive.Passive.PassiveId)
-                end
-            end
+            affected[guid].Passives = Keys(e.Vars.LCC_PassivesAdded)
         end
     end
     return affected
@@ -3505,14 +3488,8 @@ end
 
 function DBG_Passives(_cmd, guid)
     local entity = Ext.Entity.Get(guid)
-    local focus = function (passive) return passive.Passive.PassiveId end
-    local start = IndexOf(entity.PassiveContainer.Passives, focus, LCC_PASSIVE_START)
-    local stop = IndexOf(entity.PassiveContainer.Passives, focus, LCC_PASSIVE_END)
-
-    if start ~= nil and stop ~= nil then
-        local ourPassives = Filter(function(p) return not BookkeepingPassivesSet[p.Passive.PassiveId] end, table.move(Ext.Types.Serialize(entity.PassiveContainer.Passives), start + 1, stop - 1, 1, {}))
-        _D(Map(function(p) return p.Passive.PassiveId end, ourPassives))
-    end
+    local ourPassives = Keys(entity.Vars.LCC_PassivesAdded)
+    _D(ourPassives)
 end
 
 Ext.RegisterConsoleCommand("LCC_PassivesFor", DBG_Passives);
