@@ -3061,14 +3061,6 @@ function GiveBoosts(sessionContext, guid, configType)
     local entity = Ext.Entity.Get(guid)
 
     GiveNewPassives(sessionContext, guid, configType)
-    DelayedCallWhile(
-        function()
-            return Osi.HasPassive(guid, LCC_PASSIVE_PASSIVED) == 1
-        end,
-        function()
-            Osi.AddPassive(guid, LCC_PASSIVE_PASSIVED)
-        end
-    )
 
     local allBoosts = {}
     allBoosts = TableCombine(Values(ComputeNewSpells(sessionContext, guid, configType)), allBoosts)
@@ -3115,24 +3107,7 @@ function GiveBoosts(sessionContext, guid, configType)
         AddBoostsAdv(guid, boost)
     end
 
-    DelayedCallWhile(
-        function()
-            return Osi.HasPassive(guid, LCC_PASSIVE_BOOSTED) == 1
-        end,
-        function()
-            Osi.AddPassive(guid, LCC_PASSIVE_BOOSTED)
-        end
-    )
-
-    DelayedCallWhile(
-        function()
-            return Osi.HasPassive(guid, LCC_PASSIVE) == 1 and entity.Vars.LCC_Boosted.General
-        end,
-        function()
-            Osi.AddPassive(guid, LCC_PASSIVE)
-            entity.Vars.LCC_Boosted = {General = true}
-        end
-    )
+    entity.Vars.LCC_Boosted = {General = true}
 end
 
 
@@ -3247,48 +3222,31 @@ end
 
 function RemoveBoosts(sessionContext, entity)
     local guid = string.sub(entity.Uuid.EntityUuid, -36)
-    local modified = Osi.HasPassive(guid, LCC_PASSIVE) == 1
+    local modified = entity.Vars.LCC_Boosted.General
     if modified then
-        sessionContext.Log(2, string.format("Removing Boosts for Guid: %s because LCC_PASSIVE", guid))
+        sessionContext.Log(2, string.format("Removing Boosts for Guid: %s because User Variable set", guid))
         sessionContext.Log(3, string.format("Our Boosts: %s", J(OurBoosts(guid))))
         for _boostType, boostEntities in pairs(entity.BoostsContainer.Boosts) do
             for _, boostEntity in ipairs(boostEntities) do
                 RemoveBoostsAdv(sessionContext, guid, boostEntity)
             end
         end
-        Osi.RemovePassive(guid, LCC_PASSIVE_BOOSTED)
     end
 end
 
-LCC_PASSIVE = "LCC_PASSIVE"
-LCC_PASSIVE_BOOSTED = "LCC_PASSIVE_BOOSTED"
-LCC_PASSIVE_PASSIVED = "LCC_PASSIVE_PASSIVED"
-
-BookkeepingPassives = {LCC_PASSIVE}
-BoostBookkeepingPassives = {LCC_PASSIVE_BOOSTED}
-
-PassiveBookkeepingPassives = {LCC_PASSIVE_PASSIVED}
-
-BookkeepingPassivesSet = ToSet(TableCombine(TableCombine(BookkeepingPassives, BoostBookkeepingPassives), PassiveBookkeepingPassives))
-
 function RemovePassives(sessionContext, entity, combat)
     local guid = string.sub(entity.Uuid.EntityUuid, -36)
-    local modified = Osi.HasPassive(guid, LCC_PASSIVE) == 1
+    local modified = entity.Vars.LCC_Boosted.General
     if modified and (combat == nil or (combat ~= nil and combat[guid])) then
         sessionContext.Log(2, string.format("Removing Passives for Guid: %s because combatants %s", guid, combat))
         sessionContext.Log(3, string.format("Passives: %s", Ext.Json.Stringify(Map(function (p) return p.Passive.PassiveId end, entity.PassiveContainer.Passives))))
         local ourPassives = Keys(entity.Vars.LCC_PassivesAdded)
         for _, passive in ipairs(ourPassives) do
-            if not BookkeepingPassivesSet[passive] and not ProtectedPassives[passive] then
-                sessionContext.Log(3, string.format("Removing Passive: %s from %s", passive, guid))
-                Osi.RemovePassive(guid, passive)
-            end
+            sessionContext.Log(3, string.format("Removing Passive: %s from %s", passive, guid))
+            Osi.RemovePassive(guid, passive)
         end
         entity.Vars.LCC_PassivesAdded = {}
         sessionContext.EntityCache[guid] = {}
-        for _, passive in ipairs(PassiveBookkeepingPassives) do
-            Osi.RemovePassive(guid, passive)
-        end
     end
 end
 
@@ -3308,18 +3266,7 @@ function RemoveAllFromEntity(sessionContext, entity)
     sessionContext.Log(3, string.format("Removing passives for Guid: %s", shortGuid))
     RemovePassives(sessionContext, entity, nil)
 
-    DelayedCallWhile(
-        function()
-            local noMoreLCCPassive = Osi.HasPassive(shortGuid, LCC_PASSIVE) == 0
-            sessionContext.Log(4, string.format("Checking LCC_PASSIVE Unil its gone for Guid: %s %s", shortGuid, noMoreLCCPassive))
-            return noMoreLCCPassive and not entity.Vars.LCC_Boosted.General
-        end,
-        function()
-            sessionContext.Log(4, string.format("Calling Remove LCC_PASSIVE Unil its gone for Guid: %s", shortGuid))
-            Osi.RemovePassive(shortGuid, LCC_PASSIVE)
-            entity.Vars.LCC_Boosted = {General = false}
-        end
-    )
+    entity.Vars.LCC_Boosted = {General = false}
 end
 
 function RemoveAllBoosting(sessionContext)
@@ -3528,7 +3475,7 @@ function DBG_GetAffected()
     local affected = {}
     for _, e in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
         local guid = string.sub(e.Uuid.EntityUuid, -36)
-        local modified = Osi.HasPassive(guid, LCC_PASSIVE) == 1
+        local modified = e.Vars.LCC_Boosted.General
         if modified then
             affected[guid] = {
                 Name = e.ServerCharacter.Character.Template.Name,
