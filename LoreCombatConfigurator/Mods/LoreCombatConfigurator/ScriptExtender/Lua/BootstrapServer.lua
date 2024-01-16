@@ -1145,7 +1145,7 @@ function ComputeClassLevelAdditions(sessionContext, sourceTables, deps, var, pre
     local toAdd = {}
     local requiredLevels = LevelGate(sessionContext, var, 20, Osi.GetLevel(target), target, configType)
 
-    sessionContext.LogI(5, 26, string.format("DBG: Required levels %s for %s", Ext.Json.Stringify(requiredLevels), target))
+    sessionContext.LogI(7, 26, string.format("DBG: Required levels %s for %s", Ext.Json.Stringify(requiredLevels), target))
     local npcPresenceTable = {}
     for _, level in ipairs(requiredLevels) do
         local levels = sourceTables["Level" .. level]
@@ -1156,17 +1156,17 @@ function ComputeClassLevelAdditions(sessionContext, sourceTables, deps, var, pre
             end
         end
     end
-    sessionContext.LogI(5, 26, string.format("DBG: Found %s additions presence table for %s", Ext.Json.Stringify(npcPresenceTable), target))
+    sessionContext.LogI(7, 26, string.format("DBG: Found %s additions presence table for %s", Ext.Json.Stringify(npcPresenceTable), target))
     local npcTable = Keys(FilterTable(function(key, val) return val end, npcPresenceTable))
     table.sort(npcTable)
 
-    sessionContext.LogI(5, 26, string.format("DBG: Found %s %s additions table for %s", #npcTable, Ext.Json.Stringify(npcTable), target))
+    sessionContext.LogI(7, 26, string.format("DBG: Found %s %s additions table for %s", #npcTable, Ext.Json.Stringify(npcTable), target))
     local lookupFn = function(range, ...)
         return Osi.Random(range)
     end
 
     if sessionContext.VarsJson["ConsistentHash"] == 1 and sessionContext.VarsJson["ConsistentHashSalt"] ~= nil then
-        sessionContext.LogI(5, 26, string.format("DBG: Using consistent hash for %s wiht salt %s", target, sessionContext.VarsJson["ConsistentHashSalt"]))
+        sessionContext.LogI(7, 26, string.format("DBG: Using consistent hash for %s wiht salt %s", target, sessionContext.VarsJson["ConsistentHashSalt"]))
         lookupFn = function(range, ...)
             local params = {...}
             return ConsistentHash(sessionContext.VarsJson["ConsistentHashSalt"], range, target, table.unpack(params))
@@ -1213,7 +1213,7 @@ function PreparePassivesTables(sessionContext, target)
         local classes = KindMapping[kind]
         allClasses = TableCombine(classes, allClasses)
     end
-    sessionContext.LogI(5, 26, string.format("DBG: In passives Found classes %s for %s", Ext.Json.Stringify(allClasses), target))
+    sessionContext.LogI(7, 26, string.format("DBG: In passives Found classes %s for %s", Ext.Json.Stringify(allClasses), target))
 
     local combinedClassPassives = {}
     for _, class in ipairs(allClasses) do
@@ -1229,7 +1229,7 @@ function PreparePassivesTables(sessionContext, target)
             end
         end
     end
-    sessionContext.LogI(5, 26, string.format("DBG: Found passives %s for %s", Ext.Json.Stringify(combinedClassPassives), target))
+    sessionContext.LogI(7, 26, string.format("DBG: Found passives %s for %s", Ext.Json.Stringify(combinedClassPassives), target))
     local seenPassives = {}
     for level=1, 20, 1 do
         local combinedPassivesForLevel = combinedClassPassives["Level" .. level]
@@ -1243,7 +1243,7 @@ function PreparePassivesTables(sessionContext, target)
             end
         end
     end
-    sessionContext.LogI(5, 26, string.format("DBG: Found filtered passives %s for %s", Ext.Json.Stringify(combinedClassPassives), target))
+    sessionContext.LogI(7, 26, string.format("DBG: Found filtered passives %s for %s", Ext.Json.Stringify(combinedClassPassives), target))
 
     local passivesCount = 0
     for level, passives in pairs(combinedClassPassives) do
@@ -1267,7 +1267,7 @@ function ComputeClassSpecificPassives(sessionContext, target, configType)
         sessionContext.LogI(2, 18, "No passives available, please check config")
         return passivesToAdd
     end
-    sessionContext.LogI(5, 26, string.format("DBG: Found passive tables %s for %s", Ext.Json.Stringify(passiveTables), target))
+    sessionContext.LogI(7, 26, string.format("DBG: Found passive tables %s for %s", Ext.Json.Stringify(passiveTables), target))
 
     return ComputeClassLevelAdditions(sessionContext, passiveTables, sessionContext.PassiveDependencies, "PassivesAdded", Osi.HasPassive, target, configType)
 end
@@ -1284,7 +1284,7 @@ function PrepareAbilityTables(sessionContext, target)
     end
     local restrictions = sessionContext.EntityToRestrictions(target) or {}
 
-    sessionContext.LogI(5, 26, string.format("DBG: In abilities Found classes %s for %s", Ext.Json.Stringify(allClasses), target))
+    sessionContext.LogI(7, 26, string.format("DBG: In abilities Found classes %s for %s", Ext.Json.Stringify(allClasses), target))
 
     local combinedClassAbilities = {}
     for _, class in ipairs(allClasses) do
@@ -1304,7 +1304,7 @@ function PrepareAbilityTables(sessionContext, target)
             end
         end
     end
-    sessionContext.LogI(5, 26, string.format("DBG: Found abilities %s for %s", Ext.Json.Stringify(combinedClassAbilities), target))
+    sessionContext.LogI(7, 26, string.format("DBG: Found abilities %s for %s", Ext.Json.Stringify(combinedClassAbilities), target))
 
     local abilitiesCount = 0
     for level, abilities in pairs(combinedClassAbilities) do
@@ -1328,7 +1328,7 @@ function ComputeClassSpecificAbilities(sessionContext, target, configType)
         sessionContext.LogI(2, 18, "No abilities available, please check config")
         return abiltiesToAdd
     end
-    sessionContext.LogI(5, 26, string.format("DBG: Found ability tables %s for %s", Ext.Json.Stringify(abilityTables), target))
+    sessionContext.LogI(7, 26, string.format("DBG: Found ability tables %s for %s", Ext.Json.Stringify(abilityTables), target))
 
     return ComputeClassLevelAdditions(sessionContext, abilityTables, sessionContext.AbilityDependencies, "AbilitiesAdded", Osi.HasSpell, target, configType)
 end
@@ -1413,7 +1413,7 @@ function GetVar(sessionContext, var, guid, configType)
     if specific ~= nil then
         local result = specific[var]
         if result ~= nil then
-            sessionContext.LogI(7, 36, string.format("Found specific override for %s %s, applying", guid, var))
+            sessionContext.LogI(8, 36, string.format("Found specific override for %s %s, applying", guid, var))
             return result
         end
     end
@@ -1423,7 +1423,7 @@ function GetVar(sessionContext, var, guid, configType)
         if raceResult ~= nil then
             local raceVarResult = raceResult[var]
             if raceVarResult ~= nil then
-                sessionContext.LogI(7, 36, string.format("Found race override for %s %s, applying", guid, var))
+                sessionContext.LogI(8, 36, string.format("Found race override for %s %s, applying", guid, var))
                 return raceVarResult
             end
         end
@@ -1446,38 +1446,38 @@ function GetVarComplex(sessionContext, topvar, var, guid, configType)
         if topresult ~= nil then
             local result = topresult[var]
             if result ~= nil then
-                sessionContext.LogI(7, 36, string.format("Found specific override for %s %s %s, applying", guid, topvar, var))
+                sessionContext.LogI(8, 36, string.format("Found specific override for %s %s %s, applying", guid, topvar, var))
                 return result
             end
         end
     end
     local general = vars[configType]
     if general ~= nil then
-        sessionContext.LogI(7, 36, string.format("Found settings for %s %s %s %s", configType, guid, topvar, var))
+        sessionContext.LogI(8, 36, string.format("Found settings for %s %s %s %s", configType, guid, topvar, var))
         local raceResult = general[race]
         if raceResult ~= nil then
-            sessionContext.LogI(7, 36, string.format("Found race settings for %s %s %s %s %s", configType, race, guid, topvar, var))
+            sessionContext.LogI(8, 36, string.format("Found race settings for %s %s %s %s %s", configType, race, guid, topvar, var))
             local topRaceVarResult = raceResult[topvar]
             if topRaceVarResult ~= nil then
-                sessionContext.LogI(7, 36, string.format("Found topvar race settings for %s %s %s %s %s", configType, race, guid, topvar, var))
+                sessionContext.LogI(8, 36, string.format("Found topvar race settings for %s %s %s %s %s", configType, race, guid, topvar, var))
                 local raceVarResult = topRaceVarResult[var]
                 if raceVarResult ~= nil then
-                    sessionContext.LogI(7, 36, string.format("Found race override for %s %s %s, applying", guid, topvar, var))
+                    sessionContext.LogI(8, 36, string.format("Found race override for %s %s %s, applying", guid, topvar, var))
                     return raceVarResult
                 end
             end
         end
         local topresult = general[topvar]
         if topresult ~= nil then
-            sessionContext.LogI(7, 36, string.format("Found topvar settings for %s %s %s %s", configType, guid, topvar, var))
+            sessionContext.LogI(8, 36, string.format("Found topvar settings for %s %s %s %s", configType, guid, topvar, var))
             local result = topresult[var]
             if result ~= nil then
-                sessionContext.LogI(7, 36, string.format("Found %s override for %s %s %s, applying", configType, guid, topvar, var))
+                sessionContext.LogI(8, 36, string.format("Found %s override for %s %s %s, applying", configType, guid, topvar, var))
                 return result
             end
         end
     end
-    sessionContext.LogI(7, 36, string.format("Found no override for %s %s %s, applying default", configType, guid, topvar, var))
+    sessionContext.LogI(8, 36, string.format("Found no override for %s %s %s, applying default", configType, guid, topvar, var))
     return Defaults[topvar][var]
 end
 
@@ -1811,7 +1811,7 @@ function ComputeNewSpells(sessionContext, target, configType)
         end
     end
 
-    sessionContext.LogI(5, 26, string.format("DBG: Found spells %s for %s", Ext.Json.Stringify(combinedClassSpells), target))
+    sessionContext.LogI(7, 26, string.format("DBG: Found spells %s for %s", Ext.Json.Stringify(combinedClassSpells), target))
     local spellsCount = 0
     for level, spells in pairs(combinedClassSpells) do
         local spellTable = {}
@@ -1822,7 +1822,7 @@ function ComputeNewSpells(sessionContext, target, configType)
         table.sort(spellTable)
         spellTables[level] = spellTable
     end
-    sessionContext.LogI(5, 26, string.format("DBG: Found spell tables %s for %s", Ext.Json.Stringify(spellTables), target))
+    sessionContext.LogI(7, 26, string.format("DBG: Found spell tables %s for %s", Ext.Json.Stringify(spellTables), target))
 
     if spellsCount == 0 then
         sessionContext.LogI(2, 18, "No spell available, please check config")
@@ -3345,7 +3345,15 @@ end
 
 --- @return SessionContext
 function DummySessionContext()
-    return {VarsJson = {}}
+    local verbosity = 0
+    if Ext.Debug.IsDeveloperMode() then
+        verbosity = 2
+    end
+    return {
+        VarsJson = {
+            Verbosity = verbosity,
+        },
+    }
 end
 
 local function OnSessionLoaded()
@@ -3437,11 +3445,11 @@ Ext.Events.SessionLoaded:Subscribe(OnSessionLoaded)
 
 Ext.Events.GameStateChanged:Subscribe(function(event)
         if event.FromState == "Sync" and event.ToState == "Running" then
-            _Log(DummySessionContext(), 0, "Game state loaded")
+            _Log(DummySessionContext(), 2, "Game state loaded")
         end
 
         if event.FromState == "UnloadSession" and event.ToState == "LoadSession" then
-            _Log(DummySessionContext(), 0, "Session Loading")
+            _Log(DummySessionContext(), 2, "Session Loading")
         end
     end
 )
