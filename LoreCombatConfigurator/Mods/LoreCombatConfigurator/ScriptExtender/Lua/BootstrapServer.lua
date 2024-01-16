@@ -718,6 +718,7 @@ function SpellListsToSpells(sessionContext)
                 CanAIUse = aiFlags["CanNotUse"] == nil,
                 CanUseInCombat = canUseInCombat,
                 Origin = Ext.Mod.GetMod(spellData.ModId).Info.Name,
+                DamageType = spellData.DamageType,
             }
         end
     end

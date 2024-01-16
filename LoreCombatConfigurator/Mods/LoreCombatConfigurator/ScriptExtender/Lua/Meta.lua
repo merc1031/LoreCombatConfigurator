@@ -13,7 +13,8 @@
 --- @field CanAIUse boolean
 --- @field CanUseInCombat boolean
 --- @field Origin string
---
+--- @field DamageType string
+
 --- @class SpellSelector
 --- @field SpellUUID string
 --- @field Spells table<string, Spell>
