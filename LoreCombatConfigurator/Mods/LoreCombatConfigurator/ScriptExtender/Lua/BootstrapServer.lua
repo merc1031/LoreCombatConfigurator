@@ -269,7 +269,15 @@ function CompareBoost(boost, candidateBoost)
 end
 
 Restrictions = {
-    Cambion = {},
+    Cambion = {
+        Spell = {
+            DamageType = {
+                Exclusive = {
+                    "Fire",
+                },
+            },
+        },
+    },
     DarkJusticiar_Caster = {},
     DarkJusticiar_Melee = {},
     DarkJusticiar_Ranger = {},
@@ -370,7 +378,15 @@ Restrictions = {
     Human_Melee = {},
     Human_Ranger = {},
     Human_Rogue = {},
-    Imp = {}, -- spells Fire?
+    Imp = {
+        Spell = {
+            DamageType = {
+                Exclusive = {
+                    "Fire",
+                },
+            },
+        },
+    },
     KillerReplica_Barbarian = {},
     KillerReplica_Cleric = {},
     KillerReplica_Druid = {},
@@ -414,6 +430,51 @@ Restrictions = {
     Tiefling_Melee = {},
     Tiefling_Ranger = {},
     Tiefling_Rogue = {},
+    TWN_Brewer_Imp_Acid = {
+        Spell = {
+            DamageType = {
+                Exclusive = {
+                    "Acid",
+                },
+            },
+        },
+    },
+    TWN_Brewer_Imp_Cold = {
+        Spell = {
+            DamageType = {
+                Exclusive = {
+                    "Cold",
+                },
+            },
+        },
+    },
+    TWN_Brewer_Imp_Fire = {
+        Spell = {
+            DamageType = {
+                Exclusive = {
+                    "Fire",
+                },
+            },
+        },
+    },
+    TWN_Brewer_Imp_Lightning = {
+        Spell = {
+            DamageType = {
+                Exclusive = {
+                    "Lightning",
+                },
+            },
+        },
+    },
+    TWN_Brewer_Imp_Poison = {
+        Spell = {
+            DamageType = {
+                Exclusive = {
+                    "Poison",
+                },
+            },
+        },
+    },
     _Devil = {},
     _Fiend = {},
     _Fey = {
@@ -429,7 +490,7 @@ Restrictions = {
 }
 
 Kinds = {
-    Cambion = {"Fighter"},
+    Cambion = {"Caster", "Fighter"},
     DarkJusticiar_Caster = {"Caster", "Fighter"},
     DarkJusticiar_Melee = {"Fighter"},
     DarkJusticiar_Ranger = {"Fighter", "Ranger"},
@@ -658,6 +719,25 @@ function AllowedByRestrictions(sessionContext, restrictionsDefinition, restricti
         local allowed = false
         for _, exclusiveSchoolRestriction in ipairs(exclusiveSchoolRestrictions or {}) do
             if spellData.SpellSchool == exclusiveSchoolRestriction then
+                allowed = true
+            end
+        end
+        return allowed
+    end
+    if restrictions.DamageType ~= nil then
+        local exclusiveDamageTypeRestrictions = restrictions.DamageType.Exclusive
+        if exclusiveDamageTypeRestrictions == nil then
+            return true
+        end
+
+        if exclusiveDamageTypeRestrictions == {} then
+            -- No schools allowed
+            return false
+        end
+
+        local allowed = false
+        for _, exclusiveDamageTypeRestriction in ipairs(exclusiveDamageTypeRestrictions or {}) do
+            if spellData.DamageType == exclusiveDamageTypeRestriction then
                 allowed = true
             end
         end
