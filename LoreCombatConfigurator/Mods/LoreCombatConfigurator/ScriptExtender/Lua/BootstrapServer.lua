@@ -3286,12 +3286,25 @@ function RemovePassives(sessionContext, entity, combat)
     end
 end
 
-function RemoveBoosting(sessionContext)
+function RemoveAllFromEntity(sessionContext, entity)
+    RemoveBoosts(sessionContext, entity)
+    RemovePassives(sessionContext, entity, nil)
+
+    DelayedCallWhile(
+        function()
+            return Osi.HasPassive(entity.Uuid.EntityUuid, LCC_PASSIVE) == 0
+        end,
+        function()
+            Osi.RemovePassive(entity.Uuid.EntityUuid, LCC_PASSIVE)
+        end
+    )
+end
+
+function RemoveAllBoosting(sessionContext)
     sessionContext.Log(1, "Removing Boosting")
 
     for _, e in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
-        RemoveBoosts(sessionContext, e)
-        RemovePassives(sessionContext, e, nil)
+        RemoveAllFromEntity(sessionContext, e)
     end
 end
 
@@ -3388,7 +3401,7 @@ local function OnSessionLoaded()
     Ext.Osiris.RegisterListener("PingRequested",1,"after",function(_)
             SessionContext.Log(1, "PingRequested: Removing Current Boosts")
 
-            RemoveBoosting(SessionContext)
+            RemoveAllBoosting(SessionContext)
 
             SessionContext.EntityCache = {}
             GetVarsJson(SessionContext)
@@ -3420,7 +3433,7 @@ local function OnSessionLoaded()
                     DebugMode(guid)
                 end
             end
-            RemoveBoosting(SessionContext)
+            RemoveAllBoosting(SessionContext)
 
             -- After removing passives, it takes some time for them to actually disappear
             Osi.TimerLaunch("BoostAllServerCharacters",500)
