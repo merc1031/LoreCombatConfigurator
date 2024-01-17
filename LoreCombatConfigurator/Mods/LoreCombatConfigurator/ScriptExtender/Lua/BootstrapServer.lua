@@ -3530,6 +3530,13 @@ local function OnSessionLoaded()
                 SessionContext.Log(0, string.format("FullGuid: %s; ShortGuid: %s", target, shortGuid))
             end
 
+            if statusID == "LCC_RELOAD_CONFIG" then
+                SessionContext.Log(0, "Reloading LoreCombatConfigurator.json")
+
+                SessionContext.EntityCache = {}
+                GetVarsJson(SessionContext)
+            end
+
             if statusID == "LCC_REBOOST" then
                 local entity = Ext.Entity.Get(string.sub(target, -36))
 
