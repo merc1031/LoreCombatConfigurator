@@ -1452,6 +1452,7 @@ function ComputeClassSpecificAbilities(sessionContext, target, configType)
     )
 end
 
+--- @return boolean
 function CheckIfOrigin(target)
     local entity = Ext.Entity.Get(target)
     local name = SafeGet(entity, "ServerCharacter", "Template", "Name")
@@ -1459,17 +1460,17 @@ function CheckIfOrigin(target)
         local fullGuid = string.format("%s_%s", name, target)
         for i=#ExcludedNPCs,1,-1 do
             if (ExcludedNPCs[i] == fullGuid) then
-                return 1
+                return true
             end
         end
-        return 0
+        return false
     else
         for i=#ExcludedNPCs,1,-1 do
             if (string.sub(ExcludedNPCs[i], -36) == target) then
-                return 1
+                return true
             end
         end
-        return 0
+        return false
     end
 end
 
@@ -1508,20 +1509,22 @@ function IsCriticalMissLoaded()
     return Ext.Mod.IsModLoaded("17c00eba-2727-474e-a914-652cc5f85b59")
 end
 
+--- @return boolean
 function CheckIfParty(target)
     if (Osi.IsPartyMember(target,1) == 1) then
-        return 1
-    else return 0
+        return true
+    else return false
     end
 end
 
+--- @return boolean
 function CheckIfOurSummon(target)
     local us = Ext.Entity.Get(target)["IsSummon"]
     if us ~= nil then
         local parent = us["Owner_M"]
         return CheckIfParty(parent["Uuid"]["EntityUuid"])
     end
-    return 0
+    return false
 end
 
 --- @param sessionContext SessionContext
@@ -3223,11 +3226,11 @@ function PerformBoosting(sessionContext, guid)
         }
     end
 
-    local isPartyMember = CheckIfParty(guid) == 1
+    local isPartyMember = CheckIfParty(guid)
     local isPartyFollower = Osi.IsPartyFollower(guid) == 1
-    local isOurSummon = CheckIfOurSummon(guid) == 1
+    local isOurSummon = CheckIfOurSummon(guid)
     local isEnemy = Osi.IsEnemy(guid, Osi.GetHostCharacter()) == 1
-    local isOrigin = CheckIfOrigin(guid) == 1
+    local isOrigin = CheckIfOrigin(guid)
     local isBoss = Osi.IsBoss(guid) == 1
     local hasPlayerData = HasPlayerData(guid)
     local isPlayer = IsPlayer(guid)
