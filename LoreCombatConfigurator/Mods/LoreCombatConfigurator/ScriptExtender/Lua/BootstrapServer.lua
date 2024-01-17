@@ -3376,6 +3376,14 @@ function RemoveAllBoosting(sessionContext)
     end
 end
 
+function PerformAllBoosting(sessionContext)
+    sessionContext.Log(1, "Performing ALL Boosting")
+
+    for _, e in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
+        PerformBoosting(sessionContext, e.Uuid.EntityUuid)
+    end
+end
+
 --- @return SessionContext
 function CreateSessionContext()
     local sessionContext = {
@@ -3483,9 +3491,7 @@ local function OnSessionLoaded()
             if (event == "BoostAllServerCharacters") then
                 SessionContext.Log(1, "TimerFinished: Boosting all server characters")
 
-                for _, e in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
-                    PerformBoosting(SessionContext, e.Uuid.EntityUuid)
-                end
+                PerformAllBoosting(SessionContext)
             end
         end
     )
@@ -3562,9 +3568,7 @@ local function OnSessionLoaded()
             end
 
             if statusID == "LCC_ALL_BOOST" then
-                for _, e in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
-                    PerformBoosting(SessionContext, e.Uuid.EntityUuid)
-                end
+                PerformAllBoosting(SessionContext)
             end
         end
     )
