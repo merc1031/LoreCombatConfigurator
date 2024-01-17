@@ -3518,6 +3518,12 @@ local function OnSessionLoaded()
                 return
             end
 
+            -- Courtesy to claravel's DebugSpells mod for this
+            if statusID == "LCC_INFO" then
+                local shortGuid = string.sub(target, -36)
+                SessionContext.Log(0, string.format("FullGuid: %s; ShortGuid: %s", target, shortGuid))
+            end
+
             if statusID == "LCC_REBOOST" then
                 local entity = Ext.Entity.Get(string.sub(target, -36))
 

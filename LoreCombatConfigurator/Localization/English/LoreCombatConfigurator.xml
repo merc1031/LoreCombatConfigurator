@@ -20,4 +20,6 @@
 	<content contentuid="9dfefbe6-6eaf-490c-9366-650fb453b36e" version="1">Forces all (boosted) entities to drop all their LCC boosts</content>
 	<content contentuid="8c057de7-7a14-4038-b2f8-de3f3b8c49a5" version="1">All Boost</content>
 	<content contentuid="aa664a54-ff15-40c9-8c93-71c38b660e49" version="1">Forces all (unboosted) entities to try to compute all their LCC boosts</content>
+	<content contentuid="9982dbc2-9c78-498f-bfd8-402fb6362c35" version="1">Info to Console</content>
+	<content contentuid="055831a4-17dd-4e6b-9e58-676c238c1ef3" version="1">Prints full guid and short guid to Script Console</content>
 </contentList>
