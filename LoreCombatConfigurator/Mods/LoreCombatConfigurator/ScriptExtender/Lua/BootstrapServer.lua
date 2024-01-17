@@ -1223,23 +1223,23 @@ function GenerateItemLists(sessionContext)
 end
 
 --- @param sessionContext SessionContext
-function LevelGate(sessionContext, varSection, max, npcLevel, target, configType)
+function LevelGate(sessionContext, varSection, min, max, npcLevel, target, configType)
     local minLevels = {}
     local requiredLevelsChoices = {}
     local gates = GetVarComplex(sessionContext, varSection, "LevelGate", target, configType) or {}
-    for i = 1, max, 1 do
+    for i = min, max, 1 do
         local gateForLevel = SafeGet(gates, string.format("MinCharLevelForLevel%s", i))
         minLevels[i] = tonumber(gateForLevel or 13)
 
         local requireLevelAtLevel = {}
-        for j = 1, i, 1 do
+        for j = 0, i, 1 do
             table.insert(requireLevelAtLevel, j)
         end
         requiredLevelsChoices[i] = requireLevelAtLevel
     end
 
     local requiredLevels
-    for i = max, 1, -1 do
+    for i = max, min, -1 do
         if npcLevel >= minLevels[i] then
             requiredLevels = requiredLevelsChoices[i]
             break
@@ -1251,7 +1251,7 @@ end
 --- @param sessionContext SessionContext
 function ComputeClassLevelAdditions(sessionContext, sourceTables, deps, var, presenceCheckFn, target, configType)
     local toAdd = {}
-    local requiredLevels = LevelGate(sessionContext, var, 20, Osi.GetLevel(target), target, configType)
+    local requiredLevels = LevelGate(sessionContext, var, 1, 20, Osi.GetLevel(target), target, configType)
 
     sessionContext.LogI(7, 26, string.format("DBG: Required levels %s for %s", Ext.Json.Stringify(requiredLevels), target))
     local npcPresenceTable = {}
@@ -1962,13 +1962,14 @@ function ComputeNewSpells(sessionContext, target, configType)
         end
     end
 
-    local requiredSpellLevels = LevelGate(sessionContext, "SpellsAdded", 9, npcLevel, target, configType)
+    local requiredSpellLevels = LevelGate(sessionContext, "SpellsAdded", 0, 9, npcLevel, target, configType)
     local npcSpells = ComputeSimpleIncrementalBoost(sessionContext, "SpellsAdded", target, configType)
 
     table.sort(requiredSpellLevels, function (l, r) return l > r end)
 
     for _, level in ipairs(requiredSpellLevels) do
-        local levelSpells = spellTables["Level" .. level]
+        local levelName = SpellLevelToName[level + 1]
+        local levelSpells = spellTables[levelName]
         if levelSpells ~= nil then
             for i = npcSpells, 1, -1 do
                 local spellCandidate = nil
@@ -2476,7 +2477,7 @@ function ComputeSpellSlotBoosts(sessionContext, target, configType)
     local spellSlotBoost = ComputeSimpleIncrementalBoost(sessionContext, "SpellSlotBoosts", target, configType)
 
     local npcLevel = tonumber(Osi.GetLevel(target))
-    local requiredSpellLevels = LevelGate(sessionContext, "SpellsAdded", 9, npcLevel, target, configType)
+    local requiredSpellLevels = LevelGate(sessionContext, "SpellsAdded", 1, 9, npcLevel, target, configType)
 
     table.sort(requiredSpellLevels, function (l, r) return l > r end)
 
@@ -2728,6 +2729,7 @@ Defaults = {
         ValueToIncrementByOnLevel = 0,
         -- Controls the minimum level the character must be to get spells of the specified level
         LevelGate = {
+            MinCharLevelForLevel0 = 13,
             MinCharLevelForLevel1 = 13,
             MinCharLevelForLevel2 = 13,
             MinCharLevelForLevel3 = 13,
