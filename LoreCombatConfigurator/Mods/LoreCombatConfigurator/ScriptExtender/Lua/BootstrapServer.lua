@@ -2544,7 +2544,7 @@ function ResetConfigJson(sessionContext)
         Beautify = true,
         StringifyInternalTypes = true,
         IterateUserdata = true,
-        AvoidRecursion = true
+        AvoidRecursion = false,
     }
     Ext.IO.SaveFile("LoreCombatConfigurator.json", Ext.Json.Stringify(defaultConfig, opts))
     GetVarsJson(sessionContext)
