@@ -1273,7 +1273,7 @@ function ComputeClassLevelAdditions(sessionContext, sourceTables, deps, var, pre
         return Osi.Random(range)
     end
 
-    if sessionContext.VarsJson["ConsistentHash"] == 1 and sessionContext.VarsJson["ConsistentHashSalt"] ~= nil then
+    if sessionContext.VarsJson["ConsistentHash"] and sessionContext.VarsJson["ConsistentHashSalt"] ~= nil then
         sessionContext.LogI(7, 26, string.format("DBG: Using consistent hash for %s wiht salt %s", target, sessionContext.VarsJson["ConsistentHashSalt"]))
         lookupFn = function(range, ...)
             local params = {...}
@@ -1500,8 +1500,8 @@ end
 
 --- @param sessionContext SessionContext
 function IsEnemiesEnhancedLoaded(sessionContext)
-    local eeDisabled = sessionContext.VarsJson["DebugDisableEE"] or 0
-    return eeDisabled == 0 and Ext.Mod.IsModLoaded("7deea48e-8b9d-45e4-8685-5acfd0ce39ad")
+    local eeDisabled = sessionContext.VarsJson["DebugDisableEE"] or false
+    return eeDisabled and Ext.Mod.IsModLoaded("7deea48e-8b9d-45e4-8685-5acfd0ce39ad")
 end
 
 function IsCriticalMissLoaded()
@@ -1702,7 +1702,7 @@ function GuessIfCaster(sessionContext, target)
             kinds ~= nil and kinds["Caster"] ~= nil
         ) or
         (IsEnemiesEnhancedLoaded(sessionContext) and eeCaster) or
-        (sessionContext.VarsJson["CasterArchetypeCheck"] == 1 and CheckArchetype())
+        (sessionContext.VarsJson["CasterArchetypeCheck"] and CheckArchetype())
     )
 end
 
@@ -1715,7 +1715,7 @@ function GuessIfBarbarian(sessionContext, target)
     return (
         (kinds ~= nil and kinds["Barbarian"] ~= nil) or
         (
-            sessionContext.VarsJson["BarbarianArchetypeCheck"] == 1 and
+            sessionContext.VarsJson["BarbarianArchetypeCheck"] and
             barbarianTypes[SafeGet(Ext.Entity.Get(target), "ServerCharacter", "Character", "Template", "CombatComponent", "Archetype")] ~= nil
         ) or
         (IsEnemiesEnhancedLoaded(sessionContext) and Osi.HasPassive(target, "EE_Barbarian_Boost") == 1)
@@ -1734,7 +1734,7 @@ function GuessIfFighter(sessionContext, target)
             kinds ~= nil and kinds["Fighter"] ~= nil
         ) or
         (
-            sessionContext.VarsJson["FighterArchetypeCheck"] == 1 and
+            sessionContext.VarsJson["FighterArchetypeCheck"] and
             fighterTypes[SafeGet(Ext.Entity.Get(target), "ServerCharacter", "Character", "Template", "CombatComponent", "Archetype")] ~= nil
         ) or
         (IsEnemiesEnhancedLoaded(sessionContext) and Osi.HasPassive(target, "EE_Fighter_Boost") == 1)
@@ -1750,7 +1750,7 @@ function GuessIfHealer(sessionContext, target)
         melee_healer = true,
     }
     return (
-        sessionContext.VarsJson["HealerArchetypeCheck"] == 1 and
+        sessionContext.VarsJson["HealerArchetypeCheck"] and
         healerTypes[SafeGet(Ext.Entity.Get(target), "ServerCharacter", "Character", "Template", "CombatComponent", "Archetype")] ~= nil
     )
 end
@@ -1766,7 +1766,7 @@ function GuessIfCleric(sessionContext, target)
             kinds ~= nil and kinds["Cleric"] ~= nil
         ) or
         (
-            sessionContext.VarsJson["ClericArchetypeCheck"] == 1 and
+            sessionContext.VarsJson["ClericArchetypeCheck"] and
             clericTypes[SafeGet(Ext.Entity.Get(target), "ServerCharacter", "Character", "Template", "CombatComponent", "Archetype")] ~= nil
         )
     )
@@ -1783,7 +1783,7 @@ function GuessIfBard(sessionContext, target)
             kinds ~= nil and kinds["Bard"] ~= nil
         ) or
         (
-            sessionContext.VarsJson["BardArchetypeCheck"] == 1 and
+            sessionContext.VarsJson["BardArchetypeCheck"] and
             bardTypes[SafeGet(Ext.Entity.Get(target), "ServerCharacter", "Character", "Template", "CombatComponent", "Archetype")] ~= nil
         )
     )
@@ -1800,7 +1800,7 @@ function GuessIfPaladin(sessionContext, target)
             kinds ~= nil and kinds["Paladin"] ~= nil
         ) or
         (
-            sessionContext.VarsJson["PaladinArchetypeCheck"] == 1 and
+            sessionContext.VarsJson["PaladinArchetypeCheck"] and
             paladinTypes[SafeGet(Ext.Entity.Get(target), "ServerCharacter", "Character", "Template", "CombatComponent", "Archetype")] ~= nil
         )
     )
@@ -1817,7 +1817,7 @@ function GuessIfDruid(sessionContext, target)
             kinds ~= nil and kinds["Druid"] ~= nil
         ) or
         (
-            sessionContext.VarsJson["DruidArchetypeCheck"] == 1 and
+            sessionContext.VarsJson["DruidArchetypeCheck"] and
             druidTypes[SafeGet(Ext.Entity.Get(target), "ServerCharacter", "Character", "Template", "CombatComponent", "Archetype")] ~= nil
         )
     )
@@ -1836,7 +1836,7 @@ function GuessIfMonk(sessionContext, target)
             kinds ~= nil and kinds["Monk"] ~= nil
         ) or
         (
-            sessionContext.VarsJson["MonkArchetypeCheck"] == 1 and
+            sessionContext.VarsJson["MonkArchetypeCheck"] and
             monkTypes[SafeGet(Ext.Entity.Get(target), "ServerCharacter", "Character", "Template", "CombatComponent", "Archetype")] ~= nil
         ) or
         Osi.HasPassive(target, "PsychicStrikes_Githyanki") == 1
@@ -1854,7 +1854,7 @@ function GuessIfRogue(sessionContext, target)
             kinds ~= nil and kinds["Rogue"] ~= nil
         ) or
         (
-            sessionContext.VarsJson["RogueArchetypeCheck"] == 1 and
+            sessionContext.VarsJson["RogueArchetypeCheck"] and
             rogueTypes[SafeGet(Ext.Entity.Get(target), "ServerCharacter", "Character", "Template", "CombatComponent", "Archetype")] ~= nil
         )
     )
@@ -1871,7 +1871,7 @@ function GuessIfRanger(sessionContext, target)
             kinds ~= nil and kinds["Ranger"] ~= nil
         ) or
         (
-            sessionContext.VarsJson["RangerArchetypeCheck"] == 1 and
+            sessionContext.VarsJson["RangerArchetypeCheck"] and
             rogueTypes[SafeGet(Ext.Entity.Get(target), "ServerCharacter", "Character", "Template", "CombatComponent", "Archetype")] ~= nil
         )
     )
@@ -1888,7 +1888,7 @@ function GuessIfWarlock(sessionContext, target)
             kinds ~= nil and kinds["Warlock"] ~= nil
         ) or
         (
-            sessionContext.VarsJson["WarlockArchetypeCheck"] == 1 and
+            sessionContext.VarsJson["WarlockArchetypeCheck"] and
             warlockTypes[SafeGet(Ext.Entity.Get(target), "ServerCharacter", "Character", "Template", "CombatComponent", "Archetype")] ~= nil
         )
     )
@@ -1952,7 +1952,7 @@ function ComputeNewSpells(sessionContext, target, configType)
         return Osi.Random(range)
     end
 
-    if sessionContext.VarsJson["ConsistentHash"] == 1 and sessionContext.VarsJson["ConsistentHashSalt"] ~= nil then
+    if sessionContext.VarsJson["ConsistentHash"] and sessionContext.VarsJson["ConsistentHashSalt"] ~= nil then
         lookupFn = function(range, ...)
             local params = {...}
             return ConsistentHash(sessionContext.VarsJson["ConsistentHashSalt"], range, target, table.unpack(params))
@@ -2003,7 +2003,7 @@ function ComputeActionPointBoost(sessionContext, target, configType)
         actionPointBoost = actionPointBoost - 1
     end
 
-    if Osi.HasPassive(target, "ExtraAttack") and GetVar(sessionContext, "ConservativeActionPointBoosts", target, configType) == 1 and actionPointBoost > 0 then
+    if Osi.HasPassive(target, "ExtraAttack") and GetVar(sessionContext, "ConservativeActionPointBoosts", target, configType) and actionPointBoost > 0 then
         actionPointBoost = actionPointBoost - 1
     end
     if actionPointBoost > 0 then
@@ -2717,7 +2717,7 @@ end
 --- @type EntityConfig
 Defaults = {
     -- Makes Action Point boosting more conservative when boosting a character with ExtraAttack to prevent insanity
-    ConservativeActionPointBoosts = 1,
+    ConservativeActionPointBoosts = true,
     -- Controls How many max level spells will be added. Scales with level if wanted. Each lower level added will have 1 more spell, incrementally.
     SpellsAdded = {
         StaticBoost = 0,
@@ -2998,36 +2998,36 @@ function ResetConfigJson(sessionContext)
     local defaultConfig = {
         -- The following control whether we are allowing the mod to affect these types
         -- Bog Standard Enemies
-        EnemiesEnabled = 0,
+        EnemiesEnabled = false,
         -- Enemies Classified as Bosses
-        BossesEnabled = 0,
+        BossesEnabled = false,
         -- Characters that are Allied with us
-        AlliesEnabled = 0,
+        AlliesEnabled = false,
         -- Characters that are following us
-        FollowersEnabled = 0,
+        FollowersEnabled = false,
         -- Characters that are following us that are Classified as Bosses
-        FollowersBossesEnabled = 0,
+        FollowersBossesEnabled = false,
         -- Characters that we have summoned
-        SummonsEnabled = 0,
-        CasterArchetypeCheck = 0,
-        HealerArchetypeCheck = 0,
-        FighterArchetypeCheck = 0,
-        MonkArchetypeCheck = 0,
-        RogueArchetypeCheck = 0,
-        RangerArchetypeCheck = 0,
-        WarlockArchetypeCheck = 0,
-        ClericArchetypeCheck = 0,
-        DruidArchetypeCheck = 0,
-        BarbarianArchetypeCheck = 0,
-        BardArchetypeCheck = 0,
-        PaladinArchetypeCheck = 0,
+        SummonsEnabled = false,
+        CasterArchetypeCheck = false,
+        HealerArchetypeCheck = false,
+        FighterArchetypeCheck = false,
+        MonkArchetypeCheck = false,
+        RogueArchetypeCheck = false,
+        RangerArchetypeCheck = false,
+        WarlockArchetypeCheck = false,
+        ClericArchetypeCheck = false,
+        DruidArchetypeCheck = false,
+        BarbarianArchetypeCheck = false,
+        BardArchetypeCheck = false,
+        PaladinArchetypeCheck = false,
         -- This changes the selection function from random to a consistent hash based on primarilly the target guid
         -- - Note that disabling this will cause some strange behaviour in the mod due to reloading the enemy state on game load. Use at your own risk
-        ConsistentHash = 1,
+        ConsistentHash = false,
         -- Integer that allows the salt for the consistent hash to be modified to allow for different results
         ConsistentHashSalt = 0,
         -- Disables detection of EnhancedEnemies mod and its Passives for Lore inference when set to `1`
-        DebugDisableEE = 0,
+        DebugDisableEE = false,
         -- Controls the verbosity of logging for debugging
         Verbosity = 0,
         DebugMode = {
@@ -3107,7 +3107,7 @@ function GetVarsJson(sessionContext)
         return
     end
     local varsJson = Ext.Json.Parse(configStr)
-    if varsJson["ConsistentHash"] ~= nil and varsJson["ConsistentHash"] == 1 and varsJson["ConsistentHashSalt"] == nil then
+    if varsJson["ConsistentHash"] ~= nil and varsJson["ConsistentHash"] and varsJson["ConsistentHashSalt"] == nil then
         varsJson["ConsistentHashSalt"] = Ext.Math.Random()
     end
     sessionContext.Log(1, string.format("Json Loaded %s\n", Ext.Json.Stringify(varsJson)))
@@ -3282,32 +3282,32 @@ function PerformBoosting(sessionContext, guid)
 
     local shouldTryToModify = not alreadyModified
 
-    if sessionContext.VarsJson["EnemiesEnabled"] == 1 then
+    if sessionContext.VarsJson["EnemiesEnabled"] then
         if shouldTryToModify and (not isPartyMember and isEnemy and not isBoss and not isOrigin) then
             GiveBoosts(sessionContext, guid, "Enemies")
         end
     end
-    if sessionContext.VarsJson["BossesEnabled"] == 1 then
+    if sessionContext.VarsJson["BossesEnabled"] then
         if shouldTryToModify and (not isPartyMember and isEnemy and isBoss and not isOrigin) then
             GiveBoosts(sessionContext, guid, "Bosses")
         end
     end
-    if sessionContext.VarsJson["AlliesEnabled"] == 1 then
+    if sessionContext.VarsJson["AlliesEnabled"] then
         if shouldTryToModify and (not isPartyMember and not isEnemy and not isOrigin and not isBoss) then
             GiveBoosts(sessionContext, guid, "Allies")
         end
     end
-    if sessionContext.VarsJson["FollowersEnabled"] == 1 then
+    if sessionContext.VarsJson["FollowersEnabled"] then
         if shouldTryToModify and (not isEnemy and not isOrigin and isPartyFollower and not isBoss) then
             GiveBoosts(sessionContext, guid, "Followers")
         end
     end
-    if sessionContext.VarsJson["FollowersBossesEnabled"] == 1 then
+    if sessionContext.VarsJson["FollowersBossesEnabled"] then
         if shouldTryToModify and (not isEnemy and not isOrigin and isPartyFollower and isBoss) then
             GiveBoosts(sessionContext, guid, "FollowersBosses")
         end
     end
-    if sessionContext.VarsJson["SummonsEnabled"] == 1 then
+    if sessionContext.VarsJson["SummonsEnabled"] then
         if shouldTryToModify and (isPartyMember and isOurSummon) then
             GiveBoosts(sessionContext, guid, "Summons")
         end

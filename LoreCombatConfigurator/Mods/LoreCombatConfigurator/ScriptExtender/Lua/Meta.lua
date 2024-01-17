@@ -143,8 +143,6 @@
 --- @field Archetypes table<string>
 --- @field SessionLoaded boolean
 
---- @alias Enabled 0 | 1
-
 --- @class LevelScaledBoostConfig
 --- @field StaticBoost integer
 --- @field LevelStepToIncrementOn integer
@@ -195,7 +193,7 @@
 --- @field LevelGate LevelGate
 
 --- @class EntityConfig
---- @field ConservativeActionPointBoosts Enabled
+--- @field ConservativeActionPointBoosts boolean
 --- @field SpellsAdded SpellAddedConfig
 --- @field PassivesAdded ClassSpecificAddedConfig
 --- @field AbilitiesAdded ClassSpecificAddedConfig
@@ -255,27 +253,27 @@
 --- @field MovementSpeedMultiplier number
 
 --- @class Config
---- @field EnemiesEnabled Enabled
---- @field BossesEnabled Enabled
---- @field AlliesEnabled Enabled
---- @field FollowersEnabled Enabled
---- @field FollowersBossesEnabled Enabled
---- @field SummonsEnabled Enabled
---- @field CasterArchetypeCheck Enabled
---- @field HealerArchetypeCheck Enabled
---- @field FighterArchetypeCheck Enabled
---- @field MonkArchetypeCheck Enabled
---- @field RogueArchetypeCheck Enabled
---- @field RangerArchetypeCheck Enabled
---- @field WarlockArchetypeCheck Enabled
---- @field ClericArchetypeCheck Enabled
---- @field DruidArchetypeCheck Enabled
---- @field BarbarianArchetypeCheck Enabled
---- @field BardArchetypeCheck Enabled
---- @field PaladinArchetypeCheck Enabled
---- @field ConsistentHash Enabled
+--- @field EnemiesEnabled boolean
+--- @field BossesEnabled boolean
+--- @field AlliesEnabled boolean
+--- @field FollowersEnabled boolean
+--- @field FollowersBossesEnabled boolean
+--- @field SummonsEnabled boolean
+--- @field CasterArchetypeCheck boolean
+--- @field HealerArchetypeCheck boolean
+--- @field FighterArchetypeCheck boolean
+--- @field MonkArchetypeCheck boolean
+--- @field RogueArchetypeCheck boolean
+--- @field RangerArchetypeCheck boolean
+--- @field WarlockArchetypeCheck boolean
+--- @field ClericArchetypeCheck boolean
+--- @field DruidArchetypeCheck boolean
+--- @field BarbarianArchetypeCheck boolean
+--- @field BardArchetypeCheck boolean
+--- @field PaladinArchetypeCheck boolean
+--- @field ConsistentHash boolean
 --- @field ConsistentHashSalt integer | nil
---- @field DebugDisableEE Enabled
+--- @field DebugDisableEE boolean
 --- @field Verbosity integer
 --- @field DebugMode DebugModeConfig
 --- @field Kinds KindsConfig
