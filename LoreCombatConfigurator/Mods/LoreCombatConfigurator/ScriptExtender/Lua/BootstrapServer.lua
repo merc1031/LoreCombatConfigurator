@@ -3512,6 +3512,10 @@ local function OnSessionLoaded()
         end
     )
     Ext.Osiris.RegisterListener("StatusApplied", 4, "after", function(target, statusID, _, _)
+            if not SafeGetWithDefault(false, SessionContext.VarsJson, "DebugMode", "Enabled") then
+                return
+            end
+
             if statusID == "LCC_REBOOST" then
                 local entity = Ext.Entity.Get(string.sub(target, -36))
 
@@ -3523,6 +3527,36 @@ local function OnSessionLoaded()
                         PerformBoosting(SessionContext, entity.Uuid.EntityUuid)
                     end
                 )
+            end
+
+            if statusID == "LCC_UNBOOST" then
+                local entity = Ext.Entity.Get(string.sub(target, -36))
+
+                RemoveAllFromEntity(SessionContext, entity)
+            end
+
+            if statusID == "LCC_BOOST" then
+                local entity = Ext.Entity.Get(string.sub(target, -36))
+
+                PerformBoosting(SessionContext, entity.Uuid.EntityUuid)
+            end
+
+
+            if statusID == "LCC_ALL_REBOOST" then
+                RemoveAllBoosting(SessionContext)
+
+                -- After removing passives, it takes some time for them to actually disappear
+                Osi.TimerLaunch("BoostAllServerCharacters",500)
+            end
+
+            if statusID == "LCC_ALL_UNBOOST" then
+                RemoveAllBoosting(SessionContext)
+            end
+
+            if statusID == "LCC_ALL_BOOST" then
+                for _, e in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
+                    PerformBoosting(SessionContext, e.Uuid.EntityUuid)
+                end
             end
         end
     )

@@ -3,5 +3,21 @@
 	<content contentuid="7239edee-417f-4f42-8253-30020f6088bb" version="1">LCC Developer Spells</content>
 	<content contentuid="86d3a7c7-06b1-43b1-90e5-71c2e6879823" version="1">Holds developer tools to make it easier to test LCC</content>
 	<content contentuid="bb6b2e96-4dfd-42a1-8e6f-d6277bfa4d29" version="1">Reboost</content>
-	<content contentuid="0b659a67-3f1e-4fd3-b77c-281abd09c96d" version="1">Forces the target to recaclulate all its boosts</content>
+	<content contentuid="0b659a67-3f1e-4fd3-b77c-281abd09c96d" version="1">Forces the target to recaclulate all its LCC boosts</content>
+	<content contentuid="f77fc94f-1155-4707-8cb6-af8565f4c642" version="1">Unboost</content>
+	<content contentuid="773bf319-897a-4597-8f37-ad8b1a9c21c6" version="1">Forces the (boosted) target to drop all its LCC boosts</content>
+	<content contentuid="24f3e910-68fd-47a8-88fc-4e24fec0f07d" version="1">Boost</content>
+	<content contentuid="757f068b-8b0c-4222-a98a-70cc6af8d32e" version="1">Forces the (unboosted) target to try to compute all its LCC boosts</content>
+	<content contentuid="b9a33b8e-1fa5-4a96-a129-2d016ac74fd4" version="1">Mass Reboost</content>
+	<content contentuid="f7998ba3-59ae-4a63-ba33-f5471cb1bd79" version="1">Up to [1] entities are forced to recaclulate all their LCC boosts</content>
+	<content contentuid="635a1038-a184-4c2b-88e0-698caaffe5d3" version="1">Mass Unboost</content>
+	<content contentuid="8aa943cd-4c09-4414-98fc-dc1d20247ef3" version="1">Up to [1] (boosted) entities are forced to drop all their LCC boosts</content>
+	<content contentuid="9febe9b2-1971-41a9-8f67-42b5299ca570" version="1">Mass Boost</content>
+	<content contentuid="368a8dbf-afea-4b05-87ca-e63700757160" version="1">Up to [1] (unboosted) entities try to compute all their LCC boosts</content>
+	<content contentuid="af5cad13-f915-4a58-a616-abb50cc54929" version="1">All Reboost</content>
+	<content contentuid="1ebf392d-ef4e-4184-9500-d307c605640a" version="1">Forces all entities to recaclulate all their LCC boosts</content>
+	<content contentuid="b94d32f5-480f-4076-b9ed-a846fe07f4ff" version="1">All Unboost</content>
+	<content contentuid="9dfefbe6-6eaf-490c-9366-650fb453b36e" version="1">Forces all (boosted) entities to drop all their LCC boosts</content>
+	<content contentuid="8c057de7-7a14-4038-b2f8-de3f3b8c49a5" version="1">All Boost</content>
+	<content contentuid="aa664a54-ff15-40c9-8c93-71c38b660e49" version="1">Forces all (unboosted) entities to try to compute all their LCC boosts</content>
 </contentList>
