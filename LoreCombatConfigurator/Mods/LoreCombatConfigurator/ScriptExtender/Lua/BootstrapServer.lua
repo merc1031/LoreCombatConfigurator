@@ -1996,7 +1996,7 @@ function ComputeNewSpells(sessionContext, target, configType)
             end
         end
     end
-    return MapTableValues(function(spellVal) return string.format("UnlockSpell(%s)", spellVal) end, finalSelectedSpells)
+    return MapTableValues(function(spellVal) return string.format("UnlockSpell(%s,,%s)", spellVal, sessionContext.ActionResources["SpellSlot"]) end, finalSelectedSpells)
 end
 
 --- @param sessionContext SessionContext
