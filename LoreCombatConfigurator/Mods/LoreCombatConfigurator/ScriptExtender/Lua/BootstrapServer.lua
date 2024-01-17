@@ -29,6 +29,15 @@ function SafeGet(object, ...)
     return result, nil
 end
 
+function SafeGetWithDefault(default, object, ...)
+    local result, error = SafeGet(object, ...)
+    if error ~= nil then
+        return default
+    else
+        return result
+    end
+end
+
 -- Courtesy to @Eralyne on Discord
 ---Delay a function call by the given time
 ---@param ms integer
@@ -3021,7 +3030,11 @@ function ResetConfigJson(sessionContext)
         DebugDisableEE = 0,
         -- Controls the verbosity of logging for debugging
         Verbosity = 0,
-        DebugMode = false,
+        DebugMode = {
+            Enabled = false,
+            AddSpells = false,
+            MovementSpeedMultiplier = 1,
+        },
         -- Allows overriding the inferred classes or kinds of characters by inspecting their `stats` chain
         Kinds = {
             Dragonborn_Cleric = {"Cleric"},
@@ -3478,9 +3491,9 @@ local function OnSessionLoaded()
             CalculateLists(SessionContext)
             Ext.IO.LoadFile(string.format("%s.json", ModName))
 
-            if SessionContext.VarsJson["DebugMode"] then
+            if SafeGetWithDefault(false, SessionContext.VarsJson, "DebugMode", "Enabled") then
                 for _, guid in ipairs(Flatten(Osi.DB_PartyMembers:Get(nil))) do
-                    DebugMode(guid)
+                    DebugMode(SessionContext, guid)
                 end
             end
             RemoveAllBoosting(SessionContext)
@@ -3490,8 +3503,8 @@ local function OnSessionLoaded()
         end
     )
     Ext.Osiris.RegisterListener("CharacterJoinedParty", 1, "after", function(character)
-            if SessionContext.VarsJson["DebugMode"] then
-                DebugMode(character)
+            if SafeGetWithDefault(false, SessionContext.VarsJson, "DebugMode", "Enabled") then
+                DebugMode(SessionContext, character)
             end
         end
     )
@@ -3519,21 +3532,26 @@ function AddDeveloperSpells(target)
     end
 end
 
-function DebugMode(characterGuid)
+function DebugMode(sessionContext, characterGuid)
     local shortGuid = string.sub(characterGuid, -36)
 
-    local charTemplate = Ext.Template.GetTemplate(shortGuid)
-    if charTemplate == nil then
-        local charTemplateGuid = Osi.GetTemplate(shortGuid)
-        if charTemplateGuid ~= nil then
-            charTemplate = Ext.Template.GetTemplate(string.sub(charTemplateGuid, -36))
+    local movementSpeedMultiplier = SafeGet(SessionContext.VarsJson, "DebugMode", "MovementSpeedMultiplier")
+    if movementSpeedMultiplier ~= nil and movementSpeedMultiplier > 1 then
+        local charTemplate = Ext.Template.GetTemplate(shortGuid)
+        if charTemplate == nil then
+            local charTemplateGuid = Osi.GetTemplate(shortGuid)
+            if charTemplateGuid ~= nil then
+                charTemplate = Ext.Template.GetTemplate(string.sub(charTemplateGuid, -36))
+            end
+        end
+        if charTemplate ~= nil then
+            charTemplate["MovementSpeedRun"] = charTemplate["MovementSpeedRun"] * movementSpeedMultiplier
         end
     end
-    if charTemplate ~= nil then
-        charTemplate["MovementSpeedRun"] = 10
-    end
 
-    AddDeveloperSpells(shortGuid)
+    if SafeGetWithDefault(false, SessionContext.VarsJson, "DebugMode", "AddSpells") then
+        AddDeveloperSpells(shortGuid)
+    end
 end
 
 Ext.Vars.RegisterUserVariable("LCC_PassivesAdded", {Server=true, Persistent=true, DontCache=true})

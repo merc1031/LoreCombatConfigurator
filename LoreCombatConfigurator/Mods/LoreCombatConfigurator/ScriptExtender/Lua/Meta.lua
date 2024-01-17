@@ -249,6 +249,11 @@
 
 --- @alias BlacklistConfig table<string, boolean>
 
+--- @class DebugModeConfig
+--- @field Enabled boolean
+--- @field AddSpells boolean
+--- @field MovementSpeedMultiplier number
+
 --- @class Config
 --- @field EnemiesEnabled Enabled
 --- @field BossesEnabled Enabled
@@ -272,7 +277,7 @@
 --- @field ConsistentHashSalt integer | nil
 --- @field DebugDisableEE Enabled
 --- @field Verbosity integer
---- @field DebugMode boolean
+--- @field DebugMode DebugModeConfig
 --- @field Kinds KindsConfig
 --- @field Restrictions RestrictionsConfig
 --- @field BlacklistedAbilities BlacklistConfig
