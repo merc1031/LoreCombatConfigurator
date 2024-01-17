@@ -3500,7 +3500,6 @@ local function OnSessionLoaded()
 
             SessionContext.EntityCache = {}
             CalculateLists(SessionContext)
-            Ext.IO.LoadFile(string.format("%s.json", ModName))
 
             if SafeGetWithDefault(false, SessionContext.VarsJson, "DebugMode", "Enabled") then
                 for _, guid in ipairs(Flatten(Osi.DB_PartyMembers:Get(nil))) do
