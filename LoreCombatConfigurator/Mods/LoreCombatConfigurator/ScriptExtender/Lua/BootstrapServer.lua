@@ -3512,16 +3512,27 @@ local function OnSessionLoaded()
             GetVarsJson(SessionContext)
 
             -- After removing passives, it takes some time for them to actually disappear
-            Osi.TimerLaunch("BoostAllServerCharacters",500)
+            DelayedCallUntil(
+                function()
+                    local allGone = true
+                    for _, entity in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
+                        local boosts = OurBoosts(nil, entity)
+                        SessionContext.Log(3, string.format("Waiting for all boosts to be gone: %s %s %s", entity.Uuid.EntityUuid, #boosts, allGone))
+                        if #boosts > 0 then
+                            allGone = false
+                            break
+                        end
+                    end
+                    return allGone
+                end,
+                function()
+                    PerformAllBoosting(SessionContext)
+                end
+            )
         end
     )
 
     Ext.Osiris.RegisterListener("TimerFinished",1,"after",function(event)
-            if (event == "BoostAllServerCharacters") then
-                SessionContext.Log(1, "TimerFinished: Boosting all server characters")
-
-                PerformAllBoosting(SessionContext)
-            end
         end
     )
     Ext.Osiris.RegisterListener("LevelGameplayStarted",2,"after",function(_,_)
@@ -3536,7 +3547,48 @@ local function OnSessionLoaded()
             RemoveAllBoosting(SessionContext)
 
             -- After removing passives, it takes some time for them to actually disappear
-            Osi.TimerLaunch("BoostAllServerCharacters",500)
+            DelayedCallUntil(
+                function()
+                    local allGone = true
+                    for _, entity in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
+                        local boosts = OurBoosts(nil, entity)
+                        SessionContext.Log(3, string.format("Waiting for all boosts to be gone: %s %s %s", entity.Uuid.EntityUuid, #boosts, allGone))
+                        if #boosts > 0 then
+                            allGone = false
+                            break
+                        end
+                    end
+                    return allGone
+                end,
+                function()
+                    PerformAllBoosting(SessionContext)
+                    -- Goddamnit after loading a save we lose the boost state. This is a hack for now
+                    DelayedCall(
+                        500,
+                        function()
+                            RemoveAllBoosting(SessionContext)
+                            -- After removing passives, it takes some time for them to actually disappear
+                            DelayedCallUntil(
+                                function()
+                                    local allGone = true
+                                    for _, entity in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
+                                        local boosts = OurBoosts(nil, entity)
+                                        SessionContext.Log(3, string.format("Waiting for all boosts to be gone: %s %s %s", entity.Uuid.EntityUuid, #boosts, allGone))
+                                        if #boosts > 0 then
+                                            allGone = false
+                                            break
+                                        end
+                                    end
+                                    return allGone
+                                end,
+                                function()
+                                    PerformAllBoosting(SessionContext)
+                                end
+                            )
+                        end
+                    )
+                end
+            )
         end
     )
     Ext.Osiris.RegisterListener("CharacterJoinedParty", 1, "after", function(character)
@@ -3593,7 +3645,23 @@ local function OnSessionLoaded()
                 RemoveAllBoosting(SessionContext)
 
                 -- After removing passives, it takes some time for them to actually disappear
-                Osi.TimerLaunch("BoostAllServerCharacters",500)
+                DelayedCallUntil(
+                    function()
+                        local allGone = true
+                        for _, entity in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
+                            local boosts = OurBoosts(nil, entity)
+                            SessionContext.Log(3, string.format("Waiting for all boosts to be gone: %s %s %s", entity.Uuid.EntityUuid, #boosts, allGone))
+                            if #boosts > 0 then
+                                allGone = false
+                                break
+                            end
+                        end
+                        return allGone
+                    end,
+                    function()
+                        PerformAllBoosting(SessionContext)
+                    end
+                )
             end
 
             if statusID == "LCC_ALL_UNBOOST" then
@@ -3762,7 +3830,16 @@ end
 
 Ext.RegisterConsoleCommand("LCC_PassivesFor", DBG_Passives);
 
-function OurBoosts(guid)
+function OurBoosts(guid, entity)
+    if guid == nil and entity == nil then
+        return {}
+    end
+    if guid ~= nil and entity ~= nil then
+        return {}
+    end
+    if guid ~= nil then
+        entity = Ext.Entity.Get(guid)
+    end
     return Filter(
         function(bi) return bi.Cause.Cause == ModName end,
         Map(
@@ -3770,7 +3847,7 @@ function OurBoosts(guid)
             Flatten(
                     Map(
                         function(cpp) return Ext.Types.Serialize(cpp) end,
-                        Values(Ext.Entity.Get(guid).BoostsContainer.Boosts
+                        Values(entity.BoostsContainer.Boosts
                     )
                 )
             )
