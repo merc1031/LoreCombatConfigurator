@@ -3129,6 +3129,16 @@ function GetVarsJson(sessionContext)
     sessionContext.EntityToRestrictions = function(target) return _EntityToRestrictions(sessionContext, Restrictions, target) end
 
     CalculateLists(sessionContext)
+    local newDebugMode = SafeGetWithDefault(false, SessionContext.VarsJson, "DebugMode", "Enabled")
+    if  newDebugMode then
+        for _, guid in ipairs(Flatten(Osi.DB_PartyMembers:Get(nil))) do
+            DebugMode(SessionContext, guid)
+        end
+    else
+        for _, guid in ipairs(Flatten(Osi.DB_PartyMembers:Get(nil))) do
+            UnDebugMode(SessionContext, guid)
+        end
+    end
 end
 
 --- @param sessionContext SessionContext
@@ -3474,8 +3484,6 @@ local function OnSessionLoaded()
     --- @type SessionContext
     SessionContext = CreateSessionContext()
 
-    GetVarsJson(SessionContext)
-
     Ext.Osiris.RegisterListener("EnteredLevel", 3, "before", function(guid, _objectRootTemplate, level)
             SessionContext.Log(1, string.format("EnteredLevel: Guid: %s", guid))
 
@@ -3520,12 +3528,10 @@ local function OnSessionLoaded()
             SessionContext.Log(1, string.format("LevelGameplayStarted: Computing Lists"))
 
             SessionContext.EntityCache = {}
-            CalculateLists(SessionContext)
+            GetVarsJson(SessionContext)
 
-            if SafeGetWithDefault(false, SessionContext.VarsJson, "DebugMode", "Enabled") then
-                for _, guid in ipairs(Flatten(Osi.DB_PartyMembers:Get(nil))) do
-                    DebugMode(SessionContext, guid)
-                end
+            if SafeGetWithDefault(false, SessionContext.VarsJson, "DebugMode", "DisableLevelGameplayStart") then
+                return
             end
             RemoveAllBoosting(SessionContext)
 
@@ -3601,15 +3607,28 @@ local function OnSessionLoaded()
     )
 end
 
+DEVELOPMENT_SPELLS_CONTAINER = "Target_LCC_DeveloperContainer"
 function AddDeveloperSpells(target)
-    local container = "Target_LCC_DeveloperContainer"
-    if Osi.HasSpell(target, container) == 0 then
-        Osi.AddSpell(target, container, 1, 1)
+    if Osi.HasSpell(target, DEVELOPMENT_SPELLS_CONTAINER) == 0 then
+        Osi.AddSpell(target, DEVELOPMENT_SPELLS_CONTAINER, 1, 1)
+    end
+end
+
+function RemoveDeveloperSpells(target)
+    if Osi.HasSpell(target, DEVELOPMENT_SPELLS_CONTAINER) == 1 then
+        Osi.RemoveSpell(target, DEVELOPMENT_SPELLS_CONTAINER, 1)
     end
 end
 
 function DebugMode(sessionContext, characterGuid)
     local shortGuid = string.sub(characterGuid, -36)
+    local entity = Ext.Entity.Get(shortGuid)
+    if entity.Vars.LCC_DebugMode_RestoreSettings == nil then
+        entity.Vars.LCC_DebugMode_RestoreSettings = {
+            OriginalMovementSpeed = nil,
+            SpellsAdded = nil,
+        }
+    end
 
     local movementSpeedMultiplier = SafeGet(SessionContext.VarsJson, "DebugMode", "MovementSpeedMultiplier")
     if movementSpeedMultiplier ~= nil and movementSpeedMultiplier > 1 then
@@ -3621,17 +3640,66 @@ function DebugMode(sessionContext, characterGuid)
             end
         end
         if charTemplate ~= nil then
-            charTemplate["MovementSpeedRun"] = charTemplate["MovementSpeedRun"] * movementSpeedMultiplier
+            local debugSettings = entity.Vars.LCC_DebugMode_RestoreSettings
+            local originalMovementSpeedRun = debugSettings.OriginalMovementSpeed or charTemplate["MovementSpeedRun"]
+
+            charTemplate["MovementSpeedRun"] = originalMovementSpeedRun * movementSpeedMultiplier
+
+            debugSettings.OriginalMovementSpeed = originalMovementSpeedRun
+            entity.Vars.LCC_DebugMode_RestoreSettings = debugSettings
         end
     end
 
     if SafeGetWithDefault(false, SessionContext.VarsJson, "DebugMode", "AddSpells") then
         AddDeveloperSpells(shortGuid)
+
+        local debugSettings = entity.Vars.LCC_DebugMode_RestoreSettings
+        debugSettings.SpellsAdded = true
+        entity.Vars.LCC_DebugMode_RestoreSettings = debugSettings
+    end
+end
+
+function UnDebugMode(sessionContext, characterGuid)
+    local shortGuid = string.sub(characterGuid, -36)
+    local entity = Ext.Entity.Get(shortGuid)
+    if entity.Vars.LCC_DebugMode_RestoreSettings == nil then
+        entity.Vars.LCC_DebugMode_RestoreSettings = {
+            WasEnabled = false,
+            OriginalMovementSpeed = nil,
+            SpellsAdded = nil,
+        }
+    end
+
+    if entity.Vars.LCC_DebugMode_RestoreSettings.OriginalMovementSpeed ~= nil then
+        local charTemplate = Ext.Template.GetTemplate(shortGuid)
+        if charTemplate == nil then
+            local charTemplateGuid = Osi.GetTemplate(shortGuid)
+            if charTemplateGuid ~= nil then
+                charTemplate = Ext.Template.GetTemplate(string.sub(charTemplateGuid, -36))
+            end
+        end
+        if charTemplate ~= nil then
+            local debugSettings = entity.Vars.LCC_DebugMode_RestoreSettings
+
+            charTemplate["MovementSpeedRun"] = debugSettings.OriginalMovementSpeed
+
+            debugSettings.OriginalMovementSpeed = nil
+            entity.Vars.LCC_DebugMode_RestoreSettings = debugSettings
+        end
+    end
+
+    if entity.Vars.LCC_DebugMode_RestoreSettings.SpellsAdded ~= nil then
+        RemoveDeveloperSpells(shortGuid)
+
+        local debugSettings = entity.Vars.LCC_DebugMode_RestoreSettings
+        debugSettings.SpellsAdded = nil
+        entity.Vars.LCC_DebugMode_RestoreSettings = debugSettings
     end
 end
 
 Ext.Vars.RegisterUserVariable("LCC_PassivesAdded", {Server=true, Persistent=true, DontCache=true})
 Ext.Vars.RegisterUserVariable("LCC_Boosted", {Server=true, Persistent=true, DontCache=true})
+Ext.Vars.RegisterUserVariable("LCC_DebugMode_RestoreSettings", {Server=true, Persistent=true, DontCache=true})
 
 Ext.Events.SessionLoaded:Subscribe(OnSessionLoaded)
 
