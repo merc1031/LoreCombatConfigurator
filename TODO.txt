@@ -31,3 +31,15 @@
 [] If boosts are different, what do we do? reapply? probaly should collect already added boosts we own that are different and do boost removal, delay boost add
 
 [x] CriticalMiss plugin fights with ours. seeems that somehow it runs BETWEEN LCC_PASSIVE_START and the rest???????
+
+[] More intelligent reload
+    * On Load new config compute sha
+    * When applying boosts, check sha + boosted. If diff, mark for unboost.
+    * Apply unboosts
+    * delay apply boosts
+
+[] On reload us Vars.LCC_RestoreBoosts to bring back boosts that were had pre save load (test this)
+   When adding boosts, add to Vars.LCC_RestoreBoosts
+
+[] New config
+    Per entity, new entities to spawn nearby?
