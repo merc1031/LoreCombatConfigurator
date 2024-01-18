@@ -1509,6 +1509,12 @@ function IsCriticalMissLoaded()
     return Ext.Mod.IsModLoaded("17c00eba-2727-474e-a914-652cc5f85b59")
 end
 
+ADDITIONAL_ENEMIES_GUID = "49a94025-c3e4-461f-bc08-2de6a629666c"
+
+function IsAdditionalEnemiesLoaded()
+    return Ext.Mod.IsModLoaded(ADDITIONAL_ENEMIES_GUID)
+end
+
 --- @return boolean
 function CheckIfParty(target)
     if (Osi.IsPartyMember(target,1) == 1) then
@@ -3237,8 +3243,17 @@ function PerformBoosting(sessionContext, guid)
     local hasPlayerData = HasPlayerData(guid)
     local isPlayer = IsPlayer(guid)
     local alreadyModified = entity.Vars.LCC_Boosted.General
+    -- Special case check, AdditionalEnemies mod adds certain enemies that are marked boss but not hostile for some reason
+    local isAdditionalEnemiesSpecialBoss = false
+    if IsAdditionalEnemiesLoaded() and isBoss then
+        for _, statName in ipairs(CharacterGetStats(guid)) do
+            if Ext.Stats.Get(statName).ModId == ADDITIONAL_ENEMIES_GUID then
+                isAdditionalEnemiesSpecialBoss = true
+            end
+        end
+    end
 
-    sessionContext.Log(1, string.format("Give: Guid: %s; Modified?: %s; Party?: %s; Follower?: %s; Enemy?: %s; Origin?: %s; Boss?: %s; OurSummon?: %s; HasPlayerData?: %s; IsPlayer?: %s;\n", guid, alreadyModified, isPartyMember, isPartyFollower, isEnemy, isOrigin, isBoss, isOurSummon, hasPlayerData, isPlayer))
+    sessionContext.Log(1, string.format("Give: Guid: %s; Modified?: %s; Party?: %s; Follower?: %s; Enemy?: %s; Origin?: %s; Boss?: %s; OurSummon?: %s; HasPlayerData?: %s; IsPlayer?: %s; isAdditionalEnemiesSpecialBoss?: %s\n", guid, alreadyModified, isPartyMember, isPartyFollower, isEnemy, isOrigin, isBoss, isOurSummon, hasPlayerData, isPlayer, isAdditionalEnemiesSpecialBoss))
 
     if not isPartyMember and not isPartyFollower and not isOurSummon and not isEnemy and not isOrigin and not isBoss then
         local res, component = pcall(function() return Ext.Entity.Get(guid).ServerCharacter end)
@@ -3290,31 +3305,37 @@ function PerformBoosting(sessionContext, guid)
     if sessionContext.VarsJson["EnemiesEnabled"] then
         if shouldTryToModify and (not isPartyMember and isEnemy and not isBoss and not isOrigin) then
             GiveBoosts(sessionContext, guid, "Enemies")
+            return
         end
     end
     if sessionContext.VarsJson["BossesEnabled"] then
-        if shouldTryToModify and (not isPartyMember and isEnemy and isBoss and not isOrigin) then
+        if shouldTryToModify and (not isPartyMember and (isEnemy or isAdditionalEnemiesSpecialBoss) and isBoss and not isOrigin) then
             GiveBoosts(sessionContext, guid, "Bosses")
+            return
         end
     end
     if sessionContext.VarsJson["AlliesEnabled"] then
         if shouldTryToModify and (not isPartyMember and not isEnemy and not isOrigin and not isBoss) then
             GiveBoosts(sessionContext, guid, "Allies")
+            return
         end
     end
     if sessionContext.VarsJson["FollowersEnabled"] then
         if shouldTryToModify and (not isEnemy and not isOrigin and isPartyFollower and not isBoss) then
             GiveBoosts(sessionContext, guid, "Followers")
+            return
         end
     end
     if sessionContext.VarsJson["FollowersBossesEnabled"] then
         if shouldTryToModify and (not isEnemy and not isOrigin and isPartyFollower and isBoss) then
             GiveBoosts(sessionContext, guid, "FollowersBosses")
+            return
         end
     end
     if sessionContext.VarsJson["SummonsEnabled"] then
         if shouldTryToModify and (isPartyMember and isOurSummon) then
             GiveBoosts(sessionContext, guid, "Summons")
+            return
         end
     end
 end
