@@ -998,25 +998,29 @@ function GenerateClassSpellLists(sessionContext, blacklistedAbilitiesByClass, bl
         end
     end
     for subclassName, subclass in pairs(class.Subclasses) do
-        for level, progression in pairs(subclass.Progression) do
-            if not blacklistedAbilitiesByClass[progression.Name] then
-                for _, selector in ipairs(progression.AddSpells) do
-                    for spellId, spell in pairs(selector.Spells) do
-                        if not blacklistedAbilities[spell.Name] then
-                            spells[spell.Name] = {
-                                Spell = spell,
-                                ClassLevel = level,
-                            }
+        if subclass.Progression == nil then
+            sessionContext.LogI(2, 18, string.format("Subclass %s of class %s has no progression", subclass.Name, class.Name))
+        else
+            for level, progression in pairs(subclass.Progression) do
+                if not blacklistedAbilitiesByClass[progression.Name] then
+                    for _, selector in ipairs(progression.AddSpells) do
+                        for spellId, spell in pairs(selector.Spells) do
+                            if not blacklistedAbilities[spell.Name] then
+                                spells[spell.Name] = {
+                                    Spell = spell,
+                                    ClassLevel = level,
+                                }
+                            end
                         end
                     end
-                end
-                for _, selector in ipairs(progression.SelectSpells) do
-                    for spellId, spell in pairs(selector.Spells) do
-                        if not blacklistedAbilities[spell.Name] then
-                            spells[spell.Name] = {
-                                Spell = spell,
-                                ClassLevel = level,
-                            }
+                    for _, selector in ipairs(progression.SelectSpells) do
+                        for spellId, spell in pairs(selector.Spells) do
+                            if not blacklistedAbilities[spell.Name] then
+                                spells[spell.Name] = {
+                                    Spell = spell,
+                                    ClassLevel = level,
+                                }
+                            end
                         end
                     end
                 end
@@ -3475,7 +3479,7 @@ function DummySessionContext()
 end
 
 local function OnSessionLoaded()
-    _Log(DummySessionContext(), 0, "0.9.3.0")
+    _Log(DummySessionContext(), 0, "0.9.4.0")
 
     if IsCriticalMissLoaded() then
         ProtectedPassives["Passive_CriticalMiss"] = true
