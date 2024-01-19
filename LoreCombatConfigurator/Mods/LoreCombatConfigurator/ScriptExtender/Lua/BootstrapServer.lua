@@ -95,6 +95,14 @@ function ConsistentHash(salt, buckets, str, ...)
     return hash % buckets
 end
 
+function Fold(fn, acc, listlike)
+    local result = acc
+    for _, val in ipairs(listlike) do
+        result = fn(result, val)
+    end
+    return result
+end
+
 function Map(fn, listlike)
     local result = {}
     for _, val in ipairs(listlike) do
@@ -131,6 +139,65 @@ function FilterTable(fn, tablelike)
     return result
 end
 
+function NestedCompareTables(table1, table2)
+    local keySet1 = ToSet(Keys(table1))
+    local keySet2 = ToSet(Keys(table2))
+
+    for e1, _ in pairs(keySet1) do
+        if not keySet2[e1] then
+            return false
+        end
+    end
+    for e2, _ in pairs(keySet2) do
+        if not keySet1[e2] then
+            return false
+        end
+    end
+    if IsList(table1) then
+        for i, _ in ipairs(table1) do
+            if table1[i] ~= table2[i] then
+                return false
+            end
+        end
+    else
+        for key, val in pairs(table1) do
+            if type(val) == "table" then
+                if type(table2[key]) ~= "table" then
+                    return false
+                end
+                if not NestedCompareTables(val, table2[key]) then
+                    return false
+                end
+            else
+                if val ~= table2[key] then
+                    return false
+                end
+            end
+        end
+    end
+    return true
+end
+
+function NestedVisitTable(table1, visitor, reducer)
+    if IsList(table1) then
+        local results = {}
+        for i, _ in ipairs(table1) do
+            table.insert(results, visitor(table1[i]))
+        end
+        return reducer(results)
+    else
+        local results = {}
+        for key, val in pairs(table1) do
+            if type(val) == "table" then
+                return NestedVisitTable(val, visitor, reducer)
+            else
+                results[key] = visitor(val)
+            end
+        end
+        return reducer(Values(results))
+    end
+end
+
 function ToSet(list)
     local tab = {}
     for _, l in ipairs(list) do
@@ -161,6 +228,15 @@ function IndexOf(array, selector, value)
         end
     end
     return nil
+end
+
+function IsList(t)
+    local i = 0
+    for _ in pairs(t) do
+        i = i + 1
+        if t[i] == nil then return false end
+    end
+    return true
 end
 
 function ArrayToList(array)
