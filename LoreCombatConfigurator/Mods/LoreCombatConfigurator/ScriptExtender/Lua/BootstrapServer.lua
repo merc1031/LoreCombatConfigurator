@@ -3610,14 +3610,34 @@ local function OnSessionLoaded()
 
     Ext.Osiris.RegisterListener("EnteredLevel", 3, "before", function(guid, _objectRootTemplate, level)
             SessionContext.Log(1, string.format("EnteredLevel: Guid: %s", guid))
+            local shortGuid = string.sub(guid, -36)
+            local entity = Ext.Entity.Get(shortGuid)
 
-            PerformBoosting(SessionContext, guid)
+            local entities = {entity}
+            RemoveBoostingMany(SessionContext, entities)
+
+            DelayedCallUntil(
+                function() return WaitRemoveBoostingMany(SessionContext, entities) end,
+                function()
+                    PerformBoostingMany(SessionContext, entities)
+                end
+            )
         end
     )
     Ext.Osiris.RegisterListener("EnteredCombat", 2, "after", function(guid, combatid)
             SessionContext.Log(1, string.format("EnteredCombat: Guid: %s; combatid: %s", guid, combatid))
+            local shortGuid = string.sub(guid, -36)
+            local entity = Ext.Entity.Get(shortGuid)
 
-            PerformBoosting(SessionContext, guid)
+            local entities = {entity}
+            RemoveBoostingMany(SessionContext, entities)
+
+            DelayedCallUntil(
+                function() return WaitRemoveBoostingMany(SessionContext, entities) end,
+                function()
+                    PerformBoostingMany(SessionContext, entities)
+                end
+            )
         end
     )
 
@@ -3630,27 +3650,18 @@ local function OnSessionLoaded()
     Ext.Osiris.RegisterListener("PingRequested",1,"after",function(_)
             SessionContext.Log(1, "PingRequested: Removing Current Boosts")
 
-            RemoveAllBoosting(SessionContext)
-
             SessionContext.EntityCache = {}
             GetVarsJson(SessionContext)
 
+            local entities = Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")
+
+            RemoveBoostingMany(SessionContext, entities)
+
             -- After removing passives, it takes some time for them to actually disappear
             DelayedCallUntil(
+                function() return WaitRemoveBoostingMany(SessionContext, entities) end,
                 function()
-                    local allGone = true
-                    for _, entity in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
-                        local boosts = OurBoosts(nil, entity)
-                        SessionContext.Log(3, string.format("Waiting for all boosts to be gone: %s %s %s", entity.Uuid.EntityUuid, #boosts, allGone))
-                        if #boosts > 0 then
-                            allGone = false
-                            break
-                        end
-                    end
-                    return allGone
-                end,
-                function()
-                    PerformAllBoosting(SessionContext)
+                    PerformBoostingMany(SessionContext, entities)
                 end
             )
         end
@@ -3668,49 +3679,15 @@ local function OnSessionLoaded()
             if SafeGetWithDefault(false, SessionContext.VarsJson, "DebugMode", "DisableLevelGameplayStart") then
                 return
             end
-            RemoveAllBoosting(SessionContext)
+            local entities = Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")
+
+            RemoveBoostingMany(SessionContext, entities)
 
             -- After removing passives, it takes some time for them to actually disappear
             DelayedCallUntil(
+                function() return WaitRemoveBoostingMany(SessionContext, entities) end,
                 function()
-                    local allGone = true
-                    for _, entity in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
-                        local boosts = OurBoosts(nil, entity)
-                        SessionContext.Log(3, string.format("Waiting for all boosts to be gone: %s %s %s", entity.Uuid.EntityUuid, #boosts, allGone))
-                        if #boosts > 0 then
-                            allGone = false
-                            break
-                        end
-                    end
-                    return allGone
-                end,
-                function()
-                    PerformAllBoosting(SessionContext)
-                    -- Goddamnit after loading a save we lose the boost state. This is a hack for now
-                    DelayedCall(
-                        500,
-                        function()
-                            RemoveAllBoosting(SessionContext)
-                            -- After removing passives, it takes some time for them to actually disappear
-                            DelayedCallUntil(
-                                function()
-                                    local allGone = true
-                                    for _, entity in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
-                                        local boosts = OurBoosts(nil, entity)
-                                        SessionContext.Log(3, string.format("Waiting for all boosts to be gone: %s %s %s", entity.Uuid.EntityUuid, #boosts, allGone))
-                                        if #boosts > 0 then
-                                            allGone = false
-                                            break
-                                        end
-                                    end
-                                    return allGone
-                                end,
-                                function()
-                                    PerformAllBoosting(SessionContext)
-                                end
-                            )
-                        end
-                    )
+                    PerformBoostingMany(SessionContext, entities)
                 end
             )
         end
@@ -3741,13 +3718,15 @@ local function OnSessionLoaded()
 
             if statusID == "LCC_REBOOST" then
                 local entity = Ext.Entity.Get(string.sub(target, -36))
+                local entities = {entity}
 
-                RemoveAllFromEntity(SessionContext, entity)
+                RemoveBoostingMany(SessionContext, entities)
 
-                DelayedCall(
-                    500,
+                -- After removing passives, it takes some time for them to actually disappear
+                DelayedCallUntil(
+                    function() return WaitRemoveBoostingMany(SessionContext, entities) end,
                     function()
-                        PerformBoosting(SessionContext, entity.Uuid.EntityUuid)
+                        PerformBoostingMany(SessionContext, entities)
                     end
                 )
             end
@@ -3755,45 +3734,44 @@ local function OnSessionLoaded()
             if statusID == "LCC_UNBOOST" then
                 local entity = Ext.Entity.Get(string.sub(target, -36))
 
-                RemoveAllFromEntity(SessionContext, entity)
+                local entities = {entity}
+
+                RemoveBoostingMany(SessionContext, entities)
             end
 
             if statusID == "LCC_BOOST" then
                 local entity = Ext.Entity.Get(string.sub(target, -36))
 
-                PerformBoosting(SessionContext, entity.Uuid.EntityUuid)
+                local entities = {entity}
+
+                PerformBoostingMany(SessionContext, entities)
             end
 
 
             if statusID == "LCC_ALL_REBOOST" then
-                RemoveAllBoosting(SessionContext)
+                local entities = Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")
+
+                RemoveBoostingMany(SessionContext, entities)
 
                 -- After removing passives, it takes some time for them to actually disappear
                 DelayedCallUntil(
+                    function() return WaitRemoveBoostingMany(SessionContext, entities) end,
                     function()
-                        local allGone = true
-                        for _, entity in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
-                            local boosts = OurBoosts(nil, entity)
-                            SessionContext.Log(3, string.format("Waiting for all boosts to be gone: %s %s %s", entity.Uuid.EntityUuid, #boosts, allGone))
-                            if #boosts > 0 then
-                                allGone = false
-                                break
-                            end
-                        end
-                        return allGone
-                    end,
-                    function()
-                        PerformAllBoosting(SessionContext)
+                        PerformBoostingMany(SessionContext, entities)
                     end
                 )
             end
 
             if statusID == "LCC_ALL_UNBOOST" then
-                RemoveAllBoosting(SessionContext)
+                local entities = Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")
+
+                RemoveBoostingMany(SessionContext, entities)
             end
 
             if statusID == "LCC_ALL_BOOST" then
-                PerformAllBoosting(SessionContext)
+                local entities = Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")
+
+                PerformBoostingMany(SessionContext, entities)
             end
         end
     )
