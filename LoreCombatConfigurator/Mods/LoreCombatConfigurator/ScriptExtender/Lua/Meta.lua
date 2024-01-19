@@ -141,7 +141,7 @@
 --- @field AbilityDependencies table<string, string[]> | nil
 --- @field PassiveDependencies table<string, string[]> | nil
 --- @field Archetypes table<string>
---- @field SessionLoaded boolean
+--- @field ConfigHash integer
 
 --- @class LevelScaledBoostConfig
 --- @field StaticBoost integer

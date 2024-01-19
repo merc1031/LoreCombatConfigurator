@@ -3189,6 +3189,19 @@ function ResetConfigJson(sessionContext)
     GetVarsJson(sessionContext)
 end
 
+function ComputeConfigHash(sessionContext)
+    return NestedVisitTable(
+        sessionContext.VarsJson,
+        function(str) return ConsistentHash(1234, 100, tostring(str)) end,
+        function(elems) return Fold(
+                function(x, y) return x + y end,
+                0,
+                elems
+            )
+        end
+    )
+end
+
 --- @param sessionContext SessionContext
 function GetVarsJson(sessionContext)
     local configStr = Ext.IO.LoadFile(string.format("%s.json", ModName))
@@ -3219,6 +3232,7 @@ function GetVarsJson(sessionContext)
             UnDebugMode(SessionContext, guid)
         end
     end
+    sessionContext.ConfigHash = ComputeConfigHash(sessionContext)
 end
 
 --- @param sessionContext SessionContext
