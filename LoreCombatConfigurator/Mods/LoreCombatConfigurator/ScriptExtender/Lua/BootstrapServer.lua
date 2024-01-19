@@ -3505,8 +3505,8 @@ function RemoveAllFromEntity(sessionContext, entity)
     entity.Vars.LCC_BoostedWithHash = {Hash = nil}
 end
 
-function RemoveAllBoosting(sessionContext)
-    sessionContext.Log(1, "Removing ALL Boosting")
+function RemoveBoostingMany(sessionContext, entities)
+    sessionContext.Log(1, "Removing Many Boosting")
 
     for _, entity in ipairs(entities) do
         if (
@@ -3518,11 +3518,24 @@ function RemoveAllBoosting(sessionContext)
     end
 end
 
-function PerformAllBoosting(sessionContext)
-    sessionContext.Log(1, "Performing ALL Boosting")
+function WaitRemoveBoostingMany(sessionContext, entities)
+    local allGone = true
+    for _, entity in ipairs(entities) do
+        local boosts = OurBoosts(nil, entity)
+        sessionContext.Log(3, string.format("Waiting for all boosts to be gone: %s %s %s", entity.Uuid.EntityUuid, #boosts, allGone))
+        if #boosts > 0 then
+            allGone = false
+            break
+        end
+    end
+    return allGone
+end
 
-    for _, e in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
-        PerformBoosting(sessionContext, e.Uuid.EntityUuid)
+function PerformBoostingMany(sessionContext, entities)
+    sessionContext.Log(1, "Performing Many Boosting")
+
+    for _, entity in ipairs(entities) do
+        PerformBoosting(sessionContext, entity.Uuid.EntityUuid)
     end
 end
 
