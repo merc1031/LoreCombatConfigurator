@@ -3317,6 +3317,7 @@ function GiveBoosts(sessionContext, guid, configType)
     end
 
     entity.Vars.LCC_Boosted = {General = true}
+    entity.Vars.LCC_BoostedWithHash = {Hash = sessionContext.ConfigHash}
 end
 
 
@@ -3335,6 +3336,11 @@ function PerformBoosting(sessionContext, guid)
     if entity.Vars.LCC_Boosted == nil then
         entity.Vars.LCC_Boosted = {
             General = false,
+        }
+    end
+    if entity.Vars.LCC_BoostedWithHash == nil then
+        entity.Vars.LCC_BoostedWithHash = {
+            Hash = nil,
         }
     end
 
@@ -3480,6 +3486,11 @@ function RemoveAllFromEntity(sessionContext, entity)
             General = false,
         }
     end
+    if entity.Vars.LCC_BoostedWithHash == nil then
+        entity.Vars.LCC_BoostedWithHash = {
+            Hash = nil,
+        }
+    end
 
     local shortGuid = string.sub(entity.Uuid.EntityUuid, -36)
     sessionContext.Log(2, string.format("Removing All for Guid: %s", shortGuid))
@@ -3491,13 +3502,19 @@ function RemoveAllFromEntity(sessionContext, entity)
     RemovePassives(sessionContext, entity, nil)
 
     entity.Vars.LCC_Boosted = {General = false}
+    entity.Vars.LCC_BoostedWithHash = {Hash = nil}
 end
 
 function RemoveAllBoosting(sessionContext)
     sessionContext.Log(1, "Removing ALL Boosting")
 
-    for _, e in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
-        RemoveAllFromEntity(sessionContext, e)
+    for _, entity in ipairs(entities) do
+        if (
+            entity.Vars.LCC_Boosted.General and
+            entity.Vars.LCC_BoostedWithHash.Hash ~= SessionContext.ConfigHash
+        ) then
+            RemoveAllFromEntity(sessionContext, entity)
+        end
     end
 end
 
@@ -3861,6 +3878,7 @@ end
 
 Ext.Vars.RegisterUserVariable("LCC_PassivesAdded", {Server=true, Persistent=true, DontCache=true})
 Ext.Vars.RegisterUserVariable("LCC_Boosted", {Server=true, Persistent=true, DontCache=true})
+Ext.Vars.RegisterUserVariable("LCC_BoostedWithHash", {Server=true, Persistent=true, DontCache=true})
 Ext.Vars.RegisterUserVariable("LCC_DebugMode_RestoreSettings", {Server=true, Persistent=true, DontCache=true})
 
 Ext.Events.SessionLoaded:Subscribe(OnSessionLoaded)
