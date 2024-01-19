@@ -3505,6 +3505,24 @@ function RemoveAllFromEntity(sessionContext, entity)
     entity.Vars.LCC_BoostedWithHash = {Hash = nil}
 end
 
+function SetupUserVars(sessionContext, entities)
+    for _, entity in ipairs(entities) do
+        if entity.Vars.LCC_Boosted == nil then
+            entity.Vars.LCC_Boosted = {
+                General = false,
+            }
+        end
+        if entity.Vars.LCC_BoostedWithHash == nil then
+            entity.Vars.LCC_BoostedWithHash = {
+                Hash = nil,
+            }
+        end
+        if entity.Vars.LCC_PassivesAdded == nil then
+            entity.Vars.LCC_PassivesAdded = {}
+        end
+    end
+end
+
 function RemoveBoostingMany(sessionContext, entities)
     sessionContext.Log(1, "Removing Many Boosting")
 
@@ -3614,6 +3632,9 @@ local function OnSessionLoaded()
             local entity = Ext.Entity.Get(shortGuid)
 
             local entities = {entity}
+
+            SetupUserVars(SessionContext, entities)
+
             RemoveBoostingMany(SessionContext, entities)
 
             DelayedCallUntil(
@@ -3630,6 +3651,9 @@ local function OnSessionLoaded()
             local entity = Ext.Entity.Get(shortGuid)
 
             local entities = {entity}
+
+            SetupUserVars(SessionContext, entities)
+
             RemoveBoostingMany(SessionContext, entities)
 
             DelayedCallUntil(
@@ -3676,10 +3700,13 @@ local function OnSessionLoaded()
             SessionContext.EntityCache = {}
             GetVarsJson(SessionContext)
 
+            local entities = Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")
+
+            SetupUserVars(SessionContext, entities)
+
             if SafeGetWithDefault(false, SessionContext.VarsJson, "DebugMode", "DisableLevelGameplayStart") then
                 return
             end
-            local entities = Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")
 
             RemoveBoostingMany(SessionContext, entities)
 
