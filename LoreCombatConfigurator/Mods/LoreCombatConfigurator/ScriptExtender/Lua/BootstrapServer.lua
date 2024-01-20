@@ -3656,6 +3656,7 @@ local function OnSessionLoaded()
     )
 
     Ext.Osiris.RegisterListener("EnteredLevel", 3, "before", function(guid, _objectRootTemplate, level)
+            _Log(DummySessionContext(), 2, string.format("EnteredLevel: Guid: %s", guid))
             SessionContext.Log(1, string.format("EnteredLevel: Guid: %s", guid))
             local shortGuid = string.sub(guid, -36)
             local entity = Ext.Entity.Get(shortGuid)
@@ -3678,6 +3679,7 @@ local function OnSessionLoaded()
         end
     )
     Ext.Osiris.RegisterListener("EnteredCombat", 2, "after", function(guid, combatid)
+            _Log(DummySessionContext(), 2, string.format("EnteredCombat: Guid: %s; combatid: %s", guid, combatid))
             SessionContext.Log(1, string.format("EnteredCombat: Guid: %s; combatid: %s", guid, combatid))
             local shortGuid = string.sub(guid, -36)
             local entity = Ext.Entity.Get(shortGuid)
@@ -3701,12 +3703,14 @@ local function OnSessionLoaded()
     )
 
     Ext.Osiris.RegisterListener("CombatEnded",1,"after",function(combatid)
+            _Log(DummySessionContext(), 1, string.format("CombatEnded: combatid: %s\n", combatid))
             SessionContext.Log(1, string.format("CombatEnded: combatid: %s\n", combatid))
         end
     )
 
 
     Ext.Osiris.RegisterListener("PingRequested",1,"after",function(_)
+            _Log(DummySessionContext(), 1, "PingRequested")
             SessionContext.Log(1, "PingRequested: Removing Current Boosts")
 
             SessionContext.EntityCache = {}
@@ -3733,6 +3737,7 @@ local function OnSessionLoaded()
         end
     )
     Ext.Osiris.RegisterListener("LevelGameplayStarted",2,"after",function(_,_)
+            _Log(DummySessionContext(), 1, "LevelGameplayStarted")
             SessionContext.Log(1, string.format("LevelGameplayStarted: Computing Lists"))
 
             SessionContext.EntityCache = {}
