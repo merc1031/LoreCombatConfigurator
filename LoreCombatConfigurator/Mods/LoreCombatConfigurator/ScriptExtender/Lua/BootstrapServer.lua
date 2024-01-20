@@ -3190,16 +3190,7 @@ function ResetConfigJson(sessionContext)
 end
 
 function ComputeConfigHash(sessionContext)
-    return NestedVisitTable(
-        sessionContext.VarsJson,
-        function(str) return ConsistentHash(1234, 100, tostring(str)) end,
-        function(elems) return Fold(
-                function(x, y) return x + y end,
-                0,
-                elems
-            )
-        end
-    )
+    return ConsistentHash(1234, 1000000000, Ext.Json.Stringify(sessionContext.VarsJson))
 end
 
 --- @param sessionContext SessionContext
