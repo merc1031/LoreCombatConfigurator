@@ -3313,7 +3313,7 @@ function GiveBoosts(sessionContext, guid, configType)
     end
 
     for _, boost in ipairs(allBoosts) do
-        SessionContext.LogI(3, 24, string.format("Adding boost %s to %s", boost, guid))
+        sessionContext.LogI(3, 24, string.format("Adding boost %s to %s", boost, guid))
         AddBoostsAdv(guid, boost)
     end
 
