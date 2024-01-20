@@ -3641,6 +3641,20 @@ local function OnSessionLoaded()
     --- @type SessionContext
     SessionContext = CreateSessionContext()
 
+    Ext.Osiris.RegisterListener("LevelLoaded", 1, "before", function(level)
+            _Log(DummySessionContext(), 2, "LevelLoaded: Before")
+
+            SessionContext.EntityCache = {}
+            GetVarsJson(SessionContext)
+
+        end
+    )
+
+    Ext.Osiris.RegisterListener("LevelLoaded", 1, "after", function(level)
+            _Log(DummySessionContext(), 2, "LevelLoaded: After")
+        end
+    )
+
     Ext.Osiris.RegisterListener("EnteredLevel", 3, "before", function(guid, _objectRootTemplate, level)
             SessionContext.Log(1, string.format("EnteredLevel: Guid: %s", guid))
             local shortGuid = string.sub(guid, -36)
