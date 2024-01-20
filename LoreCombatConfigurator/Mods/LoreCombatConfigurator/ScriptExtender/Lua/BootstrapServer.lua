@@ -1,4 +1,7 @@
 ModName = "LoreCombatConfigurator"
+-- IMPORTANT: When the config is changed internally in a way that wont be reflected in its text by a user
+-- (defaults, inheritance, fallbacks), This value must be changed.
+CONFIG_HASH_SALT = 1234
 
 -- Courtesy to @Buns on Discord
 function SafeGet(object, ...)
@@ -3190,7 +3193,14 @@ function ResetConfigJson(sessionContext)
 end
 
 function ComputeConfigHash(sessionContext)
-    return ConsistentHash(1234, 1000000000, Ext.Json.Stringify(sessionContext.VarsJson))
+    local opts = {
+        Beautify = false,
+        StringifyInternalTypes = true,
+        IterateUserdata = true,
+        AvoidRecursion = false,
+    }
+    local stringifiedConfig = Ext.Json.Stringify(sessionContext.VarsJson)
+    return ConsistentHash(CONFIG_HASH_SALT, #stringifiedConfig * 256, stringifiedConfig)
 end
 
 --- @param sessionContext SessionContext
