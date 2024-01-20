@@ -3523,14 +3523,22 @@ end
 function RemoveBoostingMany(sessionContext, entities, force)
     sessionContext.Log(1, "Removing Many Boosting")
 
+    local affectedEntities = {}
+    local unAffectedEntities = {}
+    local unBoostedEntities = {}
     for _, entity in ipairs(entities) do
-        if force or (
-            entity.Vars.LCC_Boosted.General and
-            entity.Vars.LCC_BoostedWithHash.Hash ~= SessionContext.ConfigHash
-        ) then
-            RemoveAllFromEntity(sessionContext, entity)
+        if force or entity.Vars.LCC_Boosted.General then
+            if force or entity.Vars.LCC_BoostedWithHash.Hash ~= SessionContext.ConfigHash then
+                RemoveAllFromEntity(sessionContext, entity)
+                table.insert(affectedEntities, entity)
+            else
+                table.insert(unAffectedEntities, entity)
+            end
+        else
+            table.insert(unBoostedEntities, entity)
         end
     end
+    return affectedEntities, unAffectedEntities, unBoostedEntities
 end
 
 function WaitRemoveBoostingMany(sessionContext, entities)
@@ -3632,12 +3640,15 @@ local function OnSessionLoaded()
 
             SetupUserVars(SessionContext, entities)
 
-            RemoveBoostingMany(SessionContext, entities)
+            local affectedEntities, unAffectedEntities, unBooostedEntities = RemoveBoostingMany(SessionContext, entities)
+
+            local entitiesNeedingBoosts = {}
+            entitiesNeedingBoosts = TableCombine(unBooostedEntities, TableCombine(affectedEntities, entitiesNeedingBoosts))
 
             DelayedCallUntil(
-                function() return WaitRemoveBoostingMany(SessionContext, entities) end,
+                function() return WaitRemoveBoostingMany(SessionContext, affectedEntities) end,
                 function()
-                    PerformBoostingMany(SessionContext, entities)
+                    PerformBoostingMany(SessionContext, entitiesNeedingBoosts)
                 end
             )
         end
@@ -3651,12 +3662,15 @@ local function OnSessionLoaded()
 
             SetupUserVars(SessionContext, entities)
 
-            RemoveBoostingMany(SessionContext, entities)
+            local affectedEntities, unAffectedEntities, unBooostedEntities = RemoveBoostingMany(SessionContext, entities)
+
+            local entitiesNeedingBoosts = {}
+            entitiesNeedingBoosts = TableCombine(unBooostedEntities, TableCombine(affectedEntities, entitiesNeedingBoosts))
 
             DelayedCallUntil(
-                function() return WaitRemoveBoostingMany(SessionContext, entities) end,
+                function() return WaitRemoveBoostingMany(SessionContext, affectedEntities) end,
                 function()
-                    PerformBoostingMany(SessionContext, entities)
+                    PerformBoostingMany(SessionContext, entitiesNeedingBoosts)
                 end
             )
         end
@@ -3676,13 +3690,16 @@ local function OnSessionLoaded()
 
             local entities = Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")
 
-            RemoveBoostingMany(SessionContext, entities)
+            local affectedEntities, unAffectedEntities, unBooostedEntities = RemoveBoostingMany(SessionContext, entities)
+
+            local entitiesNeedingBoosts = {}
+            entitiesNeedingBoosts = TableCombine(unBooostedEntities, TableCombine(affectedEntities, entitiesNeedingBoosts))
 
             -- After removing passives, it takes some time for them to actually disappear
             DelayedCallUntil(
-                function() return WaitRemoveBoostingMany(SessionContext, entities) end,
+                function() return WaitRemoveBoostingMany(SessionContext, entitiesNeedingBoosts) end,
                 function()
-                    PerformBoostingMany(SessionContext, entities)
+                    PerformBoostingMany(SessionContext, entitiesNeedingBoosts)
                 end
             )
         end
@@ -3705,13 +3722,16 @@ local function OnSessionLoaded()
                 return
             end
 
-            RemoveBoostingMany(SessionContext, entities)
+            local affectedEntities, unAffectedEntities, unBooostedEntities = RemoveBoostingMany(SessionContext, entities)
+
+            local entitiesNeedingBoosts = {}
+            entitiesNeedingBoosts = TableCombine(unBooostedEntities, TableCombine(affectedEntities, entitiesNeedingBoosts))
 
             -- After removing passives, it takes some time for them to actually disappear
             DelayedCallUntil(
-                function() return WaitRemoveBoostingMany(SessionContext, entities) end,
+                function() return WaitRemoveBoostingMany(SessionContext, entitiesNeedingBoosts) end,
                 function()
-                    PerformBoostingMany(SessionContext, entities)
+                    PerformBoostingMany(SessionContext, affectedEntities)
                 end
             )
         end
@@ -3744,13 +3764,16 @@ local function OnSessionLoaded()
                 local entity = Ext.Entity.Get(string.sub(target, -36))
                 local entities = {entity}
 
-                RemoveBoostingMany(SessionContext, entities, true)
+                local affectedEntities, unAffectedEntities, unBooostedEntities = RemoveBoostingMany(SessionContext, entities, true)
+
+                local entitiesNeedingBoosts = {}
+                entitiesNeedingBoosts = TableCombine(unBooostedEntities, TableCombine(affectedEntities, entitiesNeedingBoosts))
 
                 -- After removing passives, it takes some time for them to actually disappear
                 DelayedCallUntil(
-                    function() return WaitRemoveBoostingMany(SessionContext, entities) end,
+                    function() return WaitRemoveBoostingMany(SessionContext, entitiesNeedingBoosts) end,
                     function()
-                        PerformBoostingMany(SessionContext, entities)
+                        PerformBoostingMany(SessionContext, affectedEntities)
                     end
                 )
             end
@@ -3775,13 +3798,16 @@ local function OnSessionLoaded()
             if statusID == "LCC_ALL_REBOOST" then
                 local entities = Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")
 
-                RemoveBoostingMany(SessionContext, entities, true)
+                local affectedEntities, unAffectedEntities, unBooostedEntities = RemoveBoostingMany(SessionContext, entities, true)
+
+                local entitiesNeedingBoosts = {}
+                entitiesNeedingBoosts = TableCombine(unBooostedEntities, TableCombine(affectedEntities, entitiesNeedingBoosts))
 
                 -- After removing passives, it takes some time for them to actually disappear
                 DelayedCallUntil(
-                    function() return WaitRemoveBoostingMany(SessionContext, entities) end,
+                    function() return WaitRemoveBoostingMany(SessionContext, affectedEntities) end,
                     function()
-                        PerformBoostingMany(SessionContext, entities)
+                        PerformBoostingMany(SessionContext, entitiesNeedingBoosts)
                     end
                 )
             end
