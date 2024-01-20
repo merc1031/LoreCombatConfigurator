@@ -3523,11 +3523,11 @@ function SetupUserVars(sessionContext, entities)
     end
 end
 
-function RemoveBoostingMany(sessionContext, entities)
+function RemoveBoostingMany(sessionContext, entities, force)
     sessionContext.Log(1, "Removing Many Boosting")
 
     for _, entity in ipairs(entities) do
-        if (
+        if force or (
             entity.Vars.LCC_Boosted.General and
             entity.Vars.LCC_BoostedWithHash.Hash ~= SessionContext.ConfigHash
         ) then
@@ -3747,7 +3747,7 @@ local function OnSessionLoaded()
                 local entity = Ext.Entity.Get(string.sub(target, -36))
                 local entities = {entity}
 
-                RemoveBoostingMany(SessionContext, entities)
+                RemoveBoostingMany(SessionContext, entities, true)
 
                 -- After removing passives, it takes some time for them to actually disappear
                 DelayedCallUntil(
@@ -3763,7 +3763,7 @@ local function OnSessionLoaded()
 
                 local entities = {entity}
 
-                RemoveBoostingMany(SessionContext, entities)
+                RemoveBoostingMany(SessionContext, entities, true)
             end
 
             if statusID == "LCC_BOOST" then
@@ -3778,7 +3778,7 @@ local function OnSessionLoaded()
             if statusID == "LCC_ALL_REBOOST" then
                 local entities = Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")
 
-                RemoveBoostingMany(SessionContext, entities)
+                RemoveBoostingMany(SessionContext, entities, true)
 
                 -- After removing passives, it takes some time for them to actually disappear
                 DelayedCallUntil(
@@ -3792,7 +3792,7 @@ local function OnSessionLoaded()
             if statusID == "LCC_ALL_UNBOOST" then
                 local entities = Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")
 
-                RemoveBoostingMany(SessionContext, entities)
+                RemoveBoostingMany(SessionContext, entities, true)
             end
 
             if statusID == "LCC_ALL_BOOST" then
