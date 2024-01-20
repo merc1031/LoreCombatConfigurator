@@ -3344,6 +3344,7 @@ function PerformBoosting(sessionContext, guid)
     local hasPlayerData = HasPlayerData(guid)
     local isPlayer = IsPlayer(guid)
     local alreadyModified = entity.Vars.LCC_Boosted.General
+    local sameHash = entity.Vars.LCC_BoostedWithHash.Hash == sessionContext.ConfigHash
     -- Special case check, AdditionalEnemies mod adds certain enemies that are marked boss but not hostile for some reason
     local isAdditionalEnemiesSpecialBoss = false
     if IsAdditionalEnemiesLoaded() and isBoss then
@@ -3354,7 +3355,7 @@ function PerformBoosting(sessionContext, guid)
         end
     end
 
-    sessionContext.Log(1, string.format("Give: Guid: %s; Modified?: %s; Party?: %s; Follower?: %s; Enemy?: %s; Origin?: %s; Boss?: %s; OurSummon?: %s; HasPlayerData?: %s; IsPlayer?: %s; isAdditionalEnemiesSpecialBoss?: %s\n", guid, alreadyModified, isPartyMember, isPartyFollower, isEnemy, isOrigin, isBoss, isOurSummon, hasPlayerData, isPlayer, isAdditionalEnemiesSpecialBoss))
+    sessionContext.Log(1, string.format("Give: Guid: %s; Modified?: %s; Party?: %s; Follower?: %s; Enemy?: %s; Origin?: %s; Boss?: %s; OurSummon?: %s; HasPlayerData?: %s; IsPlayer?: %s; isAdditionalEnemiesSpecialBoss?: %s; sameHash?: %s\n", guid, alreadyModified, isPartyMember, isPartyFollower, isEnemy, isOrigin, isBoss, isOurSummon, hasPlayerData, isPlayer, isAdditionalEnemiesSpecialBoss, sameHash))
 
     if not isPartyMember and not isPartyFollower and not isOurSummon and not isEnemy and not isOrigin and not isBoss then
         local res, component = pcall(function() return Ext.Entity.Get(guid).ServerCharacter end)
@@ -3371,6 +3372,11 @@ function PerformBoosting(sessionContext, guid)
 
     if isPlayer or hasPlayerData then
         sessionContext.Log(4, string.format("Give: Skipping playerlike(isPlayer %s, hasPlayerData %s): Guid: %s", isPlayer, hasPlayerData, guid))
+        return
+    end
+
+    if alreadyModified and not sameHash then
+        sessionContext.Log(0, string.format("Give: Skipping because something went wrong its already boosted but with a different hash: Guid: %s", guid))
         return
     end
 
@@ -3401,7 +3407,7 @@ function PerformBoosting(sessionContext, guid)
     sessionContext.Log(2, string.format("Give: AiHint: %s (%s) Archetype: %s\n", rawAIHint, mappedAIHint, rawArchetype))
     sessionContext.Log(2, string.format("Give: Kinds: %s; Classes: %s; Restrictions %s\n", Ext.Json.Stringify(kinds), Ext.Json.Stringify(allClasses), Ext.Json.Stringify(restrictions)))
 
-    local shouldTryToModify = not alreadyModified
+    local shouldTryToModify = not alreadyModified and not sameHash
 
     if sessionContext.VarsJson["EnemiesEnabled"] then
         if shouldTryToModify and (not isPartyMember and isEnemy and not isBoss and not isOrigin) then
