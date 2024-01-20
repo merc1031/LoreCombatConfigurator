@@ -3199,7 +3199,7 @@ function ComputeConfigHash(sessionContext)
         IterateUserdata = true,
         AvoidRecursion = false,
     }
-    local stringifiedConfig = Ext.Json.Stringify(sessionContext.VarsJson)
+    local stringifiedConfig = Ext.Json.Stringify(FilterTable(function(k, v) return k ~= "DebugMode" or k ~= "Verbosity" end, sessionContext.VarsJson))
     return ConsistentHash(CONFIG_HASH_SALT, #stringifiedConfig * 256, stringifiedConfig)
 end
 
