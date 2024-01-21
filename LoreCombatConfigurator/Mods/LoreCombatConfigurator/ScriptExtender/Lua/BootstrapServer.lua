@@ -3319,6 +3319,7 @@ function GiveBoosts(sessionContext, guid, configType)
 
     entity.Vars.LCC_Boosted = {General = true}
     entity.Vars.LCC_BoostedWithHash = {Hash = sessionContext.ConfigHash}
+    entity.Vars.LCC_BoostsAdded = allBoosts
 end
 
 
@@ -3457,10 +3458,10 @@ function PerformBoosting(sessionContext, guid)
     end
 end
 
-function RemoveBoosts(sessionContext, entity)
+function RemoveBoosts(sessionContext, entity, force)
     local guid = string.sub(entity.Uuid.EntityUuid, -36)
     local modified = entity.Vars.LCC_Boosted.General
-    if modified then
+    if force or modified then
         sessionContext.Log(2, string.format("Removing Boosts for Guid: %s because User Variable set", guid))
         sessionContext.Log(3, string.format("Our Boosts: %s", J(OurBoosts(guid))))
         for _boostType, boostEntities in pairs(entity.BoostsContainer.Boosts) do
@@ -3468,13 +3469,14 @@ function RemoveBoosts(sessionContext, entity)
                 RemoveBoostsAdv(sessionContext, guid, boostEntity)
             end
         end
+        entity.Vars.LCC_BoostsAdded = {}
     end
 end
 
-function RemovePassives(sessionContext, entity, combat)
+function RemovePassives(sessionContext, entity, combat, force)
     local guid = string.sub(entity.Uuid.EntityUuid, -36)
     local modified = entity.Vars.LCC_Boosted.General
-    if modified and (combat == nil or (combat ~= nil and combat[guid])) then
+    if force or (modified and (combat == nil or (combat ~= nil and combat[guid]))) then
         sessionContext.Log(2, string.format("Removing Passives for Guid: %s because combatants %s", guid, combat))
         sessionContext.Log(3, string.format("Passives: %s", Ext.Json.Stringify(Map(function (p) return p.Passive.PassiveId end, entity.PassiveContainer.Passives))))
         local ourPassives = Keys(entity.Vars.LCC_PassivesAdded)
@@ -3483,11 +3485,10 @@ function RemovePassives(sessionContext, entity, combat)
             Osi.RemovePassive(guid, passive)
         end
         entity.Vars.LCC_PassivesAdded = {}
-        sessionContext.EntityCache[guid] = {}
     end
 end
 
-function RemoveAllFromEntity(sessionContext, entity)
+function RemoveAllFromEntity(sessionContext, entity, force)
     if entity.Vars.LCC_Boosted == nil then
         entity.Vars.LCC_Boosted = {
             General = false,
@@ -3500,14 +3501,15 @@ function RemoveAllFromEntity(sessionContext, entity)
     end
 
     local shortGuid = string.sub(entity.Uuid.EntityUuid, -36)
-    sessionContext.Log(2, string.format("Removing All for Guid: %s", shortGuid))
+    sessionContext.Log(2, string.format("Removing All(%s) for Guid: %s", force, shortGuid))
 
-    sessionContext.Log(3, string.format("Removing boost for Guid: %s", shortGuid))
-    RemoveBoosts(sessionContext, entity)
+    sessionContext.Log(3, string.format("Removing boost(%s) for Guid: %s", force, shortGuid))
+    RemoveBoosts(sessionContext, entity, force)
 
-    sessionContext.Log(3, string.format("Removing passives for Guid: %s", shortGuid))
-    RemovePassives(sessionContext, entity, nil)
+    sessionContext.Log(3, string.format("Removing passives(%s) for Guid: %s", force, shortGuid))
+    RemovePassives(sessionContext, entity, nil, force)
 
+    sessionContext.EntityCache[string.sub(entity.Uuid.EntityUuid, -36)] = {}
     entity.Vars.LCC_Boosted = {General = false}
     entity.Vars.LCC_BoostedWithHash = {Hash = nil}
 end
@@ -3527,6 +3529,9 @@ function SetupUserVars(sessionContext, entities)
         if entity.Vars.LCC_PassivesAdded == nil then
             entity.Vars.LCC_PassivesAdded = {}
         end
+        if entity.Vars.LCC_BoostsAdded == nil then
+            entity.Vars.LCC_BoostsAdded = {}
+        end
     end
 end
 
@@ -3539,7 +3544,7 @@ function RemoveBoostingMany(sessionContext, entities, force)
     for _, entity in ipairs(entities) do
         if force or entity.Vars.LCC_Boosted.General then
             if force or entity.Vars.LCC_BoostedWithHash.Hash ~= SessionContext.ConfigHash then
-                RemoveAllFromEntity(sessionContext, entity)
+                RemoveAllFromEntity(sessionContext, entity, force)
                 table.insert(affectedEntities, entity)
             else
                 table.insert(unAffectedEntities, entity)
@@ -3760,7 +3765,7 @@ local function OnSessionLoaded()
             DelayedCallUntil(
                 function() return WaitRemoveBoostingMany(SessionContext, entitiesNeedingBoosts) end,
                 function()
-                    PerformBoostingMany(SessionContext, affectedEntities)
+                    PerformBoostingMany(SessionContext, entitiesNeedingBoosts)
                 end
             )
         end
@@ -3802,7 +3807,7 @@ local function OnSessionLoaded()
                 DelayedCallUntil(
                     function() return WaitRemoveBoostingMany(SessionContext, entitiesNeedingBoosts) end,
                     function()
-                        PerformBoostingMany(SessionContext, affectedEntities)
+                        PerformBoostingMany(SessionContext, entitiesNeedingBoosts)
                     end
                 )
             end
@@ -3834,7 +3839,7 @@ local function OnSessionLoaded()
 
                 -- After removing passives, it takes some time for them to actually disappear
                 DelayedCallUntil(
-                    function() return WaitRemoveBoostingMany(SessionContext, affectedEntities) end,
+                    function() return WaitRemoveBoostingMany(SessionContext, entitiesNeedingBoosts) end,
                     function()
                         PerformBoostingMany(SessionContext, entitiesNeedingBoosts)
                     end
@@ -3947,6 +3952,7 @@ function UnDebugMode(sessionContext, characterGuid)
 end
 
 Ext.Vars.RegisterUserVariable("LCC_PassivesAdded", {Server=true, Persistent=true, DontCache=true})
+Ext.Vars.RegisterUserVariable("LCC_BoostsAdded", {Server=true, Persistent=true, DontCache=true})
 Ext.Vars.RegisterUserVariable("LCC_Boosted", {Server=true, Persistent=true, DontCache=true})
 Ext.Vars.RegisterUserVariable("LCC_BoostedWithHash", {Server=true, Persistent=true, DontCache=true})
 Ext.Vars.RegisterUserVariable("LCC_DebugMode_RestoreSettings", {Server=true, Persistent=true, DontCache=true})
@@ -3956,6 +3962,13 @@ Ext.Events.SessionLoaded:Subscribe(OnSessionLoaded)
 Ext.Events.GameStateChanged:Subscribe(function(event)
         if event.FromState == "Sync" and event.ToState == "Running" then
             _Log(DummySessionContext(), 2, "Game state loaded")
+            for _, e in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
+                if e.Vars.LCC_BoostsAdded ~= nil then
+                    for _, boost in ipairs(e.Vars.LCC_BoostsAdded) do
+                        AddBoostsAdv(e.Uuid.EntityUuid, boost)
+                    end
+                end
+            end
         end
 
         if event.FromState == "UnloadSession" and event.ToState == "LoadSession" then
