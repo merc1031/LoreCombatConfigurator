@@ -3765,7 +3765,7 @@ local function OnSessionLoaded()
             DelayedCallUntil(
                 function() return WaitRemoveBoostingMany(SessionContext, entitiesNeedingBoosts) end,
                 function()
-                    PerformBoostingMany(SessionContext, affectedEntities)
+                    PerformBoostingMany(SessionContext, entitiesNeedingBoosts)
                 end
             )
         end
@@ -3807,7 +3807,7 @@ local function OnSessionLoaded()
                 DelayedCallUntil(
                     function() return WaitRemoveBoostingMany(SessionContext, entitiesNeedingBoosts) end,
                     function()
-                        PerformBoostingMany(SessionContext, affectedEntities)
+                        PerformBoostingMany(SessionContext, entitiesNeedingBoosts)
                     end
                 )
             end
@@ -3839,7 +3839,7 @@ local function OnSessionLoaded()
 
                 -- After removing passives, it takes some time for them to actually disappear
                 DelayedCallUntil(
-                    function() return WaitRemoveBoostingMany(SessionContext, affectedEntities) end,
+                    function() return WaitRemoveBoostingMany(SessionContext, entitiesNeedingBoosts) end,
                     function()
                         PerformBoostingMany(SessionContext, entitiesNeedingBoosts)
                     end
