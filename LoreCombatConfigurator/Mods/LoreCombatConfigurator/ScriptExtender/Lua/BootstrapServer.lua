@@ -3473,10 +3473,10 @@ function RemoveBoosts(sessionContext, entity, force)
     end
 end
 
-function RemovePassives(sessionContext, entity, combat)
+function RemovePassives(sessionContext, entity, combat, force)
     local guid = string.sub(entity.Uuid.EntityUuid, -36)
     local modified = entity.Vars.LCC_Boosted.General
-    if modified and (combat == nil or (combat ~= nil and combat[guid])) then
+    if force or (modified and (combat == nil or (combat ~= nil and combat[guid]))) then
         sessionContext.Log(2, string.format("Removing Passives for Guid: %s because combatants %s", guid, combat))
         sessionContext.Log(3, string.format("Passives: %s", Ext.Json.Stringify(Map(function (p) return p.Passive.PassiveId end, entity.PassiveContainer.Passives))))
         local ourPassives = Keys(entity.Vars.LCC_PassivesAdded)
@@ -3485,11 +3485,10 @@ function RemovePassives(sessionContext, entity, combat)
             Osi.RemovePassive(guid, passive)
         end
         entity.Vars.LCC_PassivesAdded = {}
-        sessionContext.EntityCache[guid] = {}
     end
 end
 
-function RemoveAllFromEntity(sessionContext, entity)
+function RemoveAllFromEntity(sessionContext, entity, force)
     if entity.Vars.LCC_Boosted == nil then
         entity.Vars.LCC_Boosted = {
             General = false,
@@ -3502,14 +3501,15 @@ function RemoveAllFromEntity(sessionContext, entity)
     end
 
     local shortGuid = string.sub(entity.Uuid.EntityUuid, -36)
-    sessionContext.Log(2, string.format("Removing All for Guid: %s", shortGuid))
+    sessionContext.Log(2, string.format("Removing All(%s) for Guid: %s", force, shortGuid))
 
-    sessionContext.Log(3, string.format("Removing boost for Guid: %s", shortGuid))
-    RemoveBoosts(sessionContext, entity)
+    sessionContext.Log(3, string.format("Removing boost(%s) for Guid: %s", force, shortGuid))
+    RemoveBoosts(sessionContext, entity, force)
 
-    sessionContext.Log(3, string.format("Removing passives for Guid: %s", shortGuid))
-    RemovePassives(sessionContext, entity, nil)
+    sessionContext.Log(3, string.format("Removing passives(%s) for Guid: %s", force, shortGuid))
+    RemovePassives(sessionContext, entity, nil, force)
 
+    sessionContext.EntityCache[string.sub(entity.Uuid.EntityUuid, -36)] = {}
     entity.Vars.LCC_Boosted = {General = false}
     entity.Vars.LCC_BoostedWithHash = {Hash = nil}
 end
@@ -3544,7 +3544,7 @@ function RemoveBoostingMany(sessionContext, entities, force)
     for _, entity in ipairs(entities) do
         if force or entity.Vars.LCC_Boosted.General then
             if force or entity.Vars.LCC_BoostedWithHash.Hash ~= SessionContext.ConfigHash then
-                RemoveAllFromEntity(sessionContext, entity)
+                RemoveAllFromEntity(sessionContext, entity, force)
                 table.insert(affectedEntities, entity)
             else
                 table.insert(unAffectedEntities, entity)
