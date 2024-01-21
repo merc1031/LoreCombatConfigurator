@@ -3230,6 +3230,77 @@ function ComputeConfigHash(sessionContext)
 end
 
 --- @param sessionContext SessionContext
+--- @return Config
+function PopulateInherits(sessionContext)
+    local originalConfig = sessionContext.VarsJson
+    local legalConfigs = ToSet({"Enemies", "Bosses", "Allies", "Followers", "FollowersBosses", "Summons"})
+
+    for config, _ in ipairs(legalConfigs) do
+        local seen = {config = true}
+        local targetConfig = SafeGet(originalConfig, config)
+        while targetConfig ~= nil do
+            local inherits = SafeGet(targetConfig, "Inherits")
+            if inherits ~= nil then
+                local inheritsTargetConfig = SafeGet(originalConfig, inherits)
+                if legalConfigs[inherits] == nil then
+                    sessionContext.Log(0, string.format("Illegal inheritance value for %s in %s", inherits, config))
+                    return originalConfig
+                end
+                if seen[inherits] then
+                    sessionContext.Log(0, string.format("Inheritance loop detected for %s in %s", inherits, config))
+                    return originalConfig
+                end
+                if inheritsTargetConfig == nil then
+                    sessionContext.Log(0, string.format("Inheritance target %s not found for %s", inherits, config))
+                    return originalConfig
+                end
+                seen[inherits] = true
+                targetConfig = inheritsTargetConfig
+            end
+        end
+    end
+
+    local newConfig = {}
+    for key, value in pairs(originalConfig) do
+        if legalConfigs[key] == nil then
+            newConfig[key] = DeepCopy(value)
+        else
+            local targetConfig = value
+            local configOrder = {key}
+            while targetConfig ~= nil do
+                local inherits = targetConfig["Inherits"]
+                if inherits ~= nil then
+                    table.insert(configOrder, inherits)
+                    targetConfig = originalConfig[inherits]
+                else
+                    targetConfig = nil
+                end
+            end
+            local bottomUpOrder = Reverse(configOrder)
+            local mergedConfig = {}
+            local accumConfig = {}
+            for _, config in ipairs(bottomUpOrder) do
+                local bottomUpTargetConfig =  originalConfig[config]
+                for bkey, bval in pairs(bottomUpTargetConfig) do
+                    if mergedConfig[bkey] == nil then
+                        mergedConfig[bkey] = DeepCopy(bval)
+                    end
+                end
+                for okey, oval in pairs(value) do
+                    mergedConfig[okey] = DeepCopy(oval)
+                end
+                accumConfig[key] = DeepCopy(mergedConfig)
+            end
+            for akey, avalue in pairs(accumConfig) do
+                newConfig[akey] = avalue
+            end
+        end
+    end
+
+    return newConfig
+end
+
+--- @param sessionContext SessionContext
 function GetVarsJson(sessionContext)
     local configStr = Ext.IO.LoadFile(string.format("%s.json", ModName))
     if (configStr == nil) then
@@ -3243,6 +3314,8 @@ function GetVarsJson(sessionContext)
     end
     sessionContext.Log(1, string.format("Json Loaded %s\n", Ext.Json.Stringify(varsJson)))
     sessionContext.VarsJson = varsJson
+    sessionContext.VarsJson = PopulateInherits(sessionContext)
+    sessionContext.Log(1, string.format("Inherits Populated %s\n", Ext.Json.Stringify(sessionContext.VarsJson)))
 
     -- Updated Closed Over Vars that need Config Vars here
     sessionContext.EntityToKinds = function(target) return _EntityToKinds(sessionContext, Kinds, target) end
@@ -3260,6 +3333,7 @@ function GetVarsJson(sessionContext)
         end
     end
     sessionContext.ConfigHash = ComputeConfigHash(sessionContext)
+    sessionContext.Log(1, string.format("Config Hash %s\n", sessionContext.ConfigHash))
 end
 
 --- @param sessionContext SessionContext
