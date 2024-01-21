@@ -41,6 +41,24 @@ function SafeGetWithDefault(default, object, ...)
     end
 end
 
+---Copies an object deeply
+--- @generic T : any
+---@param original T
+---@return T
+function DeepCopy(original)
+    local originalType = type(original)
+    local copy = nil
+    if originalType == 'table' then
+        copy = {}
+        for originalKey, originalValue in next, original, nil do
+            copy[DeepCopy(originalKey)] = DeepCopy(originalValue)
+        end
+    else
+        copy = original
+    end
+    return copy
+end
+
 -- Courtesy to @Eralyne on Discord
 ---Delay a function call by the given time
 ---@param ms integer
@@ -248,6 +266,14 @@ function ArrayToList(array)
         table.insert(list, elem)
     end
     return list
+end
+
+function Reverse(listlike)
+    local result = DeepCopy(listlike)
+    for i = 1, #listlike//2, 1 do
+        result[i], result[#listlike-i+1] = listlike[#listlike-i+1], listlike[i]
+    end
+    return result
 end
 
 function Flatten(listOfLists)
