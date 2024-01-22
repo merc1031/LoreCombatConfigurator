@@ -352,7 +352,7 @@ end
 --- @param candidateBoost BoostParams
 --- @return boolean
 function CompareBoost(boost, candidateBoost)
-    if not boost.BoostInfo.Cause.Cause == ModName then
+    if boost.BoostInfo.Cause.Cause ~= ModName then
         return false
     end
 
@@ -385,6 +385,10 @@ function CompareBoost(boost, candidateBoost)
         else
             return false
         end
+    end
+
+    if boost.BoostInfo.Params.Boost == "UnlockSpell" and candidateBoost.Boost == "UnlockSpell" then
+        return boost.BoostInfo.Params.Params == candidateBoost.Params
     end
 
     return true
@@ -4074,8 +4078,17 @@ Ext.Events.GameStateChanged:Subscribe(function(event)
             _Log(DummySessionContext(), 2, "Game state loaded")
             for _, e in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
                 if e.Vars.LCC_BoostsAdded ~= nil then
+                    local boosts = e.BoostsContainer.Boosts
                     for _, boost in ipairs(e.Vars.LCC_BoostsAdded) do
-                        AddBoostsAdv(e.Uuid.EntityUuid, boost)
+                        local _, _, boostKind, boostParams = string.find(boost, "(.+)[(](.+)[)]")
+                        SessionContext.Log(5, string.format("Checking if boost %s(%s(%s)) is already applied to %s", boost, boostKind, boostParams, e.Uuid.EntityUuid))
+                        if (
+                            boosts[boostKind] == nil or
+                            (boosts[boostKind] ~= nil and #Filter(function(iboost) return CompareBoost(iboost, {Boost = boostKind, Params = boostParams, Params2 =""}) end, boosts[boostKind]) == 0)
+                        ) then
+                            SessionContext.Log(6, string.format("Boost %s(%s(%s)) was not already applied to %s in %s", boost, boostKind, boostParams, e.Uuid.EntityUuid, J(Map(function(b) return b.BoostInfo end, boosts[boostKind] or {}))))
+                            AddBoostsAdv(e.Uuid.EntityUuid, boost)
+                        end
                     end
                 end
             end
