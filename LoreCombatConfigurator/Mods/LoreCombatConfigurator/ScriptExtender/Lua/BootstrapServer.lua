@@ -150,6 +150,14 @@ function MapTableValues(fn, tablelike)
     return result
 end
 
+function MapTable(fn, tablelike)
+    local result = {}
+    for key, val in pairs(tablelike) do
+        result[key] = fn(key, val)
+    end
+    return result
+end
+
 function FilterTable(fn, tablelike)
     local result = {}
     for key, val in pairs(tablelike) do
