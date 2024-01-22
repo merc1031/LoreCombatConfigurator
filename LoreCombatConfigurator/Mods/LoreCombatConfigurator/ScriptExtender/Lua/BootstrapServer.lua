@@ -1,4 +1,7 @@
 ModName = "LoreCombatConfigurator"
+-- IMPORTANT: When the config is changed internally in a way that wont be reflected in its text by a user
+-- (defaults, inheritance, fallbacks), This value must be changed.
+CONFIG_HASH_SALT = 1234
 
 -- Courtesy to @Buns on Discord
 function SafeGet(object, ...)
@@ -36,6 +39,24 @@ function SafeGetWithDefault(default, object, ...)
     else
         return result
     end
+end
+
+---Copies an object deeply
+--- @generic T : any
+---@param original T
+---@return T
+function DeepCopy(original)
+    local originalType = type(original)
+    local copy = nil
+    if originalType == 'table' then
+        copy = {}
+        for originalKey, originalValue in next, original, nil do
+            copy[DeepCopy(originalKey)] = DeepCopy(originalValue)
+        end
+    else
+        copy = original
+    end
+    return copy
 end
 
 -- Courtesy to @Eralyne on Discord
@@ -95,6 +116,14 @@ function ConsistentHash(salt, buckets, str, ...)
     return hash % buckets
 end
 
+function Fold(fn, acc, listlike)
+    local result = acc
+    for _, val in ipairs(listlike) do
+        result = fn(result, val)
+    end
+    return result
+end
+
 function Map(fn, listlike)
     local result = {}
     for _, val in ipairs(listlike) do
@@ -131,6 +160,65 @@ function FilterTable(fn, tablelike)
     return result
 end
 
+function NestedCompareTables(table1, table2)
+    local keySet1 = ToSet(Keys(table1))
+    local keySet2 = ToSet(Keys(table2))
+
+    for e1, _ in pairs(keySet1) do
+        if not keySet2[e1] then
+            return false
+        end
+    end
+    for e2, _ in pairs(keySet2) do
+        if not keySet1[e2] then
+            return false
+        end
+    end
+    if IsList(table1) then
+        for i, _ in ipairs(table1) do
+            if table1[i] ~= table2[i] then
+                return false
+            end
+        end
+    else
+        for key, val in pairs(table1) do
+            if type(val) == "table" then
+                if type(table2[key]) ~= "table" then
+                    return false
+                end
+                if not NestedCompareTables(val, table2[key]) then
+                    return false
+                end
+            else
+                if val ~= table2[key] then
+                    return false
+                end
+            end
+        end
+    end
+    return true
+end
+
+function NestedVisitTable(table1, visitor, reducer)
+    if IsList(table1) then
+        local results = {}
+        for i, _ in ipairs(table1) do
+            table.insert(results, visitor(table1[i]))
+        end
+        return reducer(results)
+    else
+        local results = {}
+        for key, val in pairs(table1) do
+            if type(val) == "table" then
+                return NestedVisitTable(val, visitor, reducer)
+            else
+                results[key] = visitor(val)
+            end
+        end
+        return reducer(Values(results))
+    end
+end
+
 function ToSet(list)
     local tab = {}
     for _, l in ipairs(list) do
@@ -163,12 +251,29 @@ function IndexOf(array, selector, value)
     return nil
 end
 
+function IsList(t)
+    local i = 0
+    for _ in pairs(t) do
+        i = i + 1
+        if t[i] == nil then return false end
+    end
+    return true
+end
+
 function ArrayToList(array)
     local list = {}
     for _, elem in pairs(array) do
         table.insert(list, elem)
     end
     return list
+end
+
+function Reverse(listlike)
+    local result = DeepCopy(listlike)
+    for i = 1, #listlike//2, 1 do
+        result[i], result[#listlike-i+1] = listlike[#listlike-i+1], listlike[i]
+    end
+    return result
 end
 
 function Flatten(listOfLists)
@@ -1912,6 +2017,8 @@ function ComputeNewSpells(sessionContext, target, configType)
     local selectedSpells = {}
 
     local npcLevel = tonumber(Osi.GetLevel(target))
+    local entity = Ext.Entity.Get(target)
+    local spellCastingAbility = entity.Stats.SpellCastingAbility
     local npcSpellTable = {}
 
     local spellTables = {}
@@ -2007,7 +2114,7 @@ function ComputeNewSpells(sessionContext, target, configType)
             end
         end
     end
-    return MapTableValues(function(spellVal) return string.format("UnlockSpell(%s,,%s)", spellVal, sessionContext.ActionResources["SpellSlot"]) end, finalSelectedSpells)
+    return MapTableValues(function(spellVal) return string.format("UnlockSpell(%s,,%s,,%s)", spellVal, sessionContext.ActionResources["SpellSlot"], spellCastingAbility) end, finalSelectedSpells)
 end
 
 --- @param sessionContext SessionContext
@@ -3113,6 +3220,88 @@ function ResetConfigJson(sessionContext)
     GetVarsJson(sessionContext)
 end
 
+function ComputeConfigHash(sessionContext)
+    local opts = {
+        Beautify = false,
+        StringifyInternalTypes = true,
+        IterateUserdata = true,
+        AvoidRecursion = false,
+    }
+    local stringifiedConfig = Ext.Json.Stringify(FilterTable(function(k, v) return k ~= "DebugMode" or k ~= "Verbosity" end, sessionContext.VarsJson))
+    return ConsistentHash(CONFIG_HASH_SALT, #stringifiedConfig * 256, stringifiedConfig)
+end
+
+--- @param sessionContext SessionContext
+--- @return Config
+function PopulateInherits(sessionContext)
+    local originalConfig = sessionContext.VarsJson
+    local legalConfigs = ToSet({"Enemies", "Bosses", "Allies", "Followers", "FollowersBosses", "Summons"})
+
+    for config, _ in ipairs(legalConfigs) do
+        local seen = {config = true}
+        local targetConfig = SafeGet(originalConfig, config)
+        while targetConfig ~= nil do
+            local inherits = SafeGet(targetConfig, "Inherits")
+            if inherits ~= nil then
+                local inheritsTargetConfig = SafeGet(originalConfig, inherits)
+                if legalConfigs[inherits] == nil then
+                    sessionContext.Log(0, string.format("Illegal inheritance value for %s in %s", inherits, config))
+                    return originalConfig
+                end
+                if seen[inherits] then
+                    sessionContext.Log(0, string.format("Inheritance loop detected for %s in %s", inherits, config))
+                    return originalConfig
+                end
+                if inheritsTargetConfig == nil then
+                    sessionContext.Log(0, string.format("Inheritance target %s not found for %s", inherits, config))
+                    return originalConfig
+                end
+                seen[inherits] = true
+                targetConfig = inheritsTargetConfig
+            end
+        end
+    end
+
+    local newConfig = {}
+    for key, value in pairs(originalConfig) do
+        if legalConfigs[key] == nil then
+            newConfig[key] = DeepCopy(value)
+        else
+            local targetConfig = value
+            local configOrder = {key}
+            while targetConfig ~= nil do
+                local inherits = targetConfig["Inherits"]
+                if inherits ~= nil then
+                    table.insert(configOrder, inherits)
+                    targetConfig = originalConfig[inherits]
+                else
+                    targetConfig = nil
+                end
+            end
+            local bottomUpOrder = Reverse(configOrder)
+            local mergedConfig = {}
+            local accumConfig = {}
+            for _, config in ipairs(bottomUpOrder) do
+                local bottomUpTargetConfig =  originalConfig[config]
+                for bkey, bval in pairs(bottomUpTargetConfig) do
+                    if mergedConfig[bkey] == nil then
+                        mergedConfig[bkey] = DeepCopy(bval)
+                    end
+                end
+                for okey, oval in pairs(value) do
+                    mergedConfig[okey] = DeepCopy(oval)
+                end
+                accumConfig[key] = DeepCopy(mergedConfig)
+            end
+            for akey, avalue in pairs(accumConfig) do
+                newConfig[akey] = avalue
+            end
+        end
+    end
+
+    return newConfig
+end
+
 --- @param sessionContext SessionContext
 function GetVarsJson(sessionContext)
     local configStr = Ext.IO.LoadFile(string.format("%s.json", ModName))
@@ -3127,6 +3316,8 @@ function GetVarsJson(sessionContext)
     end
     sessionContext.Log(1, string.format("Json Loaded %s\n", Ext.Json.Stringify(varsJson)))
     sessionContext.VarsJson = varsJson
+    sessionContext.VarsJson = PopulateInherits(sessionContext)
+    sessionContext.Log(1, string.format("Inherits Populated %s\n", Ext.Json.Stringify(sessionContext.VarsJson)))
 
     -- Updated Closed Over Vars that need Config Vars here
     sessionContext.EntityToKinds = function(target) return _EntityToKinds(sessionContext, Kinds, target) end
@@ -3143,6 +3334,8 @@ function GetVarsJson(sessionContext)
             UnDebugMode(SessionContext, guid)
         end
     end
+    sessionContext.ConfigHash = ComputeConfigHash(sessionContext)
+    sessionContext.Log(1, string.format("Config Hash %s\n", sessionContext.ConfigHash))
 end
 
 --- @param sessionContext SessionContext
@@ -3222,11 +3415,13 @@ function GiveBoosts(sessionContext, guid, configType)
     end
 
     for _, boost in ipairs(allBoosts) do
-        SessionContext.LogI(3, 24, string.format("Adding boost %s to %s", boost, guid))
+        sessionContext.LogI(3, 24, string.format("Adding boost %s to %s", boost, guid))
         AddBoostsAdv(guid, boost)
     end
 
     entity.Vars.LCC_Boosted = {General = true}
+    entity.Vars.LCC_BoostedWithHash = {Hash = sessionContext.ConfigHash}
+    entity.Vars.LCC_BoostsAdded = allBoosts
 end
 
 
@@ -3247,6 +3442,11 @@ function PerformBoosting(sessionContext, guid)
             General = false,
         }
     end
+    if entity.Vars.LCC_BoostedWithHash == nil then
+        entity.Vars.LCC_BoostedWithHash = {
+            Hash = nil,
+        }
+    end
 
     local isPartyMember = CheckIfParty(guid)
     local isPartyFollower = Osi.IsPartyFollower(guid) == 1
@@ -3257,6 +3457,7 @@ function PerformBoosting(sessionContext, guid)
     local hasPlayerData = HasPlayerData(guid)
     local isPlayer = IsPlayer(guid)
     local alreadyModified = entity.Vars.LCC_Boosted.General
+    local sameHash = entity.Vars.LCC_BoostedWithHash.Hash == sessionContext.ConfigHash
     -- Special case check, AdditionalEnemies mod adds certain enemies that are marked boss but not hostile for some reason
     local isAdditionalEnemiesSpecialBoss = false
     if IsAdditionalEnemiesLoaded() and isBoss then
@@ -3267,7 +3468,7 @@ function PerformBoosting(sessionContext, guid)
         end
     end
 
-    sessionContext.Log(1, string.format("Give: Guid: %s; Modified?: %s; Party?: %s; Follower?: %s; Enemy?: %s; Origin?: %s; Boss?: %s; OurSummon?: %s; HasPlayerData?: %s; IsPlayer?: %s; isAdditionalEnemiesSpecialBoss?: %s\n", guid, alreadyModified, isPartyMember, isPartyFollower, isEnemy, isOrigin, isBoss, isOurSummon, hasPlayerData, isPlayer, isAdditionalEnemiesSpecialBoss))
+    sessionContext.Log(1, string.format("Give: Guid: %s; Modified?: %s; Party?: %s; Follower?: %s; Enemy?: %s; Origin?: %s; Boss?: %s; OurSummon?: %s; HasPlayerData?: %s; IsPlayer?: %s; isAdditionalEnemiesSpecialBoss?: %s; sameHash?: %s\n", guid, alreadyModified, isPartyMember, isPartyFollower, isEnemy, isOrigin, isBoss, isOurSummon, hasPlayerData, isPlayer, isAdditionalEnemiesSpecialBoss, sameHash))
 
     if not isPartyMember and not isPartyFollower and not isOurSummon and not isEnemy and not isOrigin and not isBoss then
         local res, component = pcall(function() return Ext.Entity.Get(guid).ServerCharacter end)
@@ -3284,6 +3485,11 @@ function PerformBoosting(sessionContext, guid)
 
     if isPlayer or hasPlayerData then
         sessionContext.Log(4, string.format("Give: Skipping playerlike(isPlayer %s, hasPlayerData %s): Guid: %s", isPlayer, hasPlayerData, guid))
+        return
+    end
+
+    if alreadyModified and not sameHash then
+        sessionContext.Log(0, string.format("Give: Skipping because something went wrong its already boosted but with a different hash: Guid: %s", guid))
         return
     end
 
@@ -3314,7 +3520,7 @@ function PerformBoosting(sessionContext, guid)
     sessionContext.Log(2, string.format("Give: AiHint: %s (%s) Archetype: %s\n", rawAIHint, mappedAIHint, rawArchetype))
     sessionContext.Log(2, string.format("Give: Kinds: %s; Classes: %s; Restrictions %s\n", Ext.Json.Stringify(kinds), Ext.Json.Stringify(allClasses), Ext.Json.Stringify(restrictions)))
 
-    local shouldTryToModify = not alreadyModified
+    local shouldTryToModify = not alreadyModified and not sameHash
 
     if sessionContext.VarsJson["EnemiesEnabled"] then
         if shouldTryToModify and (not isPartyMember and isEnemy and not isBoss and not isOrigin) then
@@ -3354,10 +3560,10 @@ function PerformBoosting(sessionContext, guid)
     end
 end
 
-function RemoveBoosts(sessionContext, entity)
+function RemoveBoosts(sessionContext, entity, force)
     local guid = string.sub(entity.Uuid.EntityUuid, -36)
     local modified = entity.Vars.LCC_Boosted.General
-    if modified then
+    if force or modified then
         sessionContext.Log(2, string.format("Removing Boosts for Guid: %s because User Variable set", guid))
         sessionContext.Log(3, string.format("Our Boosts: %s", J(OurBoosts(guid))))
         for _boostType, boostEntities in pairs(entity.BoostsContainer.Boosts) do
@@ -3365,13 +3571,14 @@ function RemoveBoosts(sessionContext, entity)
                 RemoveBoostsAdv(sessionContext, guid, boostEntity)
             end
         end
+        entity.Vars.LCC_BoostsAdded = {}
     end
 end
 
-function RemovePassives(sessionContext, entity, combat)
+function RemovePassives(sessionContext, entity, combat, force)
     local guid = string.sub(entity.Uuid.EntityUuid, -36)
     local modified = entity.Vars.LCC_Boosted.General
-    if modified and (combat == nil or (combat ~= nil and combat[guid])) then
+    if force or (modified and (combat == nil or (combat ~= nil and combat[guid]))) then
         sessionContext.Log(2, string.format("Removing Passives for Guid: %s because combatants %s", guid, combat))
         sessionContext.Log(3, string.format("Passives: %s", Ext.Json.Stringify(Map(function (p) return p.Passive.PassiveId end, entity.PassiveContainer.Passives))))
         local ourPassives = Keys(entity.Vars.LCC_PassivesAdded)
@@ -3380,42 +3587,95 @@ function RemovePassives(sessionContext, entity, combat)
             Osi.RemovePassive(guid, passive)
         end
         entity.Vars.LCC_PassivesAdded = {}
-        sessionContext.EntityCache[guid] = {}
     end
 end
 
-function RemoveAllFromEntity(sessionContext, entity)
+function RemoveAllFromEntity(sessionContext, entity, force)
     if entity.Vars.LCC_Boosted == nil then
         entity.Vars.LCC_Boosted = {
             General = false,
         }
     end
+    if entity.Vars.LCC_BoostedWithHash == nil then
+        entity.Vars.LCC_BoostedWithHash = {
+            Hash = nil,
+        }
+    end
 
     local shortGuid = string.sub(entity.Uuid.EntityUuid, -36)
-    sessionContext.Log(2, string.format("Removing All for Guid: %s", shortGuid))
+    sessionContext.Log(2, string.format("Removing All(%s) for Guid: %s", force, shortGuid))
 
-    sessionContext.Log(3, string.format("Removing boost for Guid: %s", shortGuid))
-    RemoveBoosts(sessionContext, entity)
+    sessionContext.Log(3, string.format("Removing boost(%s) for Guid: %s", force, shortGuid))
+    RemoveBoosts(sessionContext, entity, force)
 
-    sessionContext.Log(3, string.format("Removing passives for Guid: %s", shortGuid))
-    RemovePassives(sessionContext, entity, nil)
+    sessionContext.Log(3, string.format("Removing passives(%s) for Guid: %s", force, shortGuid))
+    RemovePassives(sessionContext, entity, nil, force)
 
+    sessionContext.EntityCache[string.sub(entity.Uuid.EntityUuid, -36)] = {}
     entity.Vars.LCC_Boosted = {General = false}
+    entity.Vars.LCC_BoostedWithHash = {Hash = nil}
 end
 
-function RemoveAllBoosting(sessionContext)
-    sessionContext.Log(1, "Removing ALL Boosting")
-
-    for _, e in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
-        RemoveAllFromEntity(sessionContext, e)
+function SetupUserVars(sessionContext, entities)
+    for _, entity in ipairs(entities) do
+        if entity.Vars.LCC_Boosted == nil then
+            entity.Vars.LCC_Boosted = {
+                General = false,
+            }
+        end
+        if entity.Vars.LCC_BoostedWithHash == nil then
+            entity.Vars.LCC_BoostedWithHash = {
+                Hash = nil,
+            }
+        end
+        if entity.Vars.LCC_PassivesAdded == nil then
+            entity.Vars.LCC_PassivesAdded = {}
+        end
+        if entity.Vars.LCC_BoostsAdded == nil then
+            entity.Vars.LCC_BoostsAdded = {}
+        end
     end
 end
 
-function PerformAllBoosting(sessionContext)
-    sessionContext.Log(1, "Performing ALL Boosting")
+function RemoveBoostingMany(sessionContext, entities, force)
+    sessionContext.Log(1, "Removing Many Boosting")
 
-    for _, e in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
-        PerformBoosting(sessionContext, e.Uuid.EntityUuid)
+    local affectedEntities = {}
+    local unAffectedEntities = {}
+    local unBoostedEntities = {}
+    for _, entity in ipairs(entities) do
+        if force or entity.Vars.LCC_Boosted.General then
+            if force or entity.Vars.LCC_BoostedWithHash.Hash ~= SessionContext.ConfigHash then
+                RemoveAllFromEntity(sessionContext, entity, force)
+                table.insert(affectedEntities, entity)
+            else
+                table.insert(unAffectedEntities, entity)
+            end
+        else
+            table.insert(unBoostedEntities, entity)
+        end
+    end
+    return affectedEntities, unAffectedEntities, unBoostedEntities
+end
+
+function WaitRemoveBoostingMany(sessionContext, entities)
+    local allGone = true
+    for _, entity in ipairs(entities) do
+        local boosts = OurBoosts(nil, entity)
+        sessionContext.Log(3, string.format("Waiting for all boosts to be gone: %s %s %s", entity.Uuid.EntityUuid, #boosts, allGone))
+        if #boosts > 0 then
+            allGone = false
+            break
+        end
+    end
+    return allGone
+end
+
+function PerformBoostingMany(sessionContext, entities)
+    sessionContext.Log(1, "Performing Many Boosting")
+
+    for _, entity in ipairs(entities) do
+        PerformBoosting(sessionContext, entity.Uuid.EntityUuid)
     end
 end
 
@@ -3479,7 +3739,7 @@ function DummySessionContext()
 end
 
 local function OnSessionLoaded()
-    _Log(DummySessionContext(), 0, "0.9.4.0")
+    _Log(DummySessionContext(), 0, "0.9.5.0")
 
     if IsCriticalMissLoaded() then
         ProtectedPassives["Passive_CriticalMiss"] = true
@@ -3488,49 +3748,93 @@ local function OnSessionLoaded()
     --- @type SessionContext
     SessionContext = CreateSessionContext()
 
-    Ext.Osiris.RegisterListener("EnteredLevel", 3, "before", function(guid, _objectRootTemplate, level)
-            SessionContext.Log(1, string.format("EnteredLevel: Guid: %s", guid))
+    Ext.Osiris.RegisterListener("LevelLoaded", 1, "before", function(level)
+            _Log(DummySessionContext(), 2, "LevelLoaded: Before")
 
-            PerformBoosting(SessionContext, guid)
+            SessionContext.EntityCache = {}
+            GetVarsJson(SessionContext)
+
+        end
+    )
+
+    Ext.Osiris.RegisterListener("LevelLoaded", 1, "after", function(level)
+            _Log(DummySessionContext(), 2, "LevelLoaded: After")
+        end
+    )
+
+    Ext.Osiris.RegisterListener("EnteredLevel", 3, "before", function(guid, _objectRootTemplate, level)
+            _Log(DummySessionContext(), 2, string.format("EnteredLevel: Guid: %s", guid))
+            SessionContext.Log(1, string.format("EnteredLevel: Guid: %s", guid))
+            local shortGuid = string.sub(guid, -36)
+            local entity = Ext.Entity.Get(shortGuid)
+
+            local entities = {entity}
+
+            SetupUserVars(SessionContext, entities)
+
+            local affectedEntities, unAffectedEntities, unBooostedEntities = RemoveBoostingMany(SessionContext, entities)
+
+            local entitiesNeedingBoosts = {}
+            entitiesNeedingBoosts = TableCombine(unBooostedEntities, TableCombine(affectedEntities, entitiesNeedingBoosts))
+
+            DelayedCallUntil(
+                function() return WaitRemoveBoostingMany(SessionContext, affectedEntities) end,
+                function()
+                    PerformBoostingMany(SessionContext, entitiesNeedingBoosts)
+                end
+            )
         end
     )
     Ext.Osiris.RegisterListener("EnteredCombat", 2, "after", function(guid, combatid)
+            _Log(DummySessionContext(), 2, string.format("EnteredCombat: Guid: %s; combatid: %s", guid, combatid))
             SessionContext.Log(1, string.format("EnteredCombat: Guid: %s; combatid: %s", guid, combatid))
+            local shortGuid = string.sub(guid, -36)
+            local entity = Ext.Entity.Get(shortGuid)
 
-            PerformBoosting(SessionContext, guid)
+            local entities = {entity}
+
+            SetupUserVars(SessionContext, entities)
+
+            local affectedEntities, unAffectedEntities, unBooostedEntities = RemoveBoostingMany(SessionContext, entities)
+
+            local entitiesNeedingBoosts = {}
+            entitiesNeedingBoosts = TableCombine(unBooostedEntities, TableCombine(affectedEntities, entitiesNeedingBoosts))
+
+            DelayedCallUntil(
+                function() return WaitRemoveBoostingMany(SessionContext, affectedEntities) end,
+                function()
+                    PerformBoostingMany(SessionContext, entitiesNeedingBoosts)
+                end
+            )
         end
     )
 
     Ext.Osiris.RegisterListener("CombatEnded",1,"after",function(combatid)
+            _Log(DummySessionContext(), 1, string.format("CombatEnded: combatid: %s\n", combatid))
             SessionContext.Log(1, string.format("CombatEnded: combatid: %s\n", combatid))
         end
     )
 
 
     Ext.Osiris.RegisterListener("PingRequested",1,"after",function(_)
+            _Log(DummySessionContext(), 1, "PingRequested")
             SessionContext.Log(1, "PingRequested: Removing Current Boosts")
-
-            RemoveAllBoosting(SessionContext)
 
             SessionContext.EntityCache = {}
             GetVarsJson(SessionContext)
 
+            local entities = Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")
+
+            local affectedEntities, unAffectedEntities, unBooostedEntities = RemoveBoostingMany(SessionContext, entities)
+
+            local entitiesNeedingBoosts = {}
+            entitiesNeedingBoosts = TableCombine(unBooostedEntities, TableCombine(affectedEntities, entitiesNeedingBoosts))
+
             -- After removing passives, it takes some time for them to actually disappear
             DelayedCallUntil(
+                function() return WaitRemoveBoostingMany(SessionContext, entitiesNeedingBoosts) end,
                 function()
-                    local allGone = true
-                    for _, entity in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
-                        local boosts = OurBoosts(nil, entity)
-                        SessionContext.Log(3, string.format("Waiting for all boosts to be gone: %s %s %s", entity.Uuid.EntityUuid, #boosts, allGone))
-                        if #boosts > 0 then
-                            allGone = false
-                            break
-                        end
-                    end
-                    return allGone
-                end,
-                function()
-                    PerformAllBoosting(SessionContext)
+                    PerformBoostingMany(SessionContext, entitiesNeedingBoosts)
                 end
             )
         end
@@ -3540,57 +3844,30 @@ local function OnSessionLoaded()
         end
     )
     Ext.Osiris.RegisterListener("LevelGameplayStarted",2,"after",function(_,_)
+            _Log(DummySessionContext(), 1, "LevelGameplayStarted")
             SessionContext.Log(1, string.format("LevelGameplayStarted: Computing Lists"))
 
             SessionContext.EntityCache = {}
             GetVarsJson(SessionContext)
 
+            local entities = Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")
+
+            SetupUserVars(SessionContext, entities)
+
             if SafeGetWithDefault(false, SessionContext.VarsJson, "DebugMode", "DisableLevelGameplayStart") then
                 return
             end
-            RemoveAllBoosting(SessionContext)
+
+            local affectedEntities, unAffectedEntities, unBooostedEntities = RemoveBoostingMany(SessionContext, entities)
+
+            local entitiesNeedingBoosts = {}
+            entitiesNeedingBoosts = TableCombine(unBooostedEntities, TableCombine(affectedEntities, entitiesNeedingBoosts))
 
             -- After removing passives, it takes some time for them to actually disappear
             DelayedCallUntil(
+                function() return WaitRemoveBoostingMany(SessionContext, entitiesNeedingBoosts) end,
                 function()
-                    local allGone = true
-                    for _, entity in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
-                        local boosts = OurBoosts(nil, entity)
-                        SessionContext.Log(3, string.format("Waiting for all boosts to be gone: %s %s %s", entity.Uuid.EntityUuid, #boosts, allGone))
-                        if #boosts > 0 then
-                            allGone = false
-                            break
-                        end
-                    end
-                    return allGone
-                end,
-                function()
-                    PerformAllBoosting(SessionContext)
-                    -- Goddamnit after loading a save we lose the boost state. This is a hack for now
-                    DelayedCall(
-                        500,
-                        function()
-                            RemoveAllBoosting(SessionContext)
-                            -- After removing passives, it takes some time for them to actually disappear
-                            DelayedCallUntil(
-                                function()
-                                    local allGone = true
-                                    for _, entity in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
-                                        local boosts = OurBoosts(nil, entity)
-                                        SessionContext.Log(3, string.format("Waiting for all boosts to be gone: %s %s %s", entity.Uuid.EntityUuid, #boosts, allGone))
-                                        if #boosts > 0 then
-                                            allGone = false
-                                            break
-                                        end
-                                    end
-                                    return allGone
-                                end,
-                                function()
-                                    PerformAllBoosting(SessionContext)
-                                end
-                            )
-                        end
-                    )
+                    PerformBoostingMany(SessionContext, entitiesNeedingBoosts)
                 end
             )
         end
@@ -3621,13 +3898,18 @@ local function OnSessionLoaded()
 
             if statusID == "LCC_REBOOST" then
                 local entity = Ext.Entity.Get(string.sub(target, -36))
+                local entities = {entity}
 
-                RemoveAllFromEntity(SessionContext, entity)
+                local affectedEntities, unAffectedEntities, unBooostedEntities = RemoveBoostingMany(SessionContext, entities, true)
 
-                DelayedCall(
-                    500,
+                local entitiesNeedingBoosts = {}
+                entitiesNeedingBoosts = TableCombine(unBooostedEntities, TableCombine(affectedEntities, entitiesNeedingBoosts))
+
+                -- After removing passives, it takes some time for them to actually disappear
+                DelayedCallUntil(
+                    function() return WaitRemoveBoostingMany(SessionContext, entitiesNeedingBoosts) end,
                     function()
-                        PerformBoosting(SessionContext, entity.Uuid.EntityUuid)
+                        PerformBoostingMany(SessionContext, entitiesNeedingBoosts)
                     end
                 )
             end
@@ -3635,45 +3917,47 @@ local function OnSessionLoaded()
             if statusID == "LCC_UNBOOST" then
                 local entity = Ext.Entity.Get(string.sub(target, -36))
 
-                RemoveAllFromEntity(SessionContext, entity)
+                local entities = {entity}
+
+                RemoveBoostingMany(SessionContext, entities, true)
             end
 
             if statusID == "LCC_BOOST" then
                 local entity = Ext.Entity.Get(string.sub(target, -36))
 
-                PerformBoosting(SessionContext, entity.Uuid.EntityUuid)
+                local entities = {entity}
+
+                PerformBoostingMany(SessionContext, entities)
             end
 
 
             if statusID == "LCC_ALL_REBOOST" then
-                RemoveAllBoosting(SessionContext)
+                local entities = Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")
+
+                local affectedEntities, unAffectedEntities, unBooostedEntities = RemoveBoostingMany(SessionContext, entities, true)
+
+                local entitiesNeedingBoosts = {}
+                entitiesNeedingBoosts = TableCombine(unBooostedEntities, TableCombine(affectedEntities, entitiesNeedingBoosts))
 
                 -- After removing passives, it takes some time for them to actually disappear
                 DelayedCallUntil(
+                    function() return WaitRemoveBoostingMany(SessionContext, entitiesNeedingBoosts) end,
                     function()
-                        local allGone = true
-                        for _, entity in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
-                            local boosts = OurBoosts(nil, entity)
-                            SessionContext.Log(3, string.format("Waiting for all boosts to be gone: %s %s %s", entity.Uuid.EntityUuid, #boosts, allGone))
-                            if #boosts > 0 then
-                                allGone = false
-                                break
-                            end
-                        end
-                        return allGone
-                    end,
-                    function()
-                        PerformAllBoosting(SessionContext)
+                        PerformBoostingMany(SessionContext, entitiesNeedingBoosts)
                     end
                 )
             end
 
             if statusID == "LCC_ALL_UNBOOST" then
-                RemoveAllBoosting(SessionContext)
+                local entities = Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")
+
+                RemoveBoostingMany(SessionContext, entities, true)
             end
 
             if statusID == "LCC_ALL_BOOST" then
-                PerformAllBoosting(SessionContext)
+                local entities = Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")
+
+                PerformBoostingMany(SessionContext, entities)
             end
         end
     )
@@ -3770,7 +4054,9 @@ function UnDebugMode(sessionContext, characterGuid)
 end
 
 Ext.Vars.RegisterUserVariable("LCC_PassivesAdded", {Server=true, Persistent=true, DontCache=true})
+Ext.Vars.RegisterUserVariable("LCC_BoostsAdded", {Server=true, Persistent=true, DontCache=true})
 Ext.Vars.RegisterUserVariable("LCC_Boosted", {Server=true, Persistent=true, DontCache=true})
+Ext.Vars.RegisterUserVariable("LCC_BoostedWithHash", {Server=true, Persistent=true, DontCache=true})
 Ext.Vars.RegisterUserVariable("LCC_DebugMode_RestoreSettings", {Server=true, Persistent=true, DontCache=true})
 
 Ext.Events.SessionLoaded:Subscribe(OnSessionLoaded)
@@ -3778,6 +4064,13 @@ Ext.Events.SessionLoaded:Subscribe(OnSessionLoaded)
 Ext.Events.GameStateChanged:Subscribe(function(event)
         if event.FromState == "Sync" and event.ToState == "Running" then
             _Log(DummySessionContext(), 2, "Game state loaded")
+            for _, e in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
+                if e.Vars.LCC_BoostsAdded ~= nil then
+                    for _, boost in ipairs(e.Vars.LCC_BoostsAdded) do
+                        AddBoostsAdv(e.Uuid.EntityUuid, boost)
+                    end
+                end
+            end
         end
 
         if event.FromState == "UnloadSession" and event.ToState == "LoadSession" then
