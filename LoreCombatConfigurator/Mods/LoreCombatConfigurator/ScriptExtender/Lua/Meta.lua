@@ -122,7 +122,7 @@
 --- @field SpellRoots table<string, boolean>
 
 --- @class SessionContext
---- @field VarsJson table
+--- @field VarsJson Config
 --- @field SpellsAdded table<Guid, table<Guid, string[]>>
 --- @field PassivesAdded table<Guid, table<Guid, string[]>>
 --- @field ImplicatedGuids table<Guid, table<Guid, string[]>>
@@ -286,6 +286,12 @@
 --- @field BlacklistedLists BlacklistConfig
 --- @field AbilityDependencies table<string, string[]>
 --- @field PassiveDependencies table<string, string[]>
+--- @field Enemies EntityConfig
+--- @field Bosses EntityConfig
+--- @field Allies EntityConfig
+--- @field Followers EntityConfig
+--- @field FollowersBosses EntityConfig
+--- @field Summons EntityConfig
 
 
 
