@@ -3751,7 +3751,7 @@ function DummySessionContext()
 end
 
 local function OnSessionLoaded()
-    _Log(DummySessionContext(), 0, "0.9.6.0")
+    _Log(DummySessionContext(), 0, "0.9.7.0")
 
     if IsCriticalMissLoaded() then
         ProtectedPassives["Passive_CriticalMiss"] = true
