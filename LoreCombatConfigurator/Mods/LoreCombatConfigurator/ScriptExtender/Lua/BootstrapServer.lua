@@ -2017,6 +2017,8 @@ function ComputeNewSpells(sessionContext, target, configType)
     local selectedSpells = {}
 
     local npcLevel = tonumber(Osi.GetLevel(target))
+    local entity = Ext.Entity.Get(target)
+    local spellCastingAbility = entity.Stats.SpellCastingAbility
     local npcSpellTable = {}
 
     local spellTables = {}
@@ -2112,7 +2114,7 @@ function ComputeNewSpells(sessionContext, target, configType)
             end
         end
     end
-    return MapTableValues(function(spellVal) return string.format("UnlockSpell(%s,,%s)", spellVal, sessionContext.ActionResources["SpellSlot"]) end, finalSelectedSpells)
+    return MapTableValues(function(spellVal) return string.format("UnlockSpell(%s,,%s,,%s)", spellVal, sessionContext.ActionResources["SpellSlot"], spellCastingAbility) end, finalSelectedSpells)
 end
 
 --- @param sessionContext SessionContext
