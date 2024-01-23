@@ -126,7 +126,7 @@
 --- @field SpellsAdded table<Guid, table<Guid, string[]>>
 --- @field PassivesAdded table<Guid, table<Guid, string[]>>
 --- @field ImplicatedGuids table<Guid, table<Guid, string[]>>
---- @field EntityCache table<Guid, table<Guid, EntityCacheItem>>
+--- @field EntityCache table<Guid, EntityCacheItem>
 --- @field ActionResources table<string, Guid>
 --- @field Tags table<string, Guid>
 --- @field ConfigFailed integer
@@ -292,12 +292,98 @@
 --- @field Followers EntityConfig
 --- @field FollowersBosses EntityConfig
 --- @field Summons EntityConfig
+--- @field [Guid] EntityConfig
 
+--- @class EnrichedEntity
+--- @field Entity Entity
+--- @field Guid Guid
+--- @field ShortGuid Guid
+--- @field FullGuid Guid
+--- @field IsCharacter boolean
+--- @field IsPartyMember boolean
+--- @field IsPartyFollower boolean
+--- @field IsOurSummon boolean
+--- @field IsEnemy boolean
+--- @field IsOrigin boolean
+--- @field IsBoss boolean
+--- @field HasPlayerData boolean
+--- @field IsPlayer boolean
+--- @field AlreadyModified boolean
+--- @field SameHash boolean
+--- @field IsAdditionalEnemiesSpecialBoss boolean
+--- @field ConfigHash integer
+EnrichedEntity = {}
 
+--- @class LCC_Boosted
+--- @field General boolean
+
+--- @class LCC_BoostedWithHash
+--- @field Hash integer | nil
+
+--- @class LCC_BoostedWithClassification
+--- @field Classification string | nil
+
+--- @class LCC_DebugMode_RestoreSettings
+--- @field OriginalMovementSpeed number
+--- @field SpellsAdded boolean
+
+--- @class LCCUserVars
+--- @field LCC_PassivesAdded table<string, string>
+--- @field LCC_BoostsAdded string[]
+--- @field LCC_Boosted LCC_Boosted
+--- @field LCC_BoostedWithHash LCC_BoostedWithHash
+--- @field LCC_BoostedWithClassification LCC_BoostedWithClassification
+--- @field LCC_DebugMode_RestoreSettings LCC_DebugMode_RestoreSettings
 
 -- Might belong in MetaExtender.lua
 
 --- @class Entity
+--- @field Uuid EntityUuid
+--- @field Vars LCCUserVars
+--- @field ServerCharacter Character | nil
+--- @field ServerItem Item | nil
+--- @field PassiveContainer PassiveContainer
+--- @field BoostsContainer BoostsContainer
+--- @field ActionResources ActionResources
+--- @field Health Health
+--- @field Stats Stats
+
+--- @class Character
+--- @field Character nil | Character
+--- @field Template Template
+--- @field PlayerData any | nil
+--- @field IsPlayer boolean | nil
+
+--- @class Item
+--- @field Template Template
+
+--- @class Template
+--- @field Name string
+
+--- @class PassiveContainer
+--- @field Passives Passive[]
+
+--- @class Passive
+--- @field PassiveId string
+
+--- @class BoostsContainer
+--- @field Boosts table<string, Boost>
+
+--- @class ActionResources
+--- @field Resources table<Guid, ActionResource[]>
+
+--- @class ActionResource
+--- @field MaxAmount integer
+
+--- @class Health
+--- @field AC integer
+--- @field MaxHp integer
+
+--- @class Stats
+--- @field SpellCastingAbility string
+
+--- @class EntityUuid
+--- @field EntityUuid Guid
 
 --- @class BoostCause
 --- @field Cause string
@@ -314,3 +400,7 @@
 
 --- @class Boost
 --- @field BoostInfo BoostInfo
+
+--- @class GameStateEvent
+--- @field FromState string
+--- @field ToState string
