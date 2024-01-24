@@ -3803,18 +3803,35 @@ end
 --- @param force boolean
 --- @return EnrichedEntity[], EnrichedEntity[], EnrichedEntity[]
 function RemoveBoostingMany(sessionContext, entities, force)
-    sessionContext.Log(1, "Removing Many Boosting")
+    sessionContext.Log(1, "Attempting Removing Many Boosting")
 
     local affectedEntities = {}
     local unAffectedEntities = {}
     local unBoostedEntities = {}
     for _, entity in ipairs(entities) do
-        if force or entity.Entity.Vars.LCC_Boosted.General then
+        local generallyBoosted = entity.Entity.Vars.LCC_Boosted.General
+        local hashMismatch = entity.Entity.Vars.LCC_BoostedWithHash.Hash ~= SessionContext.ConfigHash
+        local classificationMismatch = entity.Entity.Vars.LCC_BoostedWithClassification.Classification ~= entity:GetConfigClassification(sessionContext)
+        if force or generallyBoosted then
+            sessionContext.Log(2, string.format("Attempting Removing Boosts for Guid: %s because generally boosted or forced", entity.ShortGuid))
             if (
                 force or
-                (entity.Entity.Vars.LCC_BoostedWithHash.Hash ~= SessionContext.ConfigHash) or
-                (entity.Entity.Vars.LCC_BoostedWithClassification.Classification ~= entity:GetConfigClassification(sessionContext))
+                hashMismatch or
+                classificationMismatch
             ) then
+                sessionContext.Log(
+                    3,
+                    string.format(
+                        "Removing Boosts for Guid: %s because hash mismatch(%s, %s, %s) or classification mismatch(%s, %s, %s)",
+                        entity.ShortGuid,
+                        hashMismatch,
+                        entity.Entity.Vars.LCC_BoostedWithHash.Hash,
+                        SessionContext.ConfigHash,
+                        classificationMismatch,
+                        entity.Entity.Vars.LCC_BoostedWithClassification.Classification,
+                        entity:GetConfigClassification(sessionContext)
+                    )
+                )
                 RemoveAllFromEntity(sessionContext, entity, force)
                 table.insert(affectedEntities, entity)
             else
