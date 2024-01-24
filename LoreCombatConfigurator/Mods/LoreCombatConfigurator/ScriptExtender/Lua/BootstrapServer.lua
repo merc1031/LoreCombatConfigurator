@@ -3537,8 +3537,6 @@ end
 function GiveBoosts(sessionContext, entity, configType)
     sessionContext.LogI(1, 4, string.format("%s applying for Guid: %s\n", configType, entity.ShortGuid))
 
-    entity:Refresh(sessionContext)
-
     GiveNewPassives(sessionContext, entity, configType)
 
     --- @type string[]
@@ -3597,6 +3595,8 @@ end
 ---@param sessionContext SessionContext
 ---@param entity EnrichedEntity
 function PerformBoosting(sessionContext, entity)
+    entity:Refresh(sessionContext)
+
     local shortGuid = entity.ShortGuid
 
     sessionContext.Log(1, string.format("Give: Guid: %s", shortGuid))
