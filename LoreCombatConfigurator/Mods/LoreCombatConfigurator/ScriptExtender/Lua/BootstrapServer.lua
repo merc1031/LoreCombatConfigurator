@@ -101,6 +101,25 @@ function DelayedCallWhile(pred, func)
     end)
 end
 
+---Delay a function call to wait to run once when the predicate holds true
+-- but only after the time delay
+---@param ms integer
+---@param pred function
+---@param func function
+function DelayedCallUntilWithAtLeastTime(ms, pred, func)
+    local Time = 0
+    local handler
+    handler = Ext.Events.Tick:Subscribe(function(e)
+        Time = Time + e.Time.DeltaTime * 1000
+        if (Time >= ms) then
+            if (pred()) then
+                func()
+                Ext.Events.Tick:Unsubscribe(handler)
+            end
+        end
+    end)
+end
+
 function ConsistentHash(salt, buckets, str, ...)
     local params = {...}
     for _, v in ipairs(params) do
@@ -4090,7 +4109,8 @@ local function OnSessionLoaded()
             local entitiesNeedingBoosts = {}
             entitiesNeedingBoosts = TableCombine(unBooostedEntities, TableCombine(affectedEntities, entitiesNeedingBoosts))
 
-            DelayedCallUntil(
+            DelayedCallUntilWithAtLeastTime(
+                500,
                 function() return WaitRemoveBoostingMany(SessionContext, affectedEntities) end,
                 function()
                     PerformBoostingMany(SessionContext, entitiesNeedingBoosts)
@@ -4116,7 +4136,8 @@ local function OnSessionLoaded()
             local entitiesNeedingBoosts = {}
             entitiesNeedingBoosts = TableCombine(unBooostedEntities, TableCombine(affectedEntities, entitiesNeedingBoosts))
 
-            DelayedCallUntil(
+            DelayedCallUntilWithAtLeastTime(
+                300,
                 function() return WaitRemoveBoostingMany(SessionContext, affectedEntities) end,
                 function()
                     PerformBoostingMany(SessionContext, entitiesNeedingBoosts)
@@ -4152,7 +4173,8 @@ local function OnSessionLoaded()
             entitiesNeedingBoosts = TableCombine(unBooostedEntities, TableCombine(affectedEntities, entitiesNeedingBoosts))
 
             -- After removing passives, it takes some time for them to actually disappear
-            DelayedCallUntil(
+            DelayedCallUntilWithAtLeastTime(
+                500,
                 function() return WaitRemoveBoostingMany(SessionContext, entitiesNeedingBoosts) end,
                 function()
                     PerformBoostingMany(SessionContext, entitiesNeedingBoosts)
@@ -4188,7 +4210,8 @@ local function OnSessionLoaded()
             entitiesNeedingBoosts = TableCombine(unBooostedEntities, TableCombine(affectedEntities, entitiesNeedingBoosts))
 
             -- After removing passives, it takes some time for them to actually disappear
-            DelayedCallUntil(
+            DelayedCallUntilWithAtLeastTime(
+                500,
                 function() return WaitRemoveBoostingMany(SessionContext, entitiesNeedingBoosts) end,
                 function()
                     PerformBoostingMany(SessionContext, entitiesNeedingBoosts)
