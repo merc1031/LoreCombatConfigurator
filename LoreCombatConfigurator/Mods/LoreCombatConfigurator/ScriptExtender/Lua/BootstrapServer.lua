@@ -379,7 +379,11 @@ end
 function CharacterGetStats(target)
     local entity = Ext.Entity.Get(target)
     local res, statName = pcall(function () return entity["ServerCharacter"]["Character"]["Template"]["Stats"] end)
-    return GetStatsChain(statName)
+    if statName ~= nil then
+        return GetStatsChain(statName)
+    else
+        return {}
+    end
 end
 
 --- @param statName string
@@ -1494,7 +1498,7 @@ function PreparePassivesTables(sessionContext, entity)
     local shortGuid = entity.ShortGuid
     local passiveTables = {}
 
-    local kinds = sessionContext.EntityToKinds(shortGuid) or {}
+    local kinds = entity.Kinds
     local allClasses = {}
     for kind, _ in pairs(kinds) do
         local classes = KindMapping[kind]
@@ -1569,13 +1573,13 @@ function PrepareAbilityTables(sessionContext, entity)
     local shortGuid = entity.ShortGuid
     local abilityTables = {}
 
-    local kinds = sessionContext.EntityToKinds(shortGuid) or {}
+    local kinds = entity.Kinds
     local allClasses = {}
     for kind, _ in pairs(kinds) do
         local classes = KindMapping[kind]
         allClasses = TableCombine(classes, allClasses)
     end
-    local restrictions = sessionContext.EntityToRestrictions(shortGuid) or {}
+    local restrictions = entity.Restrictions
 
     sessionContext.LogI(7, 26, string.format("DBG: In abilities Found classes %s for %s", Ext.Json.Stringify(allClasses), shortGuid))
 
@@ -1899,7 +1903,7 @@ function GuessIfCaster(sessionContext, entity)
         local combatComponent = SafeGet(entity.Entity, "ServerCharacter", "Character", "Template", "CombatComponent")
         return casterTypes[SafeGet(combatComponent, "Archetype")] ~= nil
     end
-    local kinds = sessionContext.EntityToKinds(shortGuid)
+    local kinds = entity.Kinds
     return (
         (
             kinds ~= nil and kinds["Caster"] ~= nil
@@ -1916,7 +1920,7 @@ function GuessIfBarbarian(sessionContext, entity)
     sessionContext.LogI(3, 22, string.format("Guessing if barbarian on %s", shortGuid))
     local barbarianTypes = {
     }
-    local kinds = sessionContext.EntityToKinds(shortGuid)
+    local kinds = entity.Kinds
     return (
         (kinds ~= nil and kinds["Barbarian"] ~= nil) or
         (
@@ -1935,7 +1939,7 @@ function GuessIfFighter(sessionContext, entity)
     local fighterTypes = {
         melee = true,
     }
-    local kinds = sessionContext.EntityToKinds(shortGuid)
+    local kinds = entity.Kinds
     return (
         (
             kinds ~= nil and kinds["Fighter"] ~= nil
@@ -1971,7 +1975,7 @@ function GuessIfCleric(sessionContext, entity)
     sessionContext.LogI(3, 22, string.format("Guessing if cleric on %s", shortGuid))
     local clericTypes = {
     }
-    local kinds = sessionContext.EntityToKinds(shortGuid)
+    local kinds = entity.Kinds
     return (
         (
             kinds ~= nil and kinds["Cleric"] ~= nil
@@ -1990,7 +1994,7 @@ function GuessIfBard(sessionContext, entity)
     sessionContext.LogI(3, 22, string.format("Guessing if bard on %s", shortGuid))
     local bardTypes = {
     }
-    local kinds = sessionContext.EntityToKinds(shortGuid)
+    local kinds = entity.Kinds
     return (
         (
             kinds ~= nil and kinds["Bard"] ~= nil
@@ -2009,7 +2013,7 @@ function GuessIfPaladin(sessionContext, entity)
     sessionContext.LogI(3, 22, string.format("Guessing if paladin on %s", shortGuid))
     local paladinTypes = {
     }
-    local kinds = sessionContext.EntityToKinds(shortGuid)
+    local kinds = entity.Kinds
     return (
         (
             kinds ~= nil and kinds["Paladin"] ~= nil
@@ -2028,7 +2032,7 @@ function GuessIfDruid(sessionContext, entity)
     sessionContext.LogI(3, 22, string.format("Guessing if druid on %s", shortGuid))
     local druidTypes = {
     }
-    local kinds = sessionContext.EntityToKinds(shortGuid)
+    local kinds = entity.Kinds
     return (
         (
             kinds ~= nil and kinds["Druid"] ~= nil
@@ -2049,7 +2053,7 @@ function GuessIfMonk(sessionContext, entity)
         monk_melee = true,
         monk_ranged = true,
     }
-    local kinds = sessionContext.EntityToKinds(shortGuid)
+    local kinds = entity.Kinds
     return (
         (
             kinds ~= nil and kinds["Monk"] ~= nil
@@ -2069,7 +2073,7 @@ function GuessIfRogue(sessionContext, entity)
     sessionContext.LogI(3, 22, string.format("Guessing if rogue on %s", shortGuid))
     local rogueTypes = {
     }
-    local kinds = sessionContext.EntityToKinds(shortGuid)
+    local kinds = entity.Kinds
     return (
         (
             kinds ~= nil and kinds["Rogue"] ~= nil
@@ -2088,7 +2092,7 @@ function GuessIfRanger(sessionContext, entity)
     sessionContext.LogI(3, 22, string.format("Guessing if ranger on %s", shortGuid))
     local rogueTypes = {
     }
-    local kinds = sessionContext.EntityToKinds(shortGuid)
+    local kinds = entity.Kinds
     return (
         (
             kinds ~= nil and kinds["Ranger"] ~= nil
@@ -2107,7 +2111,7 @@ function GuessIfWarlock(sessionContext, entity)
     sessionContext.LogI(3, 22, string.format("Guessing if warlock on %s", shortGuid))
     local warlockTypes = {
     }
-    local kinds = sessionContext.EntityToKinds(shortGuid)
+    local kinds = entity.Kinds
     return (
         (
             kinds ~= nil and kinds["Warlock"] ~= nil
@@ -2133,14 +2137,14 @@ function ComputeNewSpells(sessionContext, entity, configType)
 
     local spellTables = {}
 
-    local kinds = sessionContext.EntityToKinds(shortGuid) or {}
+    local kinds = entity.Kinds
     local allClasses = {}
     for kind, _ in pairs(kinds) do
         local classes = KindMapping[kind]
         allClasses = TableCombine(classes, allClasses)
     end
 
-    local restrictions = sessionContext.EntityToRestrictions(shortGuid) or {}
+    local restrictions = entity.Restrictions
 
     local combinedClassSpells = {}
     for _, class in ipairs(allClasses) do
@@ -3646,6 +3650,7 @@ function PerformBoosting(sessionContext, entity)
     local kinds = entity.Kinds
     local allClasses = entity.AllClasses
     local restrictions = entity.Restrictions
+    local statsChain = entity.StatsChain
     -- Special case check, AdditionalEnemies mod adds certain enemies that are marked boss but not hostile for some reason
     local isAdditionalEnemiesSpecialBoss = entity.IsAdditionalEnemiesSpecialBoss
 
@@ -3685,7 +3690,7 @@ function PerformBoosting(sessionContext, entity)
     PrepareSpellBookRoots(sessionContext, shortGuid)
 
     sessionContext.Log(2, string.format("Give: AiHint: %s (%s) Archetype: %s\n", rawAIHint, mappedAIHint, rawArchetype))
-    sessionContext.Log(2, string.format("Give: Kinds: %s; Classes: %s; Restrictions %s\n", Ext.Json.Stringify(kinds), Ext.Json.Stringify(allClasses), Ext.Json.Stringify(restrictions)))
+    sessionContext.Log(2, string.format("Give: Kinds: %s; Classes: %s; Restrictions %s; StatsChain: %s\n", Ext.Json.Stringify(kinds), Ext.Json.Stringify(allClasses), Ext.Json.Stringify(restrictions), Ext.Json.Stringify(statsChain)))
 
     local shouldTryToModify = not alreadyModified and not sameHash
     local classification = entity:GetConfigClassification(sessionContext)
@@ -3975,6 +3980,7 @@ function EnrichedEntity:EnrichEntity(sessionContext, entity)
     self.Kinds = kinds
     self.AllClasses = allClasses
     self.Restrictions = restrictions
+    self.StatsChain = CharacterGetStats(shortGuid)
     return self
 end
 
