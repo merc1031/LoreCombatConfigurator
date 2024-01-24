@@ -3640,6 +3640,12 @@ function PerformBoosting(sessionContext, entity)
     local isPlayer = entity.IsPlayer
     local alreadyModified = entity.AlreadyModified
     local sameHash = entity.SameHash
+    local rawAIHint = entity.RawAIHint
+    local mappedAIHint = entity.MappedAIHint
+    local rawArchetype = entity.RawArchetype
+    local kinds = entity.Kinds
+    local allClasses = entity.AllClasses
+    local restrictions = entity.Restrictions
     -- Special case check, AdditionalEnemies mod adds certain enemies that are marked boss but not hostile for some reason
     local isAdditionalEnemiesSpecialBoss = entity.IsAdditionalEnemiesSpecialBoss
 
@@ -3675,20 +3681,6 @@ function PerformBoosting(sessionContext, entity)
     sessionContext.EntityCache[shortGuid] = {
         SpellRoots = {},
     }
-
-    local CombatComponent = SafeGet(entity.Entity, "ServerCharacter", "Character", "Template", "CombatComponent")
-    local rawAIHint = SafeGet(CombatComponent, "AiHint")
-    local mappedAIHint = SafeGet(AiHints, SafeGet(CombatComponent, "AiHint"))
-    local rawArchetype = SafeGet(CombatComponent, "Archetype")
-
-    local kinds = sessionContext.EntityToKinds(shortGuid) or {}
-    local allClasses = {}
-    for kind, _ in pairs(kinds) do
-        local classes = KindMapping[kind]
-        allClasses = TableCombine(classes, allClasses)
-    end
-
-    local restrictions = sessionContext.EntityToRestrictions(shortGuid) or {}
 
     PrepareSpellBookRoots(sessionContext, shortGuid)
 
@@ -3950,6 +3942,19 @@ function EnrichedEntity:EnrichEntity(sessionContext, entity)
             end
         end
     end
+    local combatComponent = SafeGet(entity, "ServerCharacter", "Character", "Template", "CombatComponent")
+    local rawAIHint = SafeGet(combatComponent, "AiHint")
+    local mappedAIHint = SafeGet(AiHints, SafeGet(combatComponent, "AiHint"))
+    local rawArchetype = SafeGet(combatComponent, "Archetype")
+
+    local kinds = sessionContext.EntityToKinds(shortGuid) or {}
+    local allClasses = {}
+    for kind, _ in pairs(kinds) do
+        local classes = KindMapping[kind]
+        allClasses = TableCombine(classes, allClasses)
+    end
+
+    local restrictions = sessionContext.EntityToRestrictions(shortGuid) or {}
 
     self.IsCharacter = isCharacter
     self.IsPartyMember = isPartyMember
@@ -3964,6 +3969,12 @@ function EnrichedEntity:EnrichEntity(sessionContext, entity)
     self.SameHash = sameHash
     self.IsAdditionalEnemiesSpecialBoss = isAdditionalEnemiesSpecialBoss
     self.ConfigHash = sessionContext.ConfigHash
+    self.RawAIHint = rawAIHint
+    self.MappedAIHint = mappedAIHint
+    self.RawArchetype = rawArchetype
+    self.Kinds = kinds
+    self.AllClasses = allClasses
+    self.Restrictions = restrictions
     return self
 end
 
