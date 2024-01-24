@@ -519,6 +519,24 @@ Restrictions = {
     Goblin_Ranger = {},
     Goblin_Ranger_Strong = {},
     Goblin_Warlock = {},
+    HAG_AuntieEthel = {
+        Spell = {
+            School = {
+                Exclusive = {
+                    "Illusion",
+                    "Enchantment",
+                    "Transmutation",
+                },
+            },
+        },
+        Ability = {
+            Cost = {
+                Restrict = {
+                    "WildShape",
+                },
+            },
+        },
+    },
     Hag_Green = {
         Spell = {
             School = {
