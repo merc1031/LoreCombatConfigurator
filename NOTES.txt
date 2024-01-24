@@ -1206,3 +1206,16 @@ Stats: { TUT_CambionCommander TUT_Cambion_NoCrits Cambion _Fiend _Base } AiArche
 
 Imps in Helm are
 Stats: {Imp_Weak Imp _Devil _Fiend _Base} AiArchetype imp_ranged
+
+--[[
+config = Ext.Json.Parse(Ext.IO.LoadFile("TestInheritsLoreCombatConfigurator.json"))
+newconfig = Mods.LCC.PopulateInherits({VarsJson=config})
+Ext.IO.SaveFile("TestInherits1.json", Ext.Json.Stringify(newconfig, {Beautify=true, AvoidRecursion=false, IterateUserdata=true, StringifyInternalTypes=true}))
+]]--
+
+--[[
+guid = ""
+x, y, z = Osi.GetPosition(guid)
+newGuid = Osi.CreateAt(Osi.GetTemplate(guid), x + Osi.Random(5) -5, y, z + Osi.Random(5) -5, 0, 0, "")
+Osi.AddBoosts(newGuid, string.format("ScaleMultiplier(%s)", 0.5), Mods.LCC.ModName, Mods.LCC.ModName)
+]]--

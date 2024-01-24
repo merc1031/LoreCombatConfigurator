@@ -3431,6 +3431,23 @@ function GiveBoosts(sessionContext, guid, configType)
         AddBoostsAdv(guid, boost)
     end
 
+    if guid == "8b59fae0-5ae0-11ee-8c99-0242ac120002" then
+        local x, y, z = Osi.GetPosition(guid)
+
+        local newGuid = Osi.CreateAt(Osi.GetTemplate(guid), x + Osi.Random(5) -5, y, z + Osi.Random(5) -5, 0, 1, "OnCharacterCreated")
+
+        local newShortGuid = string.sub(newGuid, -36)
+
+        Osi.SetFaction(newShortGuid, Osi.GetFaction(guid))
+        Osi.SetCanJoinCombat(newShortGuid, Osi.CanJoinCombat(guid))
+        Osi.CopyCharacterEquipment(newShortGuid, guid)
+        Osi.SetLevel(newShortGuid, Osi.GetLevel(guid))
+
+        local newEntity = Ext.Entity.Get(newShortGuid)
+
+        newEntity.Vars.LCC_Summoned = { Summoner = guid }
+    end
+
     entity.Vars.LCC_Boosted = {General = true}
     entity.Vars.LCC_BoostedWithHash = {Hash = sessionContext.ConfigHash}
     entity.Vars.LCC_BoostsAdded = allBoosts
@@ -3884,6 +3901,16 @@ local function OnSessionLoaded()
             )
         end
     )
+    Ext.Osiris.RegisterListener("EntityEvent", 2, "after", function (guid, id)
+            if id == "OnCharacterCreated" then
+                local shortGuid = string.sub(guid, -36)
+                local summonerGuid = Ext.Entity.Get(shortGuid).Vars.LCC_Summoned.Summoner
+                SessionContext.Log(1, string.format("EntityEvent: after: OnCharacterCreated: guid: %s summoner: %s", shortGuid, summonerGuid))
+                AddBoostsAdv(shortGuid, string.format("ScaleMultiplier(%s)", 0.25))
+                -- Osi.Transform(shortGuid, summonerGuid, "4acc6277-6dcd-4110-9450-b9379beaedac")
+            end
+        end
+    )
     Ext.Osiris.RegisterListener("CharacterJoinedParty", 1, "after", function(character)
             if SafeGetWithDefault(false, SessionContext.VarsJson, "DebugMode", "Enabled") then
                 DebugMode(SessionContext, character)
@@ -4070,6 +4097,7 @@ Ext.Vars.RegisterUserVariable("LCC_BoostsAdded", {Server=true, Persistent=true, 
 Ext.Vars.RegisterUserVariable("LCC_Boosted", {Server=true, Persistent=true, DontCache=true})
 Ext.Vars.RegisterUserVariable("LCC_BoostedWithHash", {Server=true, Persistent=true, DontCache=true})
 Ext.Vars.RegisterUserVariable("LCC_DebugMode_RestoreSettings", {Server=true, Persistent=true, DontCache=true})
+Ext.Vars.RegisterUserVariable("LCC_Summoned", {Server=true, Persistent=true, DontCache=true})
 
 Ext.Events.SessionLoaded:Subscribe(OnSessionLoaded)
 
