@@ -378,11 +378,23 @@ end
 
 function CharacterGetStats(target)
     local entity = Ext.Entity.Get(target)
-    local res, stat = pcall(function () return entity["ServerCharacter"]["Character"]["Template"]["Stats"] end)
+    local res, statName = pcall(function () return entity["ServerCharacter"]["Character"]["Template"]["Stats"] end)
+    return GetStatsChain(statName)
+end
+
+--- @param statName string
+--- @return string[]
+function GetStatsChain(statName)
     local stats = {}
+    local stat = Ext.Stats.Get(statName)
     while stat ~= nil do
-        table.insert(stats, stat)
-        res, stat = pcall(function() return Ext.Stats.Get(stat).Using end)
+        table.insert(stats, stat.Name)
+        local _res, nextStatName = pcall(function() return stat.Using end)
+        if nextStatName ~= nil then
+            stat = Ext.Stats.Get(nextStatName)
+        else
+            stat = nil
+        end
     end
     return stats
 end
@@ -820,16 +832,15 @@ KindMapping = {
 --- @param sessionContext SessionContext
 function _EntityToKinds(sessionContext, kinds, target)
     local entity = Ext.Entity.Get(target)
-    local res, kind = pcall(function () return entity["ServerCharacter"]["Character"]["Template"]["Stats"] end)
-    while kind ~= nil do
-        local overrideKinds = SafeGet(sessionContext.VarsJson, "Kinds", kind)
+    local stats = CharacterGetStats(target)
+    for _, stat in ipairs(stats) do
+        local overrideKinds = SafeGet(sessionContext.VarsJson, "Kinds", stat)
         if overrideKinds ~= nil then
             return ToSet(overrideKinds)
         end
-        if kinds[kind] ~= nil then
-            return ToSet(kinds[kind])
+        if kinds[stat] ~= nil then
+            return ToSet(kinds[stat])
         end
-        res, kind = pcall(function() return Ext.Stats.Get(kind).Using end)
     end
     return nil
 end
@@ -837,8 +848,8 @@ end
 --- @param sessionContext SessionContext
 function _EntityToRestrictions(sessionContext, restrictions, target)
     local entity = Ext.Entity.Get(target)
-    local res, stat = pcall(function () return entity["ServerCharacter"]["Character"]["Template"]["Stats"] end)
-    while stat ~= nil do
+    local stats = CharacterGetStats(target)
+    for _, stat in ipairs(stats) do
         local overrideRestrictions = SafeGet(sessionContext.VarsJson, "Restrictions", stat)
         if overrideRestrictions ~= nil then
             return overrideRestrictions
@@ -846,7 +857,6 @@ function _EntityToRestrictions(sessionContext, restrictions, target)
         if restrictions[stat] ~= nil then
             return restrictions[stat]
         end
-        res, stat = pcall(function() return Ext.Stats.Get(stat).Using end)
     end
     return nil
 end
