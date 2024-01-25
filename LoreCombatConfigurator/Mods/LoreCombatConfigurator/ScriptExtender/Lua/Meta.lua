@@ -129,6 +129,7 @@
 --- @field EntityCache table<Guid, EntityCacheItem>
 --- @field ActionResources table<string, Guid>
 --- @field Tags table<string, Guid>
+--- @field Races table<string, Guid>
 --- @field ConfigFailed integer
 --- @field Log fun(level: integer, str: string) | nil
 --- @field LogI fun(level: integer, indent: integer, str: string) | nil

@@ -4107,6 +4107,11 @@ function CreateSessionContext()
         sessionContext.Tags[tag.Name] = tagGuid
     end
 
+    for _, raceGuid in pairs(Ext.StaticData.GetAll("Race")) do
+        local race = Ext.StaticData.Get(raceGuid, "Race")
+        sessionContext.Races[race.Name] = raceGuid
+    end
+
     local rootTemplates = Ext.Template.GetAllRootTemplates()
     for _, template in pairs(rootTemplates) do
         if ({item = true, character = true})[template.TemplateType] then
