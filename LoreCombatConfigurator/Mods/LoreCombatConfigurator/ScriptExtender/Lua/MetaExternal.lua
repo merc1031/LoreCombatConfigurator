@@ -31,3 +31,12 @@ local Ext = {}
 --- @param when string
 --- @param handler ListenerCallback
 function Ext.Osiris.RegisterListener(event, arity, when, handler) end
+
+--- @class UserVarSettings
+--- @field Server boolean
+--- @field Persistent boolean
+--- @field DontCache boolean
+
+--- @class Ext_Vars
+--- @field RegisterUserVariable fun(a1:string, a2:UserVarSettings)
+local Ext_Vars = {}
