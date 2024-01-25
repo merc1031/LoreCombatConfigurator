@@ -5,7 +5,7 @@ CONFIG_HASH_SALT = 1234
 
 -- Courtesy to @Buns on Discord
 --- @generic T
---- @param object table<string, any>
+--- @param object table<string, any> | nil
 --- @param ... string
 --- @return T | nil, nil | string
 function SafeGet(object, ...)
