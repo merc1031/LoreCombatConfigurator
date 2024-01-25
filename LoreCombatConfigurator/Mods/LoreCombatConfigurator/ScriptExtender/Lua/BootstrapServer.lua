@@ -4,6 +4,10 @@ ModName = "LoreCombatConfigurator"
 CONFIG_HASH_SALT = 1234
 
 -- Courtesy to @Buns on Discord
+--- @generic T
+--- @param object table<string, any> | nil
+--- @param ... string
+--- @return T | nil, nil | string
 function SafeGet(object, ...)
     local result = object
     local error = "SafeGet: object"
@@ -32,6 +36,11 @@ function SafeGet(object, ...)
     return result, nil
 end
 
+--- @generic T
+--- @param default T
+--- @param object table<string, any>
+--- @param ... string
+--- @return T
 function SafeGetWithDefault(default, object, ...)
     local result, error = SafeGet(object, ...)
     if error ~= nil then
@@ -101,6 +110,25 @@ function DelayedCallWhile(pred, func)
     end)
 end
 
+---Delay a function call to wait to run once when the predicate holds true
+-- but only after the time delay
+---@param ms integer
+---@param pred function
+---@param func function
+function DelayedCallUntilWithAtLeastTime(ms, pred, func)
+    local Time = 0
+    local handler
+    handler = Ext.Events.Tick:Subscribe(function(e)
+        Time = Time + e.Time.DeltaTime * 1000
+        if (Time >= ms) then
+            if (pred()) then
+                func()
+                Ext.Events.Tick:Unsubscribe(handler)
+            end
+        end
+    end)
+end
+
 function ConsistentHash(salt, buckets, str, ...)
     local params = {...}
     for _, v in ipairs(params) do
@@ -116,6 +144,11 @@ function ConsistentHash(salt, buckets, str, ...)
     return hash % buckets
 end
 
+--- @generic A, V, T
+--- @param fn fun(result:A, val: V): A
+--- @param acc A
+--- @param listlike V[]
+--- @return A
 function Fold(fn, acc, listlike)
     local result = acc
     for _, val in ipairs(listlike) do
@@ -124,6 +157,24 @@ function Fold(fn, acc, listlike)
     return result
 end
 
+--- @generic K, V, T
+--- @param fn fun(val: V): K, T
+--- @param listlike V[]
+--- @return table<K, T>
+function ListToTable(fn, listlike)
+    local result = {}
+    local fn1 = function(acc, val)
+        local key, value = fn(val)
+        acc[key] = value
+        return acc
+    end
+    return Fold(fn1, result, listlike)
+end
+
+--- @generic V, T
+--- @param fn fun(val: V): T
+--- @param listlike V[]
+--- @return T[]
 function Map(fn, listlike)
     local result = {}
     for _, val in ipairs(listlike) do
@@ -132,6 +183,10 @@ function Map(fn, listlike)
     return result
 end
 
+--- @generic V
+--- @param fn fun(val: V): boolean
+--- @param listlike V[]
+--- @return V[]
 function Filter(fn, listlike)
     local result = {}
     for _, val in ipairs(listlike) do
@@ -142,6 +197,10 @@ function Filter(fn, listlike)
     return result
 end
 
+--- @generic K, V, T
+--- @param fn fun(val: V): T
+--- @param tablelike table<K, V>
+--- @return table<K, T>
 function MapTableValues(fn, tablelike)
     local result = {}
     for key, val in pairs(tablelike) do
@@ -150,6 +209,10 @@ function MapTableValues(fn, tablelike)
     return result
 end
 
+--- @generic K, V, T
+--- @param fn fun(key: K, val: V): T
+--- @param tablelike table<K, V>
+--- @return table<K, T>
 function MapTable(fn, tablelike)
     local result = {}
     for key, val in pairs(tablelike) do
@@ -158,6 +221,10 @@ function MapTable(fn, tablelike)
     return result
 end
 
+--- @generic K, V
+--- @param fn fun(key: K, val: V): boolean
+--- @param tablelike table<K, V>
+--- @return table<K, V>
 function FilterTable(fn, tablelike)
     local result = {}
     for key, val in pairs(tablelike) do
@@ -227,6 +294,9 @@ function NestedVisitTable(table1, visitor, reducer)
     end
 end
 
+--- @generic T
+--- @param list T[]
+--- @return table<T, boolean>
 function ToSet(list)
     local tab = {}
     for _, l in ipairs(list) do
@@ -246,6 +316,10 @@ function Split(inputStr, sep)
     return t
 end
 
+--- @generic T, V
+--- @param t1 V[]
+--- @param t2 T[]
+--- @return (V | T)[]
 function TableCombine(t1, t2)
     return table.move(t1, 1, #t1, #t2 + 1, t2)
 end
@@ -292,6 +366,9 @@ function Flatten(listOfLists)
     return flatterList
 end
 
+--- @generic K, V
+--- @param tab table<K, V>
+--- @return V[]
 function Values(tab)
     local list = {}
     for key, elem in pairs(tab) do
@@ -300,6 +377,9 @@ function Values(tab)
     return list
 end
 
+--- @generic K, V
+--- @param tab table<K, V>
+--- @return K[]
 function Keys(tab)
     local list = {}
     for key, elem in pairs(tab) do
@@ -308,6 +388,9 @@ function Keys(tab)
     return list
 end
 
+--- @generic K, V
+--- @param tab table<K, V>
+--- @return table<V, K>
 function InvertTable(tab)
     local newtab = {}
     for key, elem in pairs(tab) do
@@ -339,11 +422,27 @@ end
 
 function CharacterGetStats(target)
     local entity = Ext.Entity.Get(target)
-    local res, stat = pcall(function () return entity["ServerCharacter"]["Character"]["Template"]["Stats"] end)
+    local res, statName = pcall(function () return entity["ServerCharacter"]["Character"]["Template"]["Stats"] end)
+    if statName ~= nil then
+        return GetStatsChain(statName)
+    else
+        return {}
+    end
+end
+
+--- @param statName string
+--- @return string[]
+function GetStatsChain(statName)
     local stats = {}
+    local stat = Ext.Stats.Get(statName)
     while stat ~= nil do
-        table.insert(stats, stat)
-        res, stat = pcall(function() return Ext.Stats.Get(stat).Using end)
+        table.insert(stats, stat.Name)
+        local _res, nextStatName = pcall(function() return stat.Using end)
+        if nextStatName ~= nil then
+            stat = Ext.Stats.Get(nextStatName)
+        else
+            stat = nil
+        end
     end
     return stats
 end
@@ -464,6 +563,24 @@ Restrictions = {
     Goblin_Ranger = {},
     Goblin_Ranger_Strong = {},
     Goblin_Warlock = {},
+    HAG_AuntieEthel = {
+        Spell = {
+            School = {
+                Exclusive = {
+                    "Illusion",
+                    "Enchantment",
+                    "Transmutation",
+                },
+            },
+        },
+        Ability = {
+            Cost = {
+                Restrict = {
+                    "WildShape",
+                },
+            },
+        },
+    },
     Hag_Green = {
         Spell = {
             School = {
@@ -677,6 +794,7 @@ Kinds = {
     Goblin_Ranger = {"Ranger"},
     Goblin_Ranger_Strong = {"Fighter", "Ranger"},
     Goblin_Warlock = {"Warlock"},
+    HAG_AuntieEthel = {"Druid", "Ranger"},
     Hag_Green = {"Druid", "Ranger"},
     HalfElf_Barbarian = {"Barbarian"},
     HalfElf_Bard = {"Bard"},
@@ -718,6 +836,7 @@ Kinds = {
     Kuotoa_Caster = {"Cleric"},
     Kuotoa_Ranger = {"Ranger"},
     LOW_Githyanki_Paladin = {"Paladin"},
+    RedCap = {"Fighter"},
     RedCap_Caster = {"Caster"},
     SCL_Ketheric = {"Paladin"},
     Skeleton_Caster = {"Caster"},
@@ -781,16 +900,15 @@ KindMapping = {
 --- @param sessionContext SessionContext
 function _EntityToKinds(sessionContext, kinds, target)
     local entity = Ext.Entity.Get(target)
-    local res, kind = pcall(function () return entity["ServerCharacter"]["Character"]["Template"]["Stats"] end)
-    while kind ~= nil do
-        local overrideKinds = SafeGet(sessionContext.VarsJson, "Kinds", kind)
+    local stats = CharacterGetStats(target)
+    for _, stat in ipairs(stats) do
+        local overrideKinds = SafeGet(sessionContext.VarsJson, "Kinds", stat)
         if overrideKinds ~= nil then
             return ToSet(overrideKinds)
         end
-        if kinds[kind] ~= nil then
-            return ToSet(kinds[kind])
+        if kinds[stat] ~= nil then
+            return ToSet(kinds[stat])
         end
-        res, kind = pcall(function() return Ext.Stats.Get(kind).Using end)
     end
     return nil
 end
@@ -798,8 +916,8 @@ end
 --- @param sessionContext SessionContext
 function _EntityToRestrictions(sessionContext, restrictions, target)
     local entity = Ext.Entity.Get(target)
-    local res, stat = pcall(function () return entity["ServerCharacter"]["Character"]["Template"]["Stats"] end)
-    while stat ~= nil do
+    local stats = CharacterGetStats(target)
+    for _, stat in ipairs(stats) do
         local overrideRestrictions = SafeGet(sessionContext.VarsJson, "Restrictions", stat)
         if overrideRestrictions ~= nil then
             return overrideRestrictions
@@ -807,7 +925,6 @@ function _EntityToRestrictions(sessionContext, restrictions, target)
         if restrictions[stat] ~= nil then
             return restrictions[stat]
         end
-        res, stat = pcall(function() return Ext.Stats.Get(stat).Using end)
     end
     return nil
 end
@@ -1370,47 +1487,51 @@ function LevelGate(sessionContext, varSection, min, max, npcLevel, target, confi
 end
 
 --- @param sessionContext SessionContext
-function ComputeClassLevelAdditions(sessionContext, sourceTables, deps, var, presenceCheckFn, target, configType)
+--- @param entity EnrichedEntity
+--- @param configType string
+--- @return table<string, string>
+function ComputeClassLevelAdditions(sessionContext, sourceTables, deps, var, presenceCheckFn, entity, configType)
+    local shortGuid = entity.ShortGuid
     local toAdd = {}
-    local requiredLevels = LevelGate(sessionContext, var, 1, 20, Osi.GetLevel(target), target, configType)
+    local requiredLevels = LevelGate(sessionContext, var, 1, 20, Osi.GetLevel(shortGuid), shortGuid, configType)
 
-    sessionContext.LogI(7, 26, string.format("DBG: Required levels %s for %s", Ext.Json.Stringify(requiredLevels), target))
+    sessionContext.LogI(7, 26, string.format("DBG: Required levels %s for %s", Ext.Json.Stringify(requiredLevels), shortGuid))
     local npcPresenceTable = {}
     for _, level in ipairs(requiredLevels) do
         local levels = sourceTables["Level" .. level]
 
         if levels then
             for _, addition in pairs(levels) do
-                npcPresenceTable[addition] = presenceCheckFn(target, addition) == 0
+                npcPresenceTable[addition] = presenceCheckFn(shortGuid, addition) == 0
             end
         end
     end
-    sessionContext.LogI(7, 26, string.format("DBG: Found %s additions presence table for %s", Ext.Json.Stringify(npcPresenceTable), target))
+    sessionContext.LogI(7, 26, string.format("DBG: Found %s additions presence table for %s", Ext.Json.Stringify(npcPresenceTable), shortGuid))
     local npcTable = Keys(FilterTable(function(key, val) return val end, npcPresenceTable))
     table.sort(npcTable)
 
-    sessionContext.LogI(7, 26, string.format("DBG: Found %s %s additions table for %s", #npcTable, Ext.Json.Stringify(npcTable), target))
+    sessionContext.LogI(7, 26, string.format("DBG: Found %s %s additions table for %s", #npcTable, Ext.Json.Stringify(npcTable), shortGuid))
     local lookupFn = function(range, ...)
         return Osi.Random(range)
     end
 
     if sessionContext.VarsJson["ConsistentHash"] and sessionContext.VarsJson["ConsistentHashSalt"] ~= nil then
-        sessionContext.LogI(7, 26, string.format("DBG: Using consistent hash for %s wiht salt %s", target, sessionContext.VarsJson["ConsistentHashSalt"]))
+        sessionContext.LogI(7, 26, string.format("DBG: Using consistent hash for %s wiht salt %s", shortGuid, sessionContext.VarsJson["ConsistentHashSalt"]))
         lookupFn = function(range, ...)
             local params = {...}
-            return ConsistentHash(sessionContext.VarsJson["ConsistentHashSalt"], range, target, table.unpack(params))
+            return ConsistentHash(sessionContext.VarsJson["ConsistentHashSalt"], range, shortGuid, table.unpack(params))
         end
     end
 
     if #npcTable > 0 then
-        local npcs = ComputeSimpleIncrementalBoost(sessionContext, var, target, configType)
+        local npcs = ComputeSimpleIncrementalBoost(sessionContext, var, entity, configType)
         for i = npcs, 1, -1 do
             local additionCandidate = nil
             local attempts = 1
             while attempts <= #npcTable and (additionCandidate == nil or toAdd[additionCandidate] ~= nil) do
                 local rnd = lookupFn(#npcTable, string.format("addition_%s", i), string.format("attempts_%s", attempts)) + 1
                 additionCandidate = npcTable[rnd]
-                sessionContext.LogI(4, 26, string.format("Selected %s on %s with %s attempt %s", additionCandidate, target, rnd, attempts))
+                sessionContext.LogI(4, 26, string.format("Selected %s on %s with %s attempt %s", additionCandidate, shortGuid, rnd, attempts))
                 attempts = attempts + 1
             end
             if additionCandidate ~= nil then
@@ -1423,7 +1544,7 @@ function ComputeClassLevelAdditions(sessionContext, sourceTables, deps, var, pre
     for candidateName, candidateData in pairs(toAdd) do
         finalToAdd[candidateName] = candidateData
         for _, depCandidate in ipairs(deps[candidateName] or {}) do
-            if toAdd[depCandidate] == nil and presenceCheckFn(target, depCandidate) == 0 then
+            if toAdd[depCandidate] == nil and presenceCheckFn(shortGuid, depCandidate) == 0 then
                 finalToAdd[depCandidate] = depCandidate
             end
         end
@@ -1433,16 +1554,19 @@ end
 
 
 --- @param sessionContext SessionContext
-function PreparePassivesTables(sessionContext, target)
+--- @param entity EnrichedEntity
+--- @return table<string, string[]>, integer
+function PreparePassivesTables(sessionContext, entity)
+    local shortGuid = entity.ShortGuid
     local passiveTables = {}
 
-    local kinds = sessionContext.EntityToKinds(target) or {}
+    local kinds = entity.Kinds
     local allClasses = {}
     for kind, _ in pairs(kinds) do
         local classes = KindMapping[kind]
         allClasses = TableCombine(classes, allClasses)
     end
-    sessionContext.LogI(7, 26, string.format("DBG: In passives Found classes %s for %s", Ext.Json.Stringify(allClasses), target))
+    sessionContext.LogI(7, 26, string.format("DBG: In passives Found classes %s for %s", Ext.Json.Stringify(allClasses), shortGuid))
 
     local combinedClassPassives = {}
     for _, class in ipairs(allClasses) do
@@ -1458,7 +1582,7 @@ function PreparePassivesTables(sessionContext, target)
             end
         end
     end
-    sessionContext.LogI(7, 26, string.format("DBG: Found passives %s for %s", Ext.Json.Stringify(combinedClassPassives), target))
+    sessionContext.LogI(7, 26, string.format("DBG: Found passives %s for %s", Ext.Json.Stringify(combinedClassPassives), shortGuid))
     local seenPassives = {}
     for level=1, 20, 1 do
         local combinedPassivesForLevel = combinedClassPassives["Level" .. level]
@@ -1472,7 +1596,7 @@ function PreparePassivesTables(sessionContext, target)
             end
         end
     end
-    sessionContext.LogI(7, 26, string.format("DBG: Found filtered passives %s for %s", Ext.Json.Stringify(combinedClassPassives), target))
+    sessionContext.LogI(7, 26, string.format("DBG: Found filtered passives %s for %s", Ext.Json.Stringify(combinedClassPassives), shortGuid))
 
     local passivesCount = 0
     for level, passives in pairs(combinedClassPassives) do
@@ -1488,32 +1612,38 @@ function PreparePassivesTables(sessionContext, target)
 end
 
 --- @param sessionContext SessionContext
-function ComputeClassSpecificPassives(sessionContext, target, configType)
+--- @param entity EnrichedEntity
+--- @param configType string
+--- @return table<string, string>
+function ComputeClassSpecificPassives(sessionContext, entity, configType)
     local passivesToAdd = {}
-    local passiveTables, passivesCount = PreparePassivesTables(sessionContext, target)
+    local passiveTables, passivesCount = PreparePassivesTables(sessionContext, entity)
 
     if passivesCount == 0 then
         sessionContext.LogI(2, 18, "No passives available, please check config")
         return passivesToAdd
     end
-    sessionContext.LogI(7, 26, string.format("DBG: Found passive tables %s for %s", Ext.Json.Stringify(passiveTables), target))
+    sessionContext.LogI(7, 26, string.format("DBG: Found passive tables %s for %s", Ext.Json.Stringify(passiveTables), entity.ShortGuid))
 
-    return ComputeClassLevelAdditions(sessionContext, passiveTables, sessionContext.PassiveDependencies, "PassivesAdded", Osi.HasPassive, target, configType)
+    return ComputeClassLevelAdditions(sessionContext, passiveTables, sessionContext.PassiveDependencies, "PassivesAdded", Osi.HasPassive, entity, configType)
 end
 
 --- @param sessionContext SessionContext
-function PrepareAbilityTables(sessionContext, target)
+--- @param entity EnrichedEntity
+--- @return table<string, string[]>, integer
+function PrepareAbilityTables(sessionContext, entity)
+    local shortGuid = entity.ShortGuid
     local abilityTables = {}
 
-    local kinds = sessionContext.EntityToKinds(target) or {}
+    local kinds = entity.Kinds
     local allClasses = {}
     for kind, _ in pairs(kinds) do
         local classes = KindMapping[kind]
         allClasses = TableCombine(classes, allClasses)
     end
-    local restrictions = sessionContext.EntityToRestrictions(target) or {}
+    local restrictions = entity.Restrictions
 
-    sessionContext.LogI(7, 26, string.format("DBG: In abilities Found classes %s for %s", Ext.Json.Stringify(allClasses), target))
+    sessionContext.LogI(7, 26, string.format("DBG: In abilities Found classes %s for %s", Ext.Json.Stringify(allClasses), shortGuid))
 
     local combinedClassAbilities = {}
     for _, class in ipairs(allClasses) do
@@ -1526,14 +1656,14 @@ function PrepareAbilityTables(sessionContext, target)
                 for _, ability in ipairs(abilities) do
 
                     local allowedByRestrictions = AllowedByRestrictions(sessionContext, restrictions, "Ability", ability)
-                    if allowedByRestrictions and not HasSpellThorough(sessionContext, target, ability) then
+                    if allowedByRestrictions and not HasSpellThorough(sessionContext, shortGuid, ability) then
                         combinedClassAbilities[level][ability] = true
                     end
                 end
             end
         end
     end
-    sessionContext.LogI(7, 26, string.format("DBG: Found abilities %s for %s", Ext.Json.Stringify(combinedClassAbilities), target))
+    sessionContext.LogI(7, 26, string.format("DBG: Found abilities %s for %s", Ext.Json.Stringify(combinedClassAbilities), shortGuid))
 
     local abilitiesCount = 0
     for level, abilities in pairs(combinedClassAbilities) do
@@ -1549,15 +1679,19 @@ function PrepareAbilityTables(sessionContext, target)
 end
 
 --- @param sessionContext SessionContext
-function ComputeClassSpecificAbilities(sessionContext, target, configType)
+--- @param entity EnrichedEntity
+--- @param configType string
+--- @return table<string, string>
+function ComputeClassSpecificAbilities(sessionContext, entity, configType)
+    local shortGuid
     local abiltiesToAdd = {}
-    local abilityTables, abilitiesCount = PrepareAbilityTables(sessionContext, target)
+    local abilityTables, abilitiesCount = PrepareAbilityTables(sessionContext, entity)
 
     if abilitiesCount == 0 then
         sessionContext.LogI(2, 18, "No abilities available, please check config")
         return abiltiesToAdd
     end
-    sessionContext.LogI(7, 26, string.format("DBG: Found ability tables %s for %s", Ext.Json.Stringify(abilityTables), target))
+    sessionContext.LogI(7, 26, string.format("DBG: Found ability tables %s for %s", Ext.Json.Stringify(abilityTables), shortGuid))
 
     return MapTableValues(
         function(abilityVal) return string.format("UnlockSpell(%s)", abilityVal) end,
@@ -1567,18 +1701,19 @@ function ComputeClassSpecificAbilities(sessionContext, target, configType)
             sessionContext.AbilityDependencies,
             "AbilitiesAdded",
             Osi.HasSpell,
-            target,
+            entity,
             configType
         )
     )
 end
 
+--- @param entity EnrichedEntity
 --- @return boolean
-function CheckIfOrigin(target)
-    local entity = Ext.Entity.Get(target)
-    local name = SafeGet(entity, "ServerCharacter", "Template", "Name")
+function CheckIfOrigin(entity)
+    local shortGuid = entity.ShortGuid
+    local name = SafeGet(entity.Entity, "ServerCharacter", "Template", "Name")
     if name ~= nil then
-        local fullGuid = string.format("%s_%s", name, target)
+        local fullGuid = string.format("%s_%s", name, shortGuid)
         for i=#ExcludedNPCs,1,-1 do
             if (ExcludedNPCs[i] == fullGuid) then
                 return true
@@ -1587,7 +1722,7 @@ function CheckIfOrigin(target)
         return false
     else
         for i=#ExcludedNPCs,1,-1 do
-            if (string.sub(ExcludedNPCs[i], -36) == target) then
+            if (string.sub(ExcludedNPCs[i], -36) == shortGuid) then
                 return true
             end
         end
@@ -1595,17 +1730,19 @@ function CheckIfOrigin(target)
     end
 end
 
-function HasPlayerData(target)
-    local entity = Ext.Entity.Get(target)
+--- @param entity EnrichedEntity
+--- @return boolean
+function HasPlayerData(entity)
     -- TODO: Can remove Character after v13
-    local playerData = SafeGet(entity, "ServerCharacter", "Character", "PlayerData")
+    local playerData = SafeGet(entity.Entity, "ServerCharacter", "Character", "PlayerData")
     return playerData ~= nil
 end
 
-function IsPlayer(target)
-    local entity = Ext.Entity.Get(target)
+--- @param entity EnrichedEntity
+--- @return boolean
+function IsPlayer(entity)
     -- TODO: Can remove Character after v13
-    local playerData = SafeGet(entity, "ServerCharacter", "Character", "IsPlayer")
+    local playerData = SafeGet(entity.Entity, "ServerCharacter", "Character", "IsPlayer")
     return playerData ~= nil and playerData
 end
 
@@ -1636,20 +1773,21 @@ function IsAdditionalEnemiesLoaded()
     return Ext.Mod.IsModLoaded(ADDITIONAL_ENEMIES_GUID)
 end
 
+--- @param entity EnrichedEntity
 --- @return boolean
-function CheckIfParty(target)
-    if (Osi.IsPartyMember(target,1) == 1) then
+function CheckIfParty(entity)
+    if (Osi.IsPartyMember(entity.ShortGuid,1) == 1) then
         return true
     else return false
     end
 end
 
+--- @param entity EnrichedEntity
 --- @return boolean
-function CheckIfOurSummon(target)
-    local us = Ext.Entity.Get(target)["IsSummon"]
+function CheckIfOurSummon(entity)
+    local us = Ext.Entity.Get(entity.ShortGuid)["IsSummon"]
     if us ~= nil then
-        local parent = us["Owner_M"]
-        return CheckIfParty(parent["Uuid"]["EntityUuid"])
+        return CheckIfParty(entity)
     end
     return false
 end
@@ -1800,20 +1938,22 @@ function HasSpellThorough(sessionContext, target, spell)
 end
 
 --- @param sessionContext SessionContext
-function GuessIfCaster(sessionContext, target)
-    sessionContext.LogI(3, 22, string.format("Guessing if caster on %s", target))
+--- @param entity EnrichedEntity
+function GuessIfCaster(sessionContext, entity)
+    local shortGuid = entity.ShortGuid
+    sessionContext.LogI(3, 22, string.format("Guessing if caster on %s", shortGuid))
     local eeCaster = (
-        Osi.HasPassive(target, "EE_Cantrips_Type_1") == 1 or
-        Osi.HasPassive(target, "EE_Cantrips_Type_2") == 1 or
-        Osi.HasPassive(target, "EE_Spells_Level_1") == 1 or
-        Osi.HasPassive(target, "EE_Spells_Level_2") == 1 or
-        Osi.HasPassive(target, "EE_Spells_Level_3") == 1 or
-        Osi.HasPassive(target, "EE_Spells_Level_4") == 1 or
-        Osi.HasPassive(target, "EE_Spells_Level_5") == 1 or
-        Osi.HasPassive(target, "EE_Spells_Level_6") == 1
+        Osi.HasPassive(shortGuid, "EE_Cantrips_Type_1") == 1 or
+        Osi.HasPassive(shortGuid, "EE_Cantrips_Type_2") == 1 or
+        Osi.HasPassive(shortGuid, "EE_Spells_Level_1") == 1 or
+        Osi.HasPassive(shortGuid, "EE_Spells_Level_2") == 1 or
+        Osi.HasPassive(shortGuid, "EE_Spells_Level_3") == 1 or
+        Osi.HasPassive(shortGuid, "EE_Spells_Level_4") == 1 or
+        Osi.HasPassive(shortGuid, "EE_Spells_Level_5") == 1 or
+        Osi.HasPassive(shortGuid, "EE_Spells_Level_6") == 1
     )
     function CheckArchetype()
-        sessionContext.LogI(3, 26, string.format("Peforming mage archetype check %s", target))
+        sessionContext.LogI(3, 26, string.format("Peforming mage archetype check %s", shortGuid))
         local casterTypes = {
             mage = true,
             mage_SCL = true,
@@ -1822,11 +1962,10 @@ function GuessIfCaster(sessionContext, target)
             goblin_mage = true,
             monk_mage = true,
         }
-        local entity = Ext.Entity.Get(target)
-        local combatComponent = SafeGet(entity, "ServerCharacter", "Character", "Template", "CombatComponent")
+        local combatComponent = SafeGet(entity.Entity, "ServerCharacter", "Character", "Template", "CombatComponent")
         return casterTypes[SafeGet(combatComponent, "Archetype")] ~= nil
     end
-    local kinds = sessionContext.EntityToKinds(target)
+    local kinds = entity.Kinds
     return (
         (
             kinds ~= nil and kinds["Caster"] ~= nil
@@ -1837,43 +1976,49 @@ function GuessIfCaster(sessionContext, target)
 end
 
 --- @param sessionContext SessionContext
-function GuessIfBarbarian(sessionContext, target)
-    sessionContext.LogI(3, 22, string.format("Guessing if barbarian on %s", target))
+--- @param entity EnrichedEntity
+function GuessIfBarbarian(sessionContext, entity)
+    local shortGuid = entity.ShortGuid
+    sessionContext.LogI(3, 22, string.format("Guessing if barbarian on %s", shortGuid))
     local barbarianTypes = {
     }
-    local kinds = sessionContext.EntityToKinds(target)
+    local kinds = entity.Kinds
     return (
         (kinds ~= nil and kinds["Barbarian"] ~= nil) or
         (
             sessionContext.VarsJson["BarbarianArchetypeCheck"] and
-            barbarianTypes[SafeGet(Ext.Entity.Get(target), "ServerCharacter", "Character", "Template", "CombatComponent", "Archetype")] ~= nil
+            barbarianTypes[SafeGet(entity.Entity, "ServerCharacter", "Character", "Template", "CombatComponent", "Archetype")] ~= nil
         ) or
-        (IsEnemiesEnhancedLoaded(sessionContext) and Osi.HasPassive(target, "EE_Barbarian_Boost") == 1)
+        (IsEnemiesEnhancedLoaded(sessionContext) and Osi.HasPassive(shortGuid, "EE_Barbarian_Boost") == 1)
     )
 end
 
 --- @param sessionContext SessionContext
-function GuessIfFighter(sessionContext, target)
-    sessionContext.LogI(3, 22, string.format("Guessing if fighter on %s", target))
+--- @param entity EnrichedEntity
+function GuessIfFighter(sessionContext, entity)
+    local shortGuid = entity.ShortGuid
+    sessionContext.LogI(3, 22, string.format("Guessing if fighter on %s", shortGuid))
     local fighterTypes = {
         melee = true,
     }
-    local kinds = sessionContext.EntityToKinds(target)
+    local kinds = entity.Kinds
     return (
         (
             kinds ~= nil and kinds["Fighter"] ~= nil
         ) or
         (
             sessionContext.VarsJson["FighterArchetypeCheck"] and
-            fighterTypes[SafeGet(Ext.Entity.Get(target), "ServerCharacter", "Character", "Template", "CombatComponent", "Archetype")] ~= nil
+            fighterTypes[SafeGet(entity.Entity, "ServerCharacter", "Character", "Template", "CombatComponent", "Archetype")] ~= nil
         ) or
-        (IsEnemiesEnhancedLoaded(sessionContext) and Osi.HasPassive(target, "EE_Fighter_Boost") == 1)
+        (IsEnemiesEnhancedLoaded(sessionContext) and Osi.HasPassive(shortGuid, "EE_Fighter_Boost") == 1)
     )
 end
 
 --- @param sessionContext SessionContext
-function GuessIfHealer(sessionContext, target)
-    sessionContext.LogI(3, 22, string.format("Guessing if healer on %s", target))
+--- @param entity EnrichedEntity
+function GuessIfHealer(sessionContext, entity)
+    local shortGuid = entity.ShortGuid
+    sessionContext.LogI(3, 22, string.format("Guessing if healer on %s", shortGuid))
     local healerTypes = {
         healer_melee = true,
         healer_ranged = true,
@@ -1881,168 +2026,187 @@ function GuessIfHealer(sessionContext, target)
     }
     return (
         sessionContext.VarsJson["HealerArchetypeCheck"] and
-        healerTypes[SafeGet(Ext.Entity.Get(target), "ServerCharacter", "Character", "Template", "CombatComponent", "Archetype")] ~= nil
+        healerTypes[SafeGet(entity.Entity, "ServerCharacter", "Character", "Template", "CombatComponent", "Archetype")] ~= nil
     )
 end
 
 --- @param sessionContext SessionContext
-function GuessIfCleric(sessionContext, target)
-    sessionContext.LogI(3, 22, string.format("Guessing if cleric on %s", target))
+--- @param entity EnrichedEntity
+function GuessIfCleric(sessionContext, entity)
+    local shortGuid = entity.ShortGuid
+    sessionContext.LogI(3, 22, string.format("Guessing if cleric on %s", shortGuid))
     local clericTypes = {
     }
-    local kinds = sessionContext.EntityToKinds(target)
+    local kinds = entity.Kinds
     return (
         (
             kinds ~= nil and kinds["Cleric"] ~= nil
         ) or
         (
             sessionContext.VarsJson["ClericArchetypeCheck"] and
-            clericTypes[SafeGet(Ext.Entity.Get(target), "ServerCharacter", "Character", "Template", "CombatComponent", "Archetype")] ~= nil
+            clericTypes[SafeGet(entity.Entity, "ServerCharacter", "Character", "Template", "CombatComponent", "Archetype")] ~= nil
         )
     )
 end
 
 --- @param sessionContext SessionContext
-function GuessIfBard(sessionContext, target)
-    sessionContext.LogI(3, 22, string.format("Guessing if bard on %s", target))
+--- @param entity EnrichedEntity
+function GuessIfBard(sessionContext, entity)
+    local shortGuid = entity.ShortGuid
+    sessionContext.LogI(3, 22, string.format("Guessing if bard on %s", shortGuid))
     local bardTypes = {
     }
-    local kinds = sessionContext.EntityToKinds(target)
+    local kinds = entity.Kinds
     return (
         (
             kinds ~= nil and kinds["Bard"] ~= nil
         ) or
         (
             sessionContext.VarsJson["BardArchetypeCheck"] and
-            bardTypes[SafeGet(Ext.Entity.Get(target), "ServerCharacter", "Character", "Template", "CombatComponent", "Archetype")] ~= nil
+            bardTypes[SafeGet(entity.Entity, "ServerCharacter", "Character", "Template", "CombatComponent", "Archetype")] ~= nil
         )
     )
 end
 
 --- @param sessionContext SessionContext
-function GuessIfPaladin(sessionContext, target)
-    sessionContext.LogI(3, 22, string.format("Guessing if paladin on %s", target))
+--- @param entity EnrichedEntity
+function GuessIfPaladin(sessionContext, entity)
+    local shortGuid = entity.ShortGuid
+    sessionContext.LogI(3, 22, string.format("Guessing if paladin on %s", shortGuid))
     local paladinTypes = {
     }
-    local kinds = sessionContext.EntityToKinds(target)
+    local kinds = entity.Kinds
     return (
         (
             kinds ~= nil and kinds["Paladin"] ~= nil
         ) or
         (
             sessionContext.VarsJson["PaladinArchetypeCheck"] and
-            paladinTypes[SafeGet(Ext.Entity.Get(target), "ServerCharacter", "Character", "Template", "CombatComponent", "Archetype")] ~= nil
+            paladinTypes[SafeGet(entity.Entity, "ServerCharacter", "Character", "Template", "CombatComponent", "Archetype")] ~= nil
         )
     )
 end
 
 --- @param sessionContext SessionContext
-function GuessIfDruid(sessionContext, target)
-    sessionContext.LogI(3, 22, string.format("Guessing if druid on %s", target))
+--- @param entity EnrichedEntity
+function GuessIfDruid(sessionContext, entity)
+    local shortGuid = entity.ShortGuid
+    sessionContext.LogI(3, 22, string.format("Guessing if druid on %s", shortGuid))
     local druidTypes = {
     }
-    local kinds = sessionContext.EntityToKinds(target)
+    local kinds = entity.Kinds
     return (
         (
             kinds ~= nil and kinds["Druid"] ~= nil
         ) or
         (
             sessionContext.VarsJson["DruidArchetypeCheck"] and
-            druidTypes[SafeGet(Ext.Entity.Get(target), "ServerCharacter", "Character", "Template", "CombatComponent", "Archetype")] ~= nil
+            druidTypes[SafeGet(entity.Entity, "ServerCharacter", "Character", "Template", "CombatComponent", "Archetype")] ~= nil
         )
     )
 end
 
 --- @param sessionContext SessionContext
-function GuessIfMonk(sessionContext, target)
-    sessionContext.LogI(3, 22, string.format("Guessing if monk on %s", target))
+--- @param entity EnrichedEntity
+function GuessIfMonk(sessionContext, entity)
+    local shortGuid = entity.ShortGuid
+    sessionContext.LogI(3, 22, string.format("Guessing if monk on %s", shortGuid))
     local monkTypes = {
         monk_melee = true,
         monk_ranged = true,
     }
-    local kinds = sessionContext.EntityToKinds(target)
+    local kinds = entity.Kinds
     return (
         (
             kinds ~= nil and kinds["Monk"] ~= nil
         ) or
         (
             sessionContext.VarsJson["MonkArchetypeCheck"] and
-            monkTypes[SafeGet(Ext.Entity.Get(target), "ServerCharacter", "Character", "Template", "CombatComponent", "Archetype")] ~= nil
+            monkTypes[SafeGet(entity.Entity, "ServerCharacter", "Character", "Template", "CombatComponent", "Archetype")] ~= nil
         ) or
-        Osi.HasPassive(target, "PsychicStrikes_Githyanki") == 1
+        Osi.HasPassive(shortGuid, "PsychicStrikes_Githyanki") == 1
     )
 end
 
 --- @param sessionContext SessionContext
-function GuessIfRogue(sessionContext, target)
-    sessionContext.LogI(3, 22, string.format("Guessing if rogue on %s", target))
+--- @param entity EnrichedEntity
+function GuessIfRogue(sessionContext, entity)
+    local shortGuid = entity.ShortGuid
+    sessionContext.LogI(3, 22, string.format("Guessing if rogue on %s", shortGuid))
     local rogueTypes = {
     }
-    local kinds = sessionContext.EntityToKinds(target)
+    local kinds = entity.Kinds
     return (
         (
             kinds ~= nil and kinds["Rogue"] ~= nil
         ) or
         (
             sessionContext.VarsJson["RogueArchetypeCheck"] and
-            rogueTypes[SafeGet(Ext.Entity.Get(target), "ServerCharacter", "Character", "Template", "CombatComponent", "Archetype")] ~= nil
+            rogueTypes[SafeGet(entity.Entity, "ServerCharacter", "Character", "Template", "CombatComponent", "Archetype")] ~= nil
         )
     )
 end
 
 --- @param sessionContext SessionContext
-function GuessIfRanger(sessionContext, target)
-    sessionContext.LogI(3, 22, string.format("Guessing if ranger on %s", target))
+--- @param entity EnrichedEntity
+function GuessIfRanger(sessionContext, entity)
+    local shortGuid = entity.ShortGuid
+    sessionContext.LogI(3, 22, string.format("Guessing if ranger on %s", shortGuid))
     local rogueTypes = {
     }
-    local kinds = sessionContext.EntityToKinds(target)
+    local kinds = entity.Kinds
     return (
         (
             kinds ~= nil and kinds["Ranger"] ~= nil
         ) or
         (
             sessionContext.VarsJson["RangerArchetypeCheck"] and
-            rogueTypes[SafeGet(Ext.Entity.Get(target), "ServerCharacter", "Character", "Template", "CombatComponent", "Archetype")] ~= nil
+            rogueTypes[SafeGet(entity.Entity, "ServerCharacter", "Character", "Template", "CombatComponent", "Archetype")] ~= nil
         )
     )
 end
 
 --- @param sessionContext SessionContext
-function GuessIfWarlock(sessionContext, target)
-    sessionContext.LogI(3, 22, string.format("Guessing if warlock on %s", target))
+--- @param entity EnrichedEntity
+function GuessIfWarlock(sessionContext, entity)
+    local shortGuid = entity.ShortGuid
+    sessionContext.LogI(3, 22, string.format("Guessing if warlock on %s", shortGuid))
     local warlockTypes = {
     }
-    local kinds = sessionContext.EntityToKinds(target)
+    local kinds = entity.Kinds
     return (
         (
             kinds ~= nil and kinds["Warlock"] ~= nil
         ) or
         (
             sessionContext.VarsJson["WarlockArchetypeCheck"] and
-            warlockTypes[SafeGet(Ext.Entity.Get(target), "ServerCharacter", "Character", "Template", "CombatComponent", "Archetype")] ~= nil
+            warlockTypes[SafeGet(entity.Entity, "ServerCharacter", "Character", "Template", "CombatComponent", "Archetype")] ~= nil
         )
     )
 end
 
 --- @param sessionContext SessionContext
-function ComputeNewSpells(sessionContext, target, configType)
+--- @param entity EnrichedEntity
+--- @param configType string
+--- @return table<string, string>
+function ComputeNewSpells(sessionContext, entity, configType)
     local selectedSpells = {}
 
-    local npcLevel = tonumber(Osi.GetLevel(target))
-    local entity = Ext.Entity.Get(target)
-    local spellCastingAbility = entity.Stats.SpellCastingAbility
+    local shortGuid = entity.ShortGuid
+    local npcLevel = tonumber(Osi.GetLevel(shortGuid))
+    local spellCastingAbility = entity.Entity.Stats.SpellCastingAbility
     local npcSpellTable = {}
 
     local spellTables = {}
 
-    local kinds = sessionContext.EntityToKinds(target) or {}
+    local kinds = entity.Kinds
     local allClasses = {}
     for kind, _ in pairs(kinds) do
         local classes = KindMapping[kind]
         allClasses = TableCombine(classes, allClasses)
     end
 
-    local restrictions = sessionContext.EntityToRestrictions(target) or {}
+    local restrictions = entity.Restrictions
 
     local combinedClassSpells = {}
     for _, class in ipairs(allClasses) do
@@ -2054,7 +2218,7 @@ function ComputeNewSpells(sessionContext, target, configType)
                 end
                 for _, spell in ipairs(spells) do
                     local allowedByRestrictions = AllowedByRestrictions(sessionContext, restrictions, "Spell", spell)
-                    if allowedByRestrictions and not HasSpellThorough(sessionContext, target, spell) then
+                    if allowedByRestrictions and not HasSpellThorough(sessionContext, shortGuid, spell) then
                         combinedClassSpells[level][spell] = true
                     end
                 end
@@ -2062,7 +2226,7 @@ function ComputeNewSpells(sessionContext, target, configType)
         end
     end
 
-    sessionContext.LogI(7, 26, string.format("DBG: Found spells %s for %s", Ext.Json.Stringify(combinedClassSpells), target))
+    sessionContext.LogI(7, 26, string.format("DBG: Found spells %s for %s", Ext.Json.Stringify(combinedClassSpells), shortGuid))
     local spellsCount = 0
     for level, spells in pairs(combinedClassSpells) do
         local spellTable = {}
@@ -2073,7 +2237,7 @@ function ComputeNewSpells(sessionContext, target, configType)
         table.sort(spellTable)
         spellTables[level] = spellTable
     end
-    sessionContext.LogI(7, 26, string.format("DBG: Found spell tables %s for %s", Ext.Json.Stringify(spellTables), target))
+    sessionContext.LogI(7, 26, string.format("DBG: Found spell tables %s for %s", Ext.Json.Stringify(spellTables), shortGuid))
 
     if spellsCount == 0 then
         sessionContext.LogI(2, 18, "No spell available, please check config")
@@ -2087,12 +2251,12 @@ function ComputeNewSpells(sessionContext, target, configType)
     if sessionContext.VarsJson["ConsistentHash"] and sessionContext.VarsJson["ConsistentHashSalt"] ~= nil then
         lookupFn = function(range, ...)
             local params = {...}
-            return ConsistentHash(sessionContext.VarsJson["ConsistentHashSalt"], range, target, table.unpack(params))
+            return ConsistentHash(sessionContext.VarsJson["ConsistentHashSalt"], range, shortGuid, table.unpack(params))
         end
     end
 
-    local requiredSpellLevels = LevelGate(sessionContext, "SpellsAdded", 0, 9, npcLevel, target, configType)
-    local npcSpells = ComputeSimpleIncrementalBoost(sessionContext, "SpellsAdded", target, configType)
+    local requiredSpellLevels = LevelGate(sessionContext, "SpellsAdded", 0, 9, npcLevel, shortGuid, configType)
+    local npcSpells = ComputeSimpleIncrementalBoost(sessionContext, "SpellsAdded", entity, configType)
 
     table.sort(requiredSpellLevels, function (l, r) return l > r end)
 
@@ -2106,7 +2270,7 @@ function ComputeNewSpells(sessionContext, target, configType)
                 while attempts <= #levelSpells and (spellCandidate == nil or selectedSpells[spellCandidate] ~= nil) do
                     local rnd = lookupFn(#levelSpells, string.format("spell_%s", i), string.format("attempts_%s", attempts)) + 1
                     spellCandidate = levelSpells[rnd]
-                    sessionContext.LogI(4, 26, string.format("Selected spell %s on %s with %s attempt %s", spellCandidate, target, rnd, attempts))
+                    sessionContext.LogI(4, 26, string.format("Selected spell %s on %s with %s attempt %s", spellCandidate, shortGuid, rnd, attempts))
                     attempts = attempts + 1
                 end
                 if spellCandidate ~= nil then
@@ -2121,7 +2285,7 @@ function ComputeNewSpells(sessionContext, target, configType)
     for spellName, spellData in pairs(selectedSpells) do
         finalSelectedSpells[spellName] = spellData
         for _, depSpell in ipairs(sessionContext.AbilityDependencies[spellName] or {}) do
-            if selectedSpells[depSpell] == nil and not HasSpellThorough(sessionContext, target, depSpell) then
+            if selectedSpells[depSpell] == nil and not HasSpellThorough(sessionContext, shortGuid, depSpell) then
                 finalSelectedSpells[depSpell] = depSpell
             end
         end
@@ -2130,13 +2294,15 @@ function ComputeNewSpells(sessionContext, target, configType)
 end
 
 --- @param sessionContext SessionContext
-function ComputeActionPointBoost(sessionContext, target, configType)
-    local actionPointBoost = ComputeSimpleIncrementalBoost(sessionContext, "ActionPointBoosts", target, configType)
-    if (Osi.HasPassive(target, "Boost_Action") and IsEnemiesEnhancedLoaded(sessionContext)) and actionPointBoost > 0 then
+--- @param entity EnrichedEntity
+function ComputeActionPointBoost(sessionContext, entity, configType)
+    local shortGuid = entity.ShortGuid
+    local actionPointBoost = ComputeSimpleIncrementalBoost(sessionContext, "ActionPointBoosts", entity, configType)
+    if (Osi.HasPassive(shortGuid, "Boost_Action") and IsEnemiesEnhancedLoaded(sessionContext)) and actionPointBoost > 0 then
         actionPointBoost = actionPointBoost - 1
     end
 
-    if Osi.HasPassive(target, "ExtraAttack") and GetVar(sessionContext, "ConservativeActionPointBoosts", target, configType) and actionPointBoost > 0 then
+    if Osi.HasPassive(shortGuid, "ExtraAttack") and GetVar(sessionContext, "ConservativeActionPointBoosts", shortGuid, configType) and actionPointBoost > 0 then
         actionPointBoost = actionPointBoost - 1
     end
     if actionPointBoost > 0 then
@@ -2147,9 +2313,11 @@ function ComputeActionPointBoost(sessionContext, target, configType)
 end
 
 --- @param sessionContext SessionContext
-function ComputeBonusActionPointBoost(sessionContext, target, configType)
-    local bonusActionPointBoost = ComputeSimpleIncrementalBoost(sessionContext, "BonusActionPointBoosts", target, configType)
-    if (Osi.HasPassive(target, "Boost_BonusAction") and IsEnemiesEnhancedLoaded(sessionContext)) and bonusActionPointBoost > 2 then
+--- @param entity EnrichedEntity
+function ComputeBonusActionPointBoost(sessionContext, entity, configType)
+    local shortGuid = entity.ShortGuid
+    local bonusActionPointBoost = ComputeSimpleIncrementalBoost(sessionContext, "BonusActionPointBoosts", entity, configType)
+    if (Osi.HasPassive(shortGuid, "Boost_BonusAction") and IsEnemiesEnhancedLoaded(sessionContext)) and bonusActionPointBoost > 2 then
         bonusActionPointBoost = bonusActionPointBoost - 1
     end
 
@@ -2161,15 +2329,17 @@ function ComputeBonusActionPointBoost(sessionContext, target, configType)
 end
 
 --- @param sessionContext SessionContext
-function ComputeRageBoost(sessionContext, target, configType)
+--- @param entity EnrichedEntity
+function ComputeRageBoost(sessionContext, entity, configType)
+    local shortGuid = entity.ShortGuid
     if (
-        not GuessIfBarbarian(sessionContext, target)
+        not GuessIfBarbarian(sessionContext, entity)
     ) then
         sessionContext.LogI(2, 22, "Computing Rage, couldnt guess if target is barbarian")
         return nil
     end
 
-    local rageBoost = ComputeSimpleIncrementalBoost(sessionContext, "RageBoosts", target, configType)
+    local rageBoost = ComputeSimpleIncrementalBoost(sessionContext, "RageBoosts", entity, configType)
     if rageBoost > 0 then
         return "ActionResource(Rage," .. rageBoost .. ",0)"
     else
@@ -2178,15 +2348,17 @@ function ComputeRageBoost(sessionContext, target, configType)
 end
 
 --- @param sessionContext SessionContext
-function ComputeSorceryPointBoost(sessionContext, target, configType)
+--- @param entity EnrichedEntity
+function ComputeSorceryPointBoost(sessionContext, entity, configType)
+    local shortGuid = entity.ShortGuid
     if (
-        not GuessIfCaster(sessionContext, target)
+        not GuessIfCaster(sessionContext, entity)
     ) then
         sessionContext.LogI(2, 22, "Computing Sorcery Points, couldnt guess if target is caster")
         return nil
     end
 
-    local sorcerPointBoost = ComputeSimpleIncrementalBoost(sessionContext, "SorceryPointBoosts", target, configType)
+    local sorcerPointBoost = ComputeSimpleIncrementalBoost(sessionContext, "SorceryPointBoosts", entity, configType)
     if sorcerPointBoost > 0 then
         return "ActionResource(SorceryPoint," .. sorcerPointBoost .. ",0)"
     else
@@ -2195,15 +2367,17 @@ function ComputeSorceryPointBoost(sessionContext, target, configType)
 end
 
 --- @param sessionContext SessionContext
-function ComputeTidesOfChaosBoost(sessionContext, target, configType)
+--- @param entity EnrichedEntity
+function ComputeTidesOfChaosBoost(sessionContext, entity, configType)
+    local shortGuid = entity.ShortGuid
     if (
-        not GuessIfCaster(sessionContext, target)
+        not GuessIfCaster(sessionContext, entity)
     ) then
         sessionContext.LogI(2, 22, "Computing Tides Of Chaos, couldnt guess if target is caster")
         return nil
     end
 
-    local tidesOfChaosBoost = ComputeSimpleIncrementalBoost(sessionContext, "TidesOfChaosBoosts", target, configType)
+    local tidesOfChaosBoost = ComputeSimpleIncrementalBoost(sessionContext, "TidesOfChaosBoosts", entity, configType)
     if tidesOfChaosBoost > 0 then
         return "ActionResource(TidesOfChaos," .. tidesOfChaosBoost .. ",0)"
     else
@@ -2212,15 +2386,17 @@ function ComputeTidesOfChaosBoost(sessionContext, target, configType)
 end
 
 --- @param sessionContext SessionContext
-function ComputeSuperiorityDieBoost(sessionContext, target, configType)
+--- @param entity EnrichedEntity
+function ComputeSuperiorityDieBoost(sessionContext, entity, configType)
+    local shortGuid = entity.ShortGuid
     if (
-        not GuessIfFighter(sessionContext, target)
+        not GuessIfFighter(sessionContext, entity)
     ) then
         sessionContext.LogI(2, 22, "Computing Superiority Die, couldnt guess if target is fighter")
         return nil
     end
 
-    local superiorityDieBoost = ComputeSimpleIncrementalBoost(sessionContext, "SuperiorityDieBoosts", target, configType)
+    local superiorityDieBoost = ComputeSimpleIncrementalBoost(sessionContext, "SuperiorityDieBoosts", entity, configType)
     if superiorityDieBoost > 0 then
         return "ActionResource(SuperiorityDie," .. superiorityDieBoost .. ",0)"
     else
@@ -2229,15 +2405,17 @@ function ComputeSuperiorityDieBoost(sessionContext, target, configType)
 end
 
 --- @param sessionContext SessionContext
-function ComputeWildShapeBoost(sessionContext, target, configType)
+--- @param entity EnrichedEntity
+function ComputeWildShapeBoost(sessionContext, entity, configType)
+    local shortGuid = entity.ShortGuid
     if (
-        not GuessIfDruid(sessionContext, target)
+        not GuessIfDruid(sessionContext, entity)
     ) then
         sessionContext.LogI(2, 22, "Computing Wild Shape, couldnt guess if target is druid")
         return nil
     end
 
-    local wildShapeBoost = ComputeSimpleIncrementalBoost(sessionContext, "WildShapeBoosts", target, configType)
+    local wildShapeBoost = ComputeSimpleIncrementalBoost(sessionContext, "WildShapeBoosts", entity, configType)
     if wildShapeBoost > 0 then
         return "ActionResource(WildShape," .. wildShapeBoost .. ",0)"
     else
@@ -2246,15 +2424,17 @@ function ComputeWildShapeBoost(sessionContext, target, configType)
 end
 
 --- @param sessionContext SessionContext
-function ComputeNaturalRecoveryBoost(sessionContext, target, configType)
+--- @param entity EnrichedEntity
+function ComputeNaturalRecoveryBoost(sessionContext, entity, configType)
+    local shortGuid = entity.ShortGuid
     if (
-        not GuessIfDruid(sessionContext, target)
+        not GuessIfDruid(sessionContext, entity)
     ) then
         sessionContext.LogI(2, 22, "Computing Natural Recovery, couldnt guess if target is druid")
         return nil
     end
 
-    local naturalRecoveryBoost = ComputeSimpleIncrementalBoost(sessionContext, "NaturalRecoveryBoosts", target, configType)
+    local naturalRecoveryBoost = ComputeSimpleIncrementalBoost(sessionContext, "NaturalRecoveryBoosts", entity, configType)
     if naturalRecoveryBoost > 0 then
         return "ActionResource(NaturalRecoveryPoint," .. naturalRecoveryBoost .. ",0)"
     else
@@ -2263,15 +2443,17 @@ function ComputeNaturalRecoveryBoost(sessionContext, target, configType)
 end
 
 --- @param sessionContext SessionContext
-function ComputeFungalInfestationBoost(sessionContext, target, configType)
+--- @param entity EnrichedEntity
+function ComputeFungalInfestationBoost(sessionContext, entity, configType)
+    local shortGuid = entity.ShortGuid
     if (
-        not GuessIfDruid(sessionContext, target)
+        not GuessIfDruid(sessionContext, entity)
     ) then
         sessionContext.LogI(2, 22, "Computing Fungal Infestation, couldnt guess if target is druid")
         return nil
     end
 
-    local fungalInfestationBoost = ComputeSimpleIncrementalBoost(sessionContext, "FungalInfestationBoosts", target, configType)
+    local fungalInfestationBoost = ComputeSimpleIncrementalBoost(sessionContext, "FungalInfestationBoosts", entity, configType)
     if fungalInfestationBoost > 0 then
         return "ActionResource(FungalInfestationCharge," .. fungalInfestationBoost .. ",0)"
     else
@@ -2280,15 +2462,17 @@ function ComputeFungalInfestationBoost(sessionContext, target, configType)
 end
 
 --- @param sessionContext SessionContext
-function ComputeLayOnHandsBoost(sessionContext, target, configType)
+--- @param entity EnrichedEntity
+function ComputeLayOnHandsBoost(sessionContext, entity, configType)
+    local shortGuid = entity.ShortGuid
     if (
-        not GuessIfPaladin(sessionContext, target)
+        not GuessIfPaladin(sessionContext, entity)
     ) then
         sessionContext.LogI(2, 22, "Computing Lay On Hands, couldnt guess if target is paladin")
         return nil
     end
 
-    local layOnHandsBoost = ComputeSimpleIncrementalBoost(sessionContext, "LayOnHandsBoosts", target, configType)
+    local layOnHandsBoost = ComputeSimpleIncrementalBoost(sessionContext, "LayOnHandsBoosts", entity, configType)
     if layOnHandsBoost > 0 then
         return "ActionResource(LayOnHandsCharge," .. layOnHandsBoost .. ",0)"
     else
@@ -2297,15 +2481,17 @@ function ComputeLayOnHandsBoost(sessionContext, target, configType)
 end
 
 --- @param sessionContext SessionContext
-function ComputeChannelOathBoost(sessionContext, target, configType)
+--- @param entity EnrichedEntity
+function ComputeChannelOathBoost(sessionContext, entity, configType)
+    local shortGuid = entity.ShortGuid
     if (
-        not GuessIfPaladin(sessionContext, target)
+        not GuessIfPaladin(sessionContext, entity)
     ) then
         sessionContext.LogI(2, 22, "Computing Channel Oath, couldnt guess if target is paladin")
         return nil
     end
 
-    local channelOathBoost = ComputeSimpleIncrementalBoost(sessionContext, "ChannelOathBoosts", target, configType)
+    local channelOathBoost = ComputeSimpleIncrementalBoost(sessionContext, "ChannelOathBoosts", entity, configType)
     if channelOathBoost > 0 then
         return "ActionResource(ChannelOath," .. channelOathBoost .. ",0)"
     else
@@ -2314,15 +2500,17 @@ function ComputeChannelOathBoost(sessionContext, target, configType)
 end
 
 --- @param sessionContext SessionContext
-function ComputeChannelDivinityBoost(sessionContext, target, configType)
+--- @param entity EnrichedEntity
+function ComputeChannelDivinityBoost(sessionContext, entity, configType)
+    local shortGuid = entity.ShortGuid
     if (
-        not GuessIfCleric(sessionContext, target)
+        not GuessIfCleric(sessionContext, entity)
     ) then
         sessionContext.LogI(2, 22, "Computing Channel Divinity, couldnt guess if target is cleric")
         return nil
     end
 
-    local channelDivinityBoost = ComputeSimpleIncrementalBoost(sessionContext, "ChannelDivinityBoosts", target, configType)
+    local channelDivinityBoost = ComputeSimpleIncrementalBoost(sessionContext, "ChannelDivinityBoosts", entity, configType)
     if channelDivinityBoost > 0 then
         return "ActionResource(ChannelDivinity," .. channelDivinityBoost .. ",0)"
     else
@@ -2331,15 +2519,17 @@ function ComputeChannelDivinityBoost(sessionContext, target, configType)
 end
 
 --- @param sessionContext SessionContext
-function ComputeBardicInspirationBoost(sessionContext, target, configType)
+--- @param entity EnrichedEntity
+function ComputeBardicInspirationBoost(sessionContext, entity, configType)
+    local shortGuid = entity.ShortGuid
     if (
-        not GuessIfBard(sessionContext, target)
+        not GuessIfBard(sessionContext, entity)
     ) then
         sessionContext.LogI(2, 22, "Computing Bardic Inspiration, couldnt guess if target is bard")
         return nil
     end
 
-    local bardicInspirationBoost = ComputeSimpleIncrementalBoost(sessionContext, "BardicInspirationBoosts", target, configType)
+    local bardicInspirationBoost = ComputeSimpleIncrementalBoost(sessionContext, "BardicInspirationBoosts", entity, configType)
     if bardicInspirationBoost > 0 then
         return "ActionResource(BardicInspiration," .. bardicInspirationBoost .. ",0)"
     else
@@ -2348,15 +2538,17 @@ function ComputeBardicInspirationBoost(sessionContext, target, configType)
 end
 
 --- @param sessionContext SessionContext
-function ComputeKiPointBoost(sessionContext, target, configType)
+--- @param entity EnrichedEntity
+function ComputeKiPointBoost(sessionContext, entity, configType)
+    local shortGuid = entity.ShortGuid
     if (
-        not GuessIfMonk(sessionContext, target)
+        not GuessIfMonk(sessionContext, entity)
     ) then
         sessionContext.LogI(2, 22, "Computing Ki Point, couldnt guess if target is monk")
         return nil
     end
 
-    local kiPointBoost = ComputeSimpleIncrementalBoost(sessionContext, "KiPointBoosts", target, configType)
+    local kiPointBoost = ComputeSimpleIncrementalBoost(sessionContext, "KiPointBoosts", entity, configType)
     if kiPointBoost > 0 then
         return "ActionResource(KiPoint," .. kiPointBoost .. ",0)"
     else
@@ -2365,15 +2557,17 @@ function ComputeKiPointBoost(sessionContext, target, configType)
 end
 
 --- @param sessionContext SessionContext
-function ComputeDeflectMissilesBoost(sessionContext, target, configType)
+--- @param entity EnrichedEntity
+function ComputeDeflectMissilesBoost(sessionContext, entity, configType)
+    local shortGuid = entity.ShortGuid
     if (
-        not GuessIfMonk(sessionContext, target)
+        not GuessIfMonk(sessionContext, entity)
     ) then
         sessionContext.LogI(2, 22, "Computing Deflect Missiles, couldnt guess if target is monk")
         return nil
     end
 
-    local deflectMissilesBoost = ComputeSimpleIncrementalBoost(sessionContext, "DeflectMissilesBoosts", target, configType)
+    local deflectMissilesBoost = ComputeSimpleIncrementalBoost(sessionContext, "DeflectMissilesBoosts", entity, configType)
     if deflectMissilesBoost > 0 then
         return "ActionResource(DeflectMissiles_Charge," .. deflectMissilesBoost .. ",0)"
     else
@@ -2382,15 +2576,17 @@ function ComputeDeflectMissilesBoost(sessionContext, target, configType)
 end
 
 --- @param sessionContext SessionContext
-function ComputeSneakAttackBoost(sessionContext, target, configType)
+--- @param entity EnrichedEntity
+function ComputeSneakAttackBoost(sessionContext, entity, configType)
+    local shortGuid = entity.ShortGuid
     if (
-        not GuessIfRogue(sessionContext, target)
+        not GuessIfRogue(sessionContext, entity)
     ) then
         sessionContext.LogI(2, 22, "Computing Sneak Attack, couldnt guess if target is rogue")
         return nil
     end
 
-    local sneakAttackChargeBoost = ComputeSimpleIncrementalBoost(sessionContext, "SneakAttackBoosts", target, configType)
+    local sneakAttackChargeBoost = ComputeSimpleIncrementalBoost(sessionContext, "SneakAttackBoosts", entity, configType)
     if sneakAttackChargeBoost > 0 then
         return "ActionResource(SneakAttack_Charge," .. sneakAttackChargeBoost .. ",0)"
     else
@@ -2399,8 +2595,9 @@ function ComputeSneakAttackBoost(sessionContext, target, configType)
 end
 
 --- @param sessionContext SessionContext
-function ComputeHealthIncrease(sessionContext, target, configType)
-    local hpincrease = ComputeIncrementalBoost(sessionContext, "Health", target, configType)
+--- @param entity EnrichedEntity
+function ComputeHealthIncrease(sessionContext, entity, configType)
+    local hpincrease = ComputeIncrementalBoost(sessionContext, "Health", entity, configType)
 
     if hpincrease > 0 then
         return "IncreaseMaxHP(" .. hpincrease .. ")"
@@ -2410,34 +2607,38 @@ function ComputeHealthIncrease(sessionContext, target, configType)
 end
 
 --- @param sessionContext SessionContext
-function ComputeSimpleIncrementalBoost(sessionContext, stat, target, configType)
-    local levelMultiplier = Osi.GetLevel(target)
+--- @param entity EnrichedEntity
+function ComputeSimpleIncrementalBoost(sessionContext, stat, entity, configType)
+    local shortGuid = entity.ShortGuid
+    local levelMultiplier = Osi.GetLevel(shortGuid)
 
-    local staticBoost = tonumber(GetVarComplex(sessionContext, stat, "StaticBoost", target, configType))
-    local levelIncrement = tonumber(GetVarComplex(sessionContext, stat, "LevelStepToIncrementOn", target, configType))
-    local scalingLevelIncrement = tonumber(GetVarComplex(sessionContext, stat, "ValueToIncrementByOnLevel", target, configType))
+    local staticBoost = tonumber(GetVarComplex(sessionContext, stat, "StaticBoost", shortGuid, configType))
+    local levelIncrement = tonumber(GetVarComplex(sessionContext, stat, "LevelStepToIncrementOn", shortGuid, configType))
+    local scalingLevelIncrement = tonumber(GetVarComplex(sessionContext, stat, "ValueToIncrementByOnLevel", shortGuid, configType))
     local scalingLevelBoost = scalingLevelIncrement * math.floor(levelMultiplier / levelIncrement)
 
     local totalBoost = staticBoost + scalingLevelBoost
-    sessionContext.LogI(4, 8, string.format("%s Increase for %s: %s", stat, target, totalBoost))
+    sessionContext.LogI(4, 8, string.format("%s Increase for %s: %s", stat, shortGuid, totalBoost))
     return totalBoost
 end
 
 --- @param sessionContext SessionContext
-function ComputeIncrementalBoost(sessionContext, stat, target, configType)
-    local levelMultiplier = Osi.GetLevel(target)
+--- @param entity EnrichedEntity
+function ComputeIncrementalBoost(sessionContext, stat, entity, configType)
+    local shortGuid = entity.ShortGuid
+    local levelMultiplier = Osi.GetLevel(shortGuid)
     local statValueFns = {
-        Strength = function() return Osi.GetAbility(target, "Strength") end,
-        Dexterity = function() return Osi.GetAbility(target, "Dexterity") end,
-        Constitution = function() return Osi.GetAbility(target, "Constitution") end,
-        Wisdom = function() return Osi.GetAbility(target, "Wisdom") end,
-        Intelligence = function() return Osi.GetAbility(target, "Intelligence") end,
-        Charisma = function() return Osi.GetAbility(target, "Charisma") end,
-        AC = function() return Ext.Entity.Get(target).Health.AC end,
-        Health = function() return Ext.Entity.Get(target).Health.MaxHp end,
+        Strength = function() return Osi.GetAbility(shortGuid, "Strength") end,
+        Dexterity = function() return Osi.GetAbility(shortGuid, "Dexterity") end,
+        Constitution = function() return Osi.GetAbility(shortGuid, "Constitution") end,
+        Wisdom = function() return Osi.GetAbility(shortGuid, "Wisdom") end,
+        Intelligence = function() return Osi.GetAbility(shortGuid, "Intelligence") end,
+        Charisma = function() return Osi.GetAbility(shortGuid, "Charisma") end,
+        AC = function() return entity.Entity.Health.AC end,
+        Health = function() return entity.Entity.Health.MaxHp end,
         Movement = function()
             local resourceGuid = sessionContext.ActionResources["Movement"]
-            local movementActionResource = Ext.Entity.Get(target).ActionResources.Resources[resourceGuid]
+            local movementActionResource = entity.Entity.ActionResources.Resources[resourceGuid]
             if movementActionResource ~= nil and #movementActionResource > 0 then
                 return movementActionResource[1].MaxAmount
             else
@@ -2456,13 +2657,13 @@ function ComputeIncrementalBoost(sessionContext, stat, target, configType)
         statValue = nil
     end
 
-    local maxPercentage = tonumber(GetVarComplex(sessionContext, stat, "MaxPercentage", target, configType))
-    local scalingPercentage = tonumber(GetVarComplex(sessionContext, stat, "ScalingPercentage", target, configType))
+    local maxPercentage = tonumber(GetVarComplex(sessionContext, stat, "MaxPercentage", shortGuid, configType))
+    local scalingPercentage = tonumber(GetVarComplex(sessionContext, stat, "ScalingPercentage", shortGuid, configType))
 
-    local staticBoost = tonumber(GetVarComplex(sessionContext, stat, "StaticBoost", target, configType))
-    local levelIncrement = tonumber(GetVarComplex(sessionContext, stat, "LevelStepToIncrementOn", target, configType))
-    local levelIncrementScaling = tonumber(GetVarComplex(sessionContext, stat, "ScalingLevelStepToIncrementOn", target, configType))
-    local scalingLevelIncrement = tonumber(GetVarComplex(sessionContext, stat, "ValueToIncrementByOnLevel", target, configType))
+    local staticBoost = tonumber(GetVarComplex(sessionContext, stat, "StaticBoost", shortGuid, configType))
+    local levelIncrement = tonumber(GetVarComplex(sessionContext, stat, "LevelStepToIncrementOn", shortGuid, configType))
+    local levelIncrementScaling = tonumber(GetVarComplex(sessionContext, stat, "ScalingLevelStepToIncrementOn", shortGuid, configType))
+    local scalingLevelIncrement = tonumber(GetVarComplex(sessionContext, stat, "ValueToIncrementByOnLevel", shortGuid, configType))
     local scalingLevelBoost = scalingLevelIncrement * math.floor(levelMultiplier / levelIncrement)
 
     local percentageBoost
@@ -2476,14 +2677,16 @@ function ComputeIncrementalBoost(sessionContext, stat, target, configType)
     end
 
     local totalBoost = staticBoost + percentageBoost + percentageScalingBoost + scalingLevelBoost
-    sessionContext.LogI(4, 8, string.format("%s Increase for %s: %s", stat, target, totalBoost))
+    sessionContext.LogI(4, 8, string.format("%s Increase for %s: %s", stat, shortGuid, totalBoost))
     return totalBoost
 end
 
 
 --- @param sessionContext SessionContext
-function ComputeMovementBoost(sessionContext, target, configType)
-    local totalMovementBoost = ComputeIncrementalBoost(sessionContext, "Movement", target, configType)
+--- @param entity EnrichedEntity
+function ComputeMovementBoost(sessionContext, entity, configType)
+    local shortGuid = entity.ShortGuid
+    local totalMovementBoost = ComputeIncrementalBoost(sessionContext, "Movement", entity, configType)
     if totalMovementBoost > 0 then
         return "ActionResource(Movement," .. totalMovementBoost .. ",0)"
     else
@@ -2493,8 +2696,10 @@ end
 
 
 --- @param sessionContext SessionContext
-function ComputeACBoost(sessionContext, target, configType)
-    local totalACBoost = ComputeIncrementalBoost(sessionContext, "AC", target, configType)
+--- @param entity EnrichedEntity
+function ComputeACBoost(sessionContext, entity, configType)
+    local shortGuid = entity.ShortGuid
+    local totalACBoost = ComputeIncrementalBoost(sessionContext, "AC", entity, configType)
     if totalACBoost > 0 then
         return "AC(" .. totalACBoost .. ")"
     else
@@ -2503,8 +2708,10 @@ function ComputeACBoost(sessionContext, target, configType)
 end
 
 --- @param sessionContext SessionContext
-function ComputeStrengthBoost(sessionContext, target, configType)
-    local totalStrengthBoost = ComputeIncrementalBoost(sessionContext, "Strength", target, configType)
+--- @param entity EnrichedEntity
+function ComputeStrengthBoost(sessionContext, entity, configType)
+    local shortGuid = entity.ShortGuid
+    local totalStrengthBoost = ComputeIncrementalBoost(sessionContext, "Strength", entity, configType)
     if totalStrengthBoost > 0 then
         return "Ability(Strength,+" .. totalStrengthBoost .. ")"
     else
@@ -2513,8 +2720,10 @@ function ComputeStrengthBoost(sessionContext, target, configType)
 end
 
 --- @param sessionContext SessionContext
-function ComputeDexterityBoost(sessionContext, target, configType)
-    local totalDexterityBoost = ComputeIncrementalBoost(sessionContext, "Dexterity", target, configType)
+--- @param entity EnrichedEntity
+function ComputeDexterityBoost(sessionContext, entity, configType)
+    local shortGuid = entity.ShortGuid
+    local totalDexterityBoost = ComputeIncrementalBoost(sessionContext, "Dexterity", entity, configType)
     if totalDexterityBoost > 0 then
         return "Ability(Dexterity,+" .. totalDexterityBoost .. ")"
     else
@@ -2524,8 +2733,10 @@ end
 
 
 --- @param sessionContext SessionContext
-function ComputeConstitutionBoost(sessionContext, target, configType)
-    local totalConstitutionBoost = ComputeIncrementalBoost(sessionContext, "Constitution", target, configType)
+--- @param entity EnrichedEntity
+function ComputeConstitutionBoost(sessionContext, entity, configType)
+    local shortGuid = entity.ShortGuid
+    local totalConstitutionBoost = ComputeIncrementalBoost(sessionContext, "Constitution", entity, configType)
     if totalConstitutionBoost > 0 then
         return "Ability(Constitution,+" .. totalConstitutionBoost .. ")"
     else
@@ -2534,8 +2745,10 @@ function ComputeConstitutionBoost(sessionContext, target, configType)
 end
 
 --- @param sessionContext SessionContext
-function ComputeIntelligenceBoost(sessionContext, target, configType)
-    local totalIntelligenceBoost = ComputeIncrementalBoost(sessionContext, "Intelligence", target, configType)
+--- @param entity EnrichedEntity
+function ComputeIntelligenceBoost(sessionContext, entity, configType)
+    local shortGuid = entity.ShortGuid
+    local totalIntelligenceBoost = ComputeIncrementalBoost(sessionContext, "Intelligence", entity, configType)
     if totalIntelligenceBoost > 0 then
         return "Ability(Intelligence,+" .. totalIntelligenceBoost .. ")"
     else
@@ -2544,8 +2757,10 @@ function ComputeIntelligenceBoost(sessionContext, target, configType)
 end
 
 --- @param sessionContext SessionContext
-function ComputeWisdomBoost(sessionContext, target, configType)
-    local totalWisdomBoost = ComputeIncrementalBoost(sessionContext, "Wisdom", target, configType)
+--- @param entity EnrichedEntity
+function ComputeWisdomBoost(sessionContext, entity, configType)
+    local shortGuid = entity.ShortGuid
+    local totalWisdomBoost = ComputeIncrementalBoost(sessionContext, "Wisdom", entity, configType)
     if totalWisdomBoost > 0 then
         return "Ability(Wisdom,+" .. totalWisdomBoost .. ")"
     else
@@ -2554,8 +2769,10 @@ function ComputeWisdomBoost(sessionContext, target, configType)
 end
 
 --- @param sessionContext SessionContext
-function ComputeCharismaBoost(sessionContext, target, configType)
-    local totalCharismaBoost = ComputeIncrementalBoost(sessionContext, "Charisma", target, configType)
+--- @param entity EnrichedEntity
+function ComputeCharismaBoost(sessionContext, entity, configType)
+    local shortGuid = entity.ShortGuid
+    local totalCharismaBoost = ComputeIncrementalBoost(sessionContext, "Charisma", entity, configType)
     if totalCharismaBoost > 0 then
         return "Ability(Charisma,+" .. totalCharismaBoost .. ")"
     else
@@ -2564,8 +2781,10 @@ function ComputeCharismaBoost(sessionContext, target, configType)
 end
 
 --- @param sessionContext SessionContext
-function ComputeRollBonusBoost(sessionContext, target, configType)
-    local totalRollBonus = ComputeIncrementalBoost(sessionContext, "RollBonus", target, configType)
+--- @param entity EnrichedEntity
+function ComputeRollBonusBoost(sessionContext, entity, configType)
+    local shortGuid = entity.ShortGuid
+    local totalRollBonus = ComputeIncrementalBoost(sessionContext, "RollBonus", entity, configType)
     if totalRollBonus > 0 then
         return "RollBonus(Attack," .. totalRollBonus .. ")"
     else
@@ -2576,8 +2795,10 @@ end
 
 
 --- @param sessionContext SessionContext
-function ComputeDamageBoost(sessionContext, target, configType)
-    local totalDamageBoost = ComputeIncrementalBoost(sessionContext, "Damage", target, configType)
+--- @param entity EnrichedEntity
+function ComputeDamageBoost(sessionContext, entity, configType)
+    local shortGuid = entity.ShortGuid
+    local totalDamageBoost = ComputeIncrementalBoost(sessionContext, "Damage", entity, configType)
     if totalDamageBoost > 0 then
         return "DamageBonus(" .. totalDamageBoost .. ")"
     else
@@ -2586,32 +2807,34 @@ function ComputeDamageBoost(sessionContext, target, configType)
 end
 
 --- @param sessionContext SessionContext
-function ComputeSpellSlotBoosts(sessionContext, target, configType)
+--- @param entity EnrichedEntity
+function ComputeSpellSlotBoosts(sessionContext, entity, configType)
+    local shortGuid = entity.ShortGuid
     local slots = {}
     if (
         not (
-            GuessIfCaster(sessionContext, target) or
-            GuessIfDruid(sessionContext, target) or
-            GuessIfCleric(sessionContext, target) or
-            GuessIfBard(sessionContext, target) or
-            GuessIfWarlock(sessionContext, target) or
-            GuessIfRanger(sessionContext, target) or
-            GuessIfPaladin(sessionContext, target)
+            GuessIfCaster(sessionContext, entity) or
+            GuessIfDruid(sessionContext, entity) or
+            GuessIfCleric(sessionContext, entity) or
+            GuessIfBard(sessionContext, entity) or
+            GuessIfWarlock(sessionContext, entity) or
+            GuessIfRanger(sessionContext, entity) or
+            GuessIfPaladin(sessionContext, entity)
         )
     ) then
         sessionContext.LogI(2, 22, "Computing Spell Slot, couldnt guess if target needs spell slots")
         return slots
     end
 
-    local spellSlotBoost = ComputeSimpleIncrementalBoost(sessionContext, "SpellSlotBoosts", target, configType)
+    local spellSlotBoost = ComputeSimpleIncrementalBoost(sessionContext, "SpellSlotBoosts", entity, configType)
 
-    local npcLevel = tonumber(Osi.GetLevel(target))
-    local requiredSpellLevels = LevelGate(sessionContext, "SpellsAdded", 1, 9, npcLevel, target, configType)
+    local npcLevel = tonumber(Osi.GetLevel(shortGuid))
+    local requiredSpellLevels = LevelGate(sessionContext, "SpellsAdded", 1, 9, npcLevel, shortGuid, configType)
 
     table.sort(requiredSpellLevels, function (l, r) return l > r end)
 
     for _, level in ipairs(requiredSpellLevels) do
-        sessionContext.LogI(4, 10, string.format("SpellSlotBoost Increase for %s: %s at level %s", target, spellSlotBoost, level))
+        sessionContext.LogI(4, 10, string.format("SpellSlotBoost Increase for %s: %s at level %s", shortGuid, spellSlotBoost, level))
 
         if spellSlotBoost > 0 then
             slots[level] = "ActionResource(SpellSlot," .. spellSlotBoost .. "," .. level .. ")"
@@ -3351,19 +3574,26 @@ function GetVarsJson(sessionContext)
 end
 
 --- @param sessionContext SessionContext
-function GiveNewPassives(sessionContext, target, configType)
-    local passives = ComputeClassSpecificPassives(sessionContext, target, configType)
+--- @param entity EnrichedEntity
+--- @param configType string
+--- @return table<string, string>
+function GiveNewPassives(sessionContext, entity, configType)
+    local passives = ComputeClassSpecificPassives(sessionContext, entity, configType)
     for _, passive in pairs(passives) do
-        sessionContext.LogI(3, 24, string.format("Adding passive %s to %s", passive, target))
-        Osi.AddPassive(target, passive)
+        sessionContext.LogI(3, 24, string.format("Adding passive %s to %s", passive, entity.ShortGuid))
+        Osi.AddPassive(entity.ShortGuid, passive)
     end
-    Ext.Entity.Get(target).Vars.LCC_PassivesAdded = passives
+    entity.Entity.Vars.LCC_PassivesAdded = passives
     return passives
 end
 
+--- @param boostFn fun(sessionContext: SessionContext, entity: EnrichedEntity, configType: string) : string[] | string | nil
 --- @param sessionContext SessionContext
-function ComputedBoost(boostFn, sessionContext, target, configType)
-    local boostRes = boostFn(sessionContext, target, configType)
+--- @param entity EnrichedEntity
+--- @param configType string
+--- @return string[]
+function ComputedBoost(boostFn, sessionContext, entity, configType)
+    local boostRes = boostFn(sessionContext, entity, configType)
 
     if boostRes ~= nil then
         local boosts = nil
@@ -3380,16 +3610,18 @@ function ComputedBoost(boostFn, sessionContext, target, configType)
 end
 
 --- @param sessionContext SessionContext
-function GiveBoosts(sessionContext, guid, configType)
-    sessionContext.LogI(1, 4, string.format("%s applying for Guid: %s\n", configType, guid))
-    local entity = Ext.Entity.Get(guid)
+--- @param entity EnrichedEntity
+--- @param configType string
+function GiveBoosts(sessionContext, entity, configType)
+    sessionContext.LogI(1, 4, string.format("%s applying for Guid: %s\n", configType, entity.ShortGuid))
 
-    GiveNewPassives(sessionContext, guid, configType)
+    GiveNewPassives(sessionContext, entity, configType)
 
+    --- @type string[]
     local allBoosts = {}
-    allBoosts = TableCombine(Values(ComputeNewSpells(sessionContext, guid, configType)), allBoosts)
+    allBoosts = TableCombine(Values(ComputeNewSpells(sessionContext, entity, configType)), allBoosts)
 
-    allBoosts = TableCombine(Values(ComputeClassSpecificAbilities(sessionContext, guid, configType)), allBoosts)
+    allBoosts = TableCombine(Values(ComputeClassSpecificAbilities(sessionContext, entity, configType)), allBoosts)
 
     local boosts = {
         ComputeHealthIncrease,
@@ -3423,85 +3655,89 @@ function GiveBoosts(sessionContext, guid, configType)
     }
 
     for _, boostFn in ipairs(boosts) do
-        allBoosts = TableCombine(ComputedBoost(boostFn, sessionContext, guid, configType), allBoosts)
+        allBoosts = TableCombine(ComputedBoost(boostFn, sessionContext, entity, configType), allBoosts)
     end
 
     for _, boost in ipairs(allBoosts) do
-        sessionContext.LogI(3, 24, string.format("Adding boost %s to %s", boost, guid))
-        AddBoostsAdv(guid, boost)
+        sessionContext.LogI(3, 24, string.format("Adding boost %s to %s", boost, entity.ShortGuid))
+        AddBoostsAdv(entity.ShortGuid, boost)
     end
 
-    entity.Vars.LCC_Boosted = {General = true}
-    entity.Vars.LCC_BoostedWithHash = {Hash = sessionContext.ConfigHash}
-    entity.Vars.LCC_BoostsAdded = allBoosts
+    entity.Entity.Vars.LCC_Boosted = {General = true}
+    entity.Entity.Vars.LCC_BoostedWithHash = {Hash = sessionContext.ConfigHash}
+    entity.Entity.Vars.LCC_BoostedWithClassification = {Classification = configType}
+    entity.Entity.Vars.LCC_BoostsAdded = allBoosts
 end
 
 
-function PerformBoosting(sessionContext, guid)
-    guid = string.sub(guid, -36)
+---@param sessionContext SessionContext
+---@param entity EnrichedEntity
+function PerformBoosting(sessionContext, entity)
+    entity:Refresh(sessionContext)
 
-    sessionContext.Log(1, string.format("Give: Guid: %s", guid))
+    local shortGuid = entity.ShortGuid
 
-    local isCharacter = Osi.IsCharacter(guid) == 1
+    sessionContext.Log(1, string.format("Give: Guid: %s", shortGuid))
+
+    local isCharacter = entity.IsCharacter
     if not isCharacter then
-        sessionContext.Log(4, string.format("Give: Skipping non character: Guid: %s", guid))
+        sessionContext.Log(4, string.format("Give: Skipping non character: Guid: %s", shortGuid))
         return
     end
 
-    local entity = Ext.Entity.Get(guid)
-    if entity.Vars.LCC_Boosted == nil then
-        entity.Vars.LCC_Boosted = {
+    if entity.Entity.Vars.LCC_Boosted == nil then
+        entity.Entity.Vars.LCC_Boosted = {
             General = false,
         }
     end
-    if entity.Vars.LCC_BoostedWithHash == nil then
-        entity.Vars.LCC_BoostedWithHash = {
+    if entity.Entity.Vars.LCC_BoostedWithHash == nil then
+        entity.Entity.Vars.LCC_BoostedWithHash = {
             Hash = nil,
         }
     end
 
-    local isPartyMember = CheckIfParty(guid)
-    local isPartyFollower = Osi.IsPartyFollower(guid) == 1
-    local isOurSummon = CheckIfOurSummon(guid)
-    local isEnemy = Osi.IsEnemy(guid, Osi.GetHostCharacter()) == 1
-    local isOrigin = CheckIfOrigin(guid)
-    local isBoss = Osi.IsBoss(guid) == 1
-    local hasPlayerData = HasPlayerData(guid)
-    local isPlayer = IsPlayer(guid)
-    local alreadyModified = entity.Vars.LCC_Boosted.General
-    local sameHash = entity.Vars.LCC_BoostedWithHash.Hash == sessionContext.ConfigHash
+    local isPartyMember = entity.IsPartyMember
+    local isPartyFollower = entity.IsPartyFollower
+    local isOurSummon = entity.IsOurSummon
+    local isEnemy = entity.IsEnemy
+    local isOrigin = entity.IsOrigin
+    local isBoss = entity.IsBoss
+    local hasPlayerData = entity.HasPlayerData
+    local isPlayer = entity.IsPlayer
+    local alreadyModified = entity.AlreadyModified
+    local sameHash = entity.SameHash
+    local rawAIHint = entity.RawAIHint
+    local mappedAIHint = entity.MappedAIHint
+    local rawArchetype = entity.RawArchetype
+    local kinds = entity.Kinds
+    local allClasses = entity.AllClasses
+    local restrictions = entity.Restrictions
+    local statsChain = entity.StatsChain
     -- Special case check, AdditionalEnemies mod adds certain enemies that are marked boss but not hostile for some reason
-    local isAdditionalEnemiesSpecialBoss = false
-    if IsAdditionalEnemiesLoaded() and isBoss then
-        for _, statName in ipairs(CharacterGetStats(guid)) do
-            if Ext.Stats.Get(statName).ModId == ADDITIONAL_ENEMIES_GUID then
-                isAdditionalEnemiesSpecialBoss = true
-            end
-        end
-    end
+    local isAdditionalEnemiesSpecialBoss = entity.IsAdditionalEnemiesSpecialBoss
 
-    sessionContext.Log(1, string.format("Give: Guid: %s; Modified?: %s; Party?: %s; Follower?: %s; Enemy?: %s; Origin?: %s; Boss?: %s; OurSummon?: %s; HasPlayerData?: %s; IsPlayer?: %s; isAdditionalEnemiesSpecialBoss?: %s; sameHash?: %s\n", guid, alreadyModified, isPartyMember, isPartyFollower, isEnemy, isOrigin, isBoss, isOurSummon, hasPlayerData, isPlayer, isAdditionalEnemiesSpecialBoss, sameHash))
+    sessionContext.Log(1, string.format("Give: Guid: %s; Modified?: %s; Party?: %s; Follower?: %s; Enemy?: %s; Origin?: %s; Boss?: %s; OurSummon?: %s; HasPlayerData?: %s; IsPlayer?: %s; isAdditionalEnemiesSpecialBoss?: %s; sameHash?: %s\n", shortGuid, alreadyModified, isPartyMember, isPartyFollower, isEnemy, isOrigin, isBoss, isOurSummon, hasPlayerData, isPlayer, isAdditionalEnemiesSpecialBoss, sameHash))
 
     if not isPartyMember and not isPartyFollower and not isOurSummon and not isEnemy and not isOrigin and not isBoss then
-        local res, component = pcall(function() return Ext.Entity.Get(guid).ServerCharacter end)
+        local res, component = pcall(function() return entity.Entity.ServerCharacter end)
         if not res and component == nil then
-            sessionContext.Log(4, string.format("Give: Skipping degenerate character: Guid: %s", guid))
+            sessionContext.Log(4, string.format("Give: Skipping degenerate character: Guid: %s", shortGuid))
             return
         end
     end
 
     if isPartyMember and not isPartyFollower and not isOurSummon and not isEnemy then
-        sessionContext.Log(4, string.format("Give: Skipping explicit party member: Guid: %s", guid))
+        sessionContext.Log(4, string.format("Give: Skipping explicit party member: Guid: %s", shortGuid))
         return
     end
 
     if isPlayer or hasPlayerData then
-        sessionContext.Log(4, string.format("Give: Skipping playerlike(isPlayer %s, hasPlayerData %s): Guid: %s", isPlayer, hasPlayerData, guid))
+        sessionContext.Log(4, string.format("Give: Skipping playerlike(isPlayer %s, hasPlayerData %s): Guid: %s", isPlayer, hasPlayerData, shortGuid))
         return
     end
 
     if alreadyModified and not sameHash then
-        sessionContext.Log(0, string.format("Give: Skipping because something went wrong its already boosted but with a different hash: Guid: %s", guid))
+        sessionContext.Log(0, string.format("Give: Skipping because something went wrong its already boosted but with a different hash: Guid: %s", shortGuid))
         return
     end
 
@@ -3509,112 +3745,76 @@ function PerformBoosting(sessionContext, guid)
         sessionContext.EntityCache = {}
     end
 
-    sessionContext.EntityCache[guid] = {
+    sessionContext.EntityCache[shortGuid] = {
         SpellRoots = {},
     }
 
-    local CombatComponent = SafeGet(entity, "ServerCharacter", "Character", "Template", "CombatComponent")
-    local rawAIHint = SafeGet(CombatComponent, "AiHint")
-    local mappedAIHint = SafeGet(AiHints, SafeGet(CombatComponent, "AiHint"))
-    local rawArchetype = SafeGet(CombatComponent, "Archetype")
-
-    local kinds = sessionContext.EntityToKinds(guid) or {}
-    local allClasses = {}
-    for kind, _ in pairs(kinds) do
-        local classes = KindMapping[kind]
-        allClasses = TableCombine(classes, allClasses)
-    end
-
-    local restrictions = sessionContext.EntityToRestrictions(guid) or {}
-
-    PrepareSpellBookRoots(sessionContext, guid)
+    PrepareSpellBookRoots(sessionContext, shortGuid)
 
     sessionContext.Log(2, string.format("Give: AiHint: %s (%s) Archetype: %s\n", rawAIHint, mappedAIHint, rawArchetype))
-    sessionContext.Log(2, string.format("Give: Kinds: %s; Classes: %s; Restrictions %s\n", Ext.Json.Stringify(kinds), Ext.Json.Stringify(allClasses), Ext.Json.Stringify(restrictions)))
+    sessionContext.Log(2, string.format("Give: Kinds: %s; Classes: %s; Restrictions %s; StatsChain: %s\n", Ext.Json.Stringify(kinds), Ext.Json.Stringify(allClasses), Ext.Json.Stringify(restrictions), Ext.Json.Stringify(statsChain)))
 
     local shouldTryToModify = not alreadyModified and not sameHash
+    local classification = entity:GetConfigClassification(sessionContext)
 
-    if sessionContext.VarsJson["EnemiesEnabled"] then
-        if shouldTryToModify and (not isPartyMember and isEnemy and not isBoss and not isOrigin) then
-            GiveBoosts(sessionContext, guid, "Enemies")
-            return
-        end
-    end
-    if sessionContext.VarsJson["BossesEnabled"] then
-        if shouldTryToModify and (not isPartyMember and (isEnemy or isAdditionalEnemiesSpecialBoss) and isBoss and not isOrigin) then
-            GiveBoosts(sessionContext, guid, "Bosses")
-            return
-        end
-    end
-    if sessionContext.VarsJson["AlliesEnabled"] then
-        if shouldTryToModify and (not isPartyMember and not isEnemy and not isOrigin and not isBoss) then
-            GiveBoosts(sessionContext, guid, "Allies")
-            return
-        end
-    end
-    if sessionContext.VarsJson["FollowersEnabled"] then
-        if shouldTryToModify and (not isEnemy and not isOrigin and isPartyFollower and not isBoss) then
-            GiveBoosts(sessionContext, guid, "Followers")
-            return
-        end
-    end
-    if sessionContext.VarsJson["FollowersBossesEnabled"] then
-        if shouldTryToModify and (not isEnemy and not isOrigin and isPartyFollower and isBoss) then
-            GiveBoosts(sessionContext, guid, "FollowersBosses")
-            return
-        end
-    end
-    if sessionContext.VarsJson["SummonsEnabled"] then
-        if shouldTryToModify and (isPartyMember and isOurSummon) then
-            GiveBoosts(sessionContext, guid, "Summons")
-            return
-        end
+    if shouldTryToModify and classification ~= nil then
+        GiveBoosts(sessionContext, entity, classification)
     end
 end
 
+--- @param sessionContext SessionContext
+--- @param entity EnrichedEntity
+--- @param force boolean
 function RemoveBoosts(sessionContext, entity, force)
-    local guid = string.sub(entity.Uuid.EntityUuid, -36)
-    local modified = entity.Vars.LCC_Boosted.General
+    local guid = string.sub(entity.Entity.Uuid.EntityUuid, -36)
+    local modified = entity.Entity.Vars.LCC_Boosted.General
     if force or modified then
         sessionContext.Log(2, string.format("Removing Boosts for Guid: %s because User Variable set", guid))
         sessionContext.Log(3, string.format("Our Boosts: %s", J(OurBoosts(guid))))
-        for _boostType, boostEntities in pairs(entity.BoostsContainer.Boosts) do
+        for _boostType, boostEntities in pairs(entity.Entity.BoostsContainer.Boosts) do
             for _, boostEntity in ipairs(boostEntities) do
                 RemoveBoostsAdv(sessionContext, guid, boostEntity)
             end
         end
-        entity.Vars.LCC_BoostsAdded = {}
+        entity.Entity.Vars.LCC_BoostsAdded = {}
     end
 end
 
+--- @param sessionContext SessionContext
+--- @param entity EnrichedEntity
+--- @param combat table<Guid, boolean> | nil
+--- @param force boolean
 function RemovePassives(sessionContext, entity, combat, force)
-    local guid = string.sub(entity.Uuid.EntityUuid, -36)
-    local modified = entity.Vars.LCC_Boosted.General
+    local guid = string.sub(entity.Entity.Uuid.EntityUuid, -36)
+    local modified = entity.Entity.Vars.LCC_Boosted.General
     if force or (modified and (combat == nil or (combat ~= nil and combat[guid]))) then
         sessionContext.Log(2, string.format("Removing Passives for Guid: %s because combatants %s", guid, combat))
-        sessionContext.Log(3, string.format("Passives: %s", Ext.Json.Stringify(Map(function (p) return p.Passive.PassiveId end, entity.PassiveContainer.Passives))))
-        local ourPassives = Keys(entity.Vars.LCC_PassivesAdded)
+        sessionContext.Log(3, string.format("Passives: %s", Ext.Json.Stringify(Map(function (p) return p.Passive.PassiveId end, entity.Entity.PassiveContainer.Passives))))
+        local ourPassives = Keys(entity.Entity.Vars.LCC_PassivesAdded)
         for _, passive in ipairs(ourPassives) do
             sessionContext.Log(3, string.format("Removing Passive: %s from %s", passive, guid))
             Osi.RemovePassive(guid, passive)
         end
-        entity.Vars.LCC_PassivesAdded = {}
+        entity.Entity.Vars.LCC_PassivesAdded = {}
     end
 end
 
+--- @param sessionContext SessionContext
+--- @param entity EnrichedEntity
+--- @param force boolean
 function RemoveAllFromEntity(sessionContext, entity, force)
-    if entity.Vars.LCC_Boosted == nil then
-        entity.Vars.LCC_Boosted = {
+    if entity.Entity.Vars.LCC_Boosted == nil then
+        entity.Entity.Vars.LCC_Boosted = {
             General = false,
         }
     end
-    if entity.Vars.LCC_BoostedWithHash == nil then
-        entity.Vars.LCC_BoostedWithHash = {
+    if entity.Entity.Vars.LCC_BoostedWithHash == nil then
+        entity.Entity.Vars.LCC_BoostedWithHash = {
             Hash = nil,
         }
     end
 
-    local shortGuid = string.sub(entity.Uuid.EntityUuid, -36)
+    local shortGuid = string.sub(entity.Entity.Uuid.EntityUuid, -36)
     sessionContext.Log(2, string.format("Removing All(%s) for Guid: %s", force, shortGuid))
 
     sessionContext.Log(3, string.format("Removing boost(%s) for Guid: %s", force, shortGuid))
@@ -3623,41 +3823,74 @@ function RemoveAllFromEntity(sessionContext, entity, force)
     sessionContext.Log(3, string.format("Removing passives(%s) for Guid: %s", force, shortGuid))
     RemovePassives(sessionContext, entity, nil, force)
 
-    sessionContext.EntityCache[string.sub(entity.Uuid.EntityUuid, -36)] = {}
-    entity.Vars.LCC_Boosted = {General = false}
-    entity.Vars.LCC_BoostedWithHash = {Hash = nil}
+    sessionContext.EntityCache[string.sub(entity.Entity.Uuid.EntityUuid, -36)] = nil
+    entity.Entity.Vars.LCC_Boosted = {General = false}
+    entity.Entity.Vars.LCC_BoostedWithHash = {Hash = nil}
+    entity.Entity.Vars.LCC_BoostedWithClassification = {Classification = nil}
 end
 
+--- @param sessionContext SessionContext
+--- @param entities EnrichedEntity[]
 function SetupUserVars(sessionContext, entities)
     for _, entity in ipairs(entities) do
-        if entity.Vars.LCC_Boosted == nil then
-            entity.Vars.LCC_Boosted = {
+        if entity.Entity.Vars.LCC_Boosted == nil then
+            entity.Entity.Vars.LCC_Boosted = {
                 General = false,
             }
         end
-        if entity.Vars.LCC_BoostedWithHash == nil then
-            entity.Vars.LCC_BoostedWithHash = {
+        if entity.Entity.Vars.LCC_BoostedWithHash == nil then
+            entity.Entity.Vars.LCC_BoostedWithHash = {
                 Hash = nil,
             }
         end
-        if entity.Vars.LCC_PassivesAdded == nil then
-            entity.Vars.LCC_PassivesAdded = {}
+        if entity.Entity.Vars.LCC_BoostedWithClassification == nil then
+            entity.Entity.Vars.LCC_BoostedWithClassification = {
+                Classification = nil,
+            }
         end
-        if entity.Vars.LCC_BoostsAdded == nil then
-            entity.Vars.LCC_BoostsAdded = {}
+        if entity.Entity.Vars.LCC_PassivesAdded == nil then
+            entity.Entity.Vars.LCC_PassivesAdded = {}
+        end
+        if entity.Entity.Vars.LCC_BoostsAdded == nil then
+            entity.Entity.Vars.LCC_BoostsAdded = {}
         end
     end
 end
 
+--- @param sessionContext SessionContext
+--- @param entities EnrichedEntity[]
+--- @param force boolean
+--- @return EnrichedEntity[], EnrichedEntity[], EnrichedEntity[]
 function RemoveBoostingMany(sessionContext, entities, force)
-    sessionContext.Log(1, "Removing Many Boosting")
+    sessionContext.Log(1, "Attempting Removing Many Boosting")
 
     local affectedEntities = {}
     local unAffectedEntities = {}
     local unBoostedEntities = {}
     for _, entity in ipairs(entities) do
-        if force or entity.Vars.LCC_Boosted.General then
-            if force or entity.Vars.LCC_BoostedWithHash.Hash ~= SessionContext.ConfigHash then
+        local generallyBoosted = entity.Entity.Vars.LCC_Boosted.General
+        local hashMismatch = entity.Entity.Vars.LCC_BoostedWithHash.Hash ~= SessionContext.ConfigHash
+        local classificationMismatch = entity.Entity.Vars.LCC_BoostedWithClassification.Classification ~= entity:GetConfigClassification(sessionContext)
+        if force or generallyBoosted then
+            sessionContext.Log(2, string.format("Attempting Removing Boosts for Guid: %s because generally boosted or forced", entity.ShortGuid))
+            if (
+                force or
+                hashMismatch or
+                classificationMismatch
+            ) then
+                sessionContext.Log(
+                    3,
+                    string.format(
+                        "Removing Boosts for Guid: %s because hash mismatch(%s, %s, %s) or classification mismatch(%s, %s, %s)",
+                        entity.ShortGuid,
+                        hashMismatch,
+                        entity.Entity.Vars.LCC_BoostedWithHash.Hash,
+                        SessionContext.ConfigHash,
+                        classificationMismatch,
+                        entity.Entity.Vars.LCC_BoostedWithClassification.Classification,
+                        entity:GetConfigClassification(sessionContext)
+                    )
+                )
                 RemoveAllFromEntity(sessionContext, entity, force)
                 table.insert(affectedEntities, entity)
             else
@@ -3670,11 +3903,22 @@ function RemoveBoostingMany(sessionContext, entities, force)
     return affectedEntities, unAffectedEntities, unBoostedEntities
 end
 
+--- @param sessionContext SessionContext
+--- @param entities EnrichedEntity[]
+--- @return boolean
 function WaitRemoveBoostingMany(sessionContext, entities)
+    sessionContext.Log(
+        3,
+        string.format(
+            "Waiting for all boosts to be gone on: %s entities (%s)",
+            #entities,
+            Map(function(entity) return entity.ShortGuid end, entities)
+        )
+    )
     local allGone = true
     for _, entity in ipairs(entities) do
-        local boosts = OurBoosts(nil, entity)
-        sessionContext.Log(3, string.format("Waiting for all boosts to be gone: %s %s %s", entity.Uuid.EntityUuid, #boosts, allGone))
+        local boosts = OurBoosts(nil, entity.Entity)
+        sessionContext.Log(3, string.format("Waiting for all boosts to be gone: %s %s %s", entity.Entity.Uuid.EntityUuid, #boosts, allGone))
         if #boosts > 0 then
             allGone = false
             break
@@ -3683,12 +3927,201 @@ function WaitRemoveBoostingMany(sessionContext, entities)
     return allGone
 end
 
+--- @param sessionContext SessionContext
+--- @param entities EnrichedEntity[]
 function PerformBoostingMany(sessionContext, entities)
     sessionContext.Log(1, "Performing Many Boosting")
 
     for _, entity in ipairs(entities) do
-        PerformBoosting(sessionContext, entity.Uuid.EntityUuid)
+        PerformBoosting(sessionContext, entity)
     end
+end
+
+--- @param sessionContext SessionContext
+--- @param entities Entity[]
+--- @return EnrichedEntity[]
+function EnrichEntities(sessionContext, entities)
+    return Map(
+        function(entity)
+            --- @type EnrichedEntity
+            local ee = EnrichedEntity:New()
+            return ee:EnrichEntity(sessionContext, entity)
+        end,
+        entities
+    )
+end
+
+--- @param entity Entity
+--- @return string | nil
+function GetEntityName(entity)
+    if entity.ServerCharacter ~= nil then
+        -- Remove on v13
+        if entity.ServerCharacter.Character ~= nil then
+            return entity.ServerCharacter.Character.Template.Name
+        end
+        if entity.ServerCharacter.Template ~= nil then
+            return entity.ServerCharacter.Template.Name
+        end
+    end
+    if entity.ServerItem ~= nil then
+        return entity.ServerItem.Template.Name
+    end
+    return nil
+end
+
+--- @class EnrichedEntity
+EnrichedEntity = {}
+
+--- @param sessionContext SessionContext
+--- @param entity Entity
+--- @return EnrichedEntity
+function EnrichedEntity:EnrichEntity(sessionContext, entity)
+    local guid = entity.Uuid.EntityUuid
+    local shortGuid = string.sub(guid, -36)
+    local entityName = GetEntityName(entity)
+    local fullGuid
+    if entityName ~= nil then
+        fullGuid = string.format("%s_%s", entityName, shortGuid)
+    else
+        fullGuid = string.format("%s", shortGuid)
+    end
+
+    self.Entity = entity
+
+    SetupUserVars(sessionContext, {self})
+
+    self.Guid = guid
+    self.ShortGuid = shortGuid
+    self.FullGuid = fullGuid
+
+    local isCharacter = Osi.IsCharacter(guid) == 1
+    local isPartyFollower = Osi.IsPartyFollower(guid) == 1
+    local isEnemy = Osi.IsEnemy(guid, Osi.GetHostCharacter()) == 1
+    local isBoss = Osi.IsBoss(guid) == 1
+
+    local isOrigin = CheckIfOrigin(self)
+    local isOurSummon = CheckIfOurSummon(self)
+    local isPartyMember = CheckIfParty(self)
+    local hasPlayerData = HasPlayerData(self)
+    local isPlayer = IsPlayer(self)
+
+    local alreadyModified = entity.Vars.LCC_Boosted.General
+    local sameHash = entity.Vars.LCC_BoostedWithHash.Hash == sessionContext.ConfigHash
+
+    -- Special case check, AdditionalEnemies mod adds certain enemies that are marked boss but not hostile for some reason
+    local isAdditionalEnemiesSpecialBoss = false
+    if IsAdditionalEnemiesLoaded() and isBoss then
+        for _, statName in ipairs(CharacterGetStats(guid)) do
+            if Ext.Stats.Get(statName).ModId == ADDITIONAL_ENEMIES_GUID then
+                isAdditionalEnemiesSpecialBoss = true
+            end
+        end
+    end
+    local combatComponent = SafeGet(entity, "ServerCharacter", "Character", "Template", "CombatComponent")
+    local rawAIHint = SafeGet(combatComponent, "AiHint")
+    local mappedAIHint = SafeGet(AiHints, SafeGet(combatComponent, "AiHint"))
+    local rawArchetype = SafeGet(combatComponent, "Archetype")
+
+    local kinds = sessionContext.EntityToKinds(shortGuid) or {}
+    local allClasses = {}
+    for kind, _ in pairs(kinds) do
+        local classes = KindMapping[kind]
+        allClasses = TableCombine(classes, allClasses)
+    end
+
+    local restrictions = sessionContext.EntityToRestrictions(shortGuid) or {}
+
+    self.IsCharacter = isCharacter
+    self.IsPartyMember = isPartyMember
+    self.IsPartyFollower = isPartyFollower
+    self.IsOurSummon = isOurSummon
+    self.IsEnemy = isEnemy
+    self.IsOrigin = isOrigin
+    self.IsBoss = isBoss
+    self.HasPlayerData = hasPlayerData
+    self.IsPlayer = isPlayer
+    self.AlreadyModified = alreadyModified
+    self.SameHash = sameHash
+    self.IsAdditionalEnemiesSpecialBoss = isAdditionalEnemiesSpecialBoss
+    self.ConfigHash = sessionContext.ConfigHash
+    self.RawAIHint = rawAIHint
+    self.MappedAIHint = mappedAIHint
+    self.RawArchetype = rawArchetype
+    self.Kinds = kinds
+    self.AllClasses = allClasses
+    self.Restrictions = restrictions
+    self.StatsChain = CharacterGetStats(shortGuid)
+    return self
+end
+
+--- @param o table | nil
+--- @return EnrichedEntity
+function EnrichedEntity:New(o)
+    o = o or {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
+end
+
+--- @param sessionContext SessionContext
+--- @return EnrichedEntity
+function EnrichedEntity:Refresh(sessionContext)
+    local entity = Ext.Entity.Get(self.ShortGuid)
+    return self:EnrichEntity(sessionContext, entity)
+end
+
+--- @return boolean
+function EnrichedEntity:IsClassifiedEnemy()
+    return not self.IsPartyMember and self.IsEnemy and not self.IsBoss and not self.IsOrigin
+end
+
+--- @return boolean
+function EnrichedEntity:IsClassifiedBoss()
+    return not self.IsPartyMember and (self.IsEnemy or self.IsAdditionalEnemiesSpecialBoss) and self.IsBoss and not self.IsOrigin
+end
+
+--- @return boolean
+function EnrichedEntity:IsClassifiedAlly()
+    return not self.IsPartyMember and not self.IsEnemy and not self.IsOrigin and not self.IsBoss
+end
+
+--- @return boolean
+function EnrichedEntity:IsClassifiedFollower()
+    return not self.IsEnemy and not self.IsOrigin and self.IsPartyFollower and not self.IsBoss
+end
+
+--- @return boolean
+function EnrichedEntity:IsClassifiedFollowerBoss()
+    return not self.IsEnemy and not self.IsOrigin and self.IsPartyFollower and self.IsBoss
+end
+
+--- @return boolean
+function EnrichedEntity:IsClassifiedSummon()
+    return self.IsPartyMember and self.IsOurSummon
+end
+
+--- @param sessionContext SessionContext
+--- @return string | nil
+function EnrichedEntity:GetConfigClassification(sessionContext)
+    if sessionContext.VarsJson["EnemiesEnabled"] and self:IsClassifiedEnemy() then
+        return "Enemies"
+    end
+    if sessionContext.VarsJson["BossesEnabled"] and self:IsClassifiedBoss() then
+        return "Bosses"
+    end
+    if sessionContext.VarsJson["AlliesEnabled"] and self:IsClassifiedAlly() then
+        return "Allies"
+    end
+    if sessionContext.VarsJson["FollowersEnabled"] and self:IsClassifiedFollower() then
+        return "Followers"
+    end
+    if sessionContext.VarsJson["FollowersBossesEnabled"] and self:IsClassifiedFollowerBoss() then
+        return "FollowersBosses"
+    end
+    if sessionContext.VarsJson["SummonsEnabled"] and self:IsClassifiedSummon() then
+        return "Summons"
+    end
+    return nil
 end
 
 --- @return SessionContext
@@ -3716,6 +4149,11 @@ function CreateSessionContext()
     for _, tagGuid in pairs(Ext.StaticData.GetAll("Tag")) do
         local tag = Ext.StaticData.Get(tagGuid, "Tag")
         sessionContext.Tags[tag.Name] = tagGuid
+    end
+
+    for _, raceGuid in pairs(Ext.StaticData.GetAll("Race")) do
+        local race = Ext.StaticData.Get(raceGuid, "Race")
+        sessionContext.Races[race.Name] = raceGuid
     end
 
     local rootTemplates = Ext.Template.GetAllRootTemplates()
@@ -3779,17 +4217,21 @@ local function OnSessionLoaded()
             SessionContext.Log(1, string.format("EnteredLevel: Guid: %s", guid))
             local shortGuid = string.sub(guid, -36)
             local entity = Ext.Entity.Get(shortGuid)
+            --- @cast entity Entity
 
             local entities = {entity}
 
-            SetupUserVars(SessionContext, entities)
+            local enrichedEntities = EnrichEntities(SessionContext, entities)
 
-            local affectedEntities, unAffectedEntities, unBooostedEntities = RemoveBoostingMany(SessionContext, entities)
+            SetupUserVars(SessionContext, enrichedEntities)
+
+            local affectedEntities, unAffectedEntities, unBooostedEntities = RemoveBoostingMany(SessionContext, enrichedEntities, false)
 
             local entitiesNeedingBoosts = {}
             entitiesNeedingBoosts = TableCombine(unBooostedEntities, TableCombine(affectedEntities, entitiesNeedingBoosts))
 
-            DelayedCallUntil(
+            DelayedCallUntilWithAtLeastTime(
+                500,
                 function() return WaitRemoveBoostingMany(SessionContext, affectedEntities) end,
                 function()
                     PerformBoostingMany(SessionContext, entitiesNeedingBoosts)
@@ -3802,17 +4244,21 @@ local function OnSessionLoaded()
             SessionContext.Log(1, string.format("EnteredCombat: Guid: %s; combatid: %s", guid, combatid))
             local shortGuid = string.sub(guid, -36)
             local entity = Ext.Entity.Get(shortGuid)
+            --- @cast entity Entity
 
             local entities = {entity}
 
-            SetupUserVars(SessionContext, entities)
+            local enrichedEntities = EnrichEntities(SessionContext, entities)
 
-            local affectedEntities, unAffectedEntities, unBooostedEntities = RemoveBoostingMany(SessionContext, entities)
+            SetupUserVars(SessionContext, enrichedEntities)
+
+            local affectedEntities, unAffectedEntities, unBooostedEntities = RemoveBoostingMany(SessionContext, enrichedEntities, false)
 
             local entitiesNeedingBoosts = {}
             entitiesNeedingBoosts = TableCombine(unBooostedEntities, TableCombine(affectedEntities, entitiesNeedingBoosts))
 
-            DelayedCallUntil(
+            DelayedCallUntilWithAtLeastTime(
+                300,
                 function() return WaitRemoveBoostingMany(SessionContext, affectedEntities) end,
                 function()
                     PerformBoostingMany(SessionContext, entitiesNeedingBoosts)
@@ -3836,14 +4282,20 @@ local function OnSessionLoaded()
             GetVarsJson(SessionContext)
 
             local entities = Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")
+            --- @cast entities Entity[]
 
-            local affectedEntities, unAffectedEntities, unBooostedEntities = RemoveBoostingMany(SessionContext, entities)
+            local enrichedEntities = EnrichEntities(SessionContext, entities)
+
+            SetupUserVars(SessionContext, enrichedEntities)
+
+            local affectedEntities, unAffectedEntities, unBooostedEntities = RemoveBoostingMany(SessionContext, enrichedEntities, false)
 
             local entitiesNeedingBoosts = {}
             entitiesNeedingBoosts = TableCombine(unBooostedEntities, TableCombine(affectedEntities, entitiesNeedingBoosts))
 
             -- After removing passives, it takes some time for them to actually disappear
-            DelayedCallUntil(
+            DelayedCallUntilWithAtLeastTime(
+                500,
                 function() return WaitRemoveBoostingMany(SessionContext, entitiesNeedingBoosts) end,
                 function()
                     PerformBoostingMany(SessionContext, entitiesNeedingBoosts)
@@ -3863,20 +4315,24 @@ local function OnSessionLoaded()
             GetVarsJson(SessionContext)
 
             local entities = Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")
+            --- @cast entities Entity[]
 
-            SetupUserVars(SessionContext, entities)
+            local enrichedEntities = EnrichEntities(SessionContext, entities)
+
+            SetupUserVars(SessionContext, enrichedEntities)
 
             if SafeGetWithDefault(false, SessionContext.VarsJson, "DebugMode", "DisableLevelGameplayStart") then
                 return
             end
 
-            local affectedEntities, unAffectedEntities, unBooostedEntities = RemoveBoostingMany(SessionContext, entities)
+            local affectedEntities, unAffectedEntities, unBooostedEntities = RemoveBoostingMany(SessionContext, enrichedEntities, false)
 
             local entitiesNeedingBoosts = {}
             entitiesNeedingBoosts = TableCombine(unBooostedEntities, TableCombine(affectedEntities, entitiesNeedingBoosts))
 
             -- After removing passives, it takes some time for them to actually disappear
-            DelayedCallUntil(
+            DelayedCallUntilWithAtLeastTime(
+                500,
                 function() return WaitRemoveBoostingMany(SessionContext, entitiesNeedingBoosts) end,
                 function()
                     PerformBoostingMany(SessionContext, entitiesNeedingBoosts)
@@ -3910,9 +4366,15 @@ local function OnSessionLoaded()
 
             if statusID == "LCC_REBOOST" then
                 local entity = Ext.Entity.Get(string.sub(target, -36))
+                --- @cast entity Entity
+
                 local entities = {entity}
 
-                local affectedEntities, unAffectedEntities, unBooostedEntities = RemoveBoostingMany(SessionContext, entities, true)
+                local enrichedEntities = EnrichEntities(SessionContext, entities)
+
+                SetupUserVars(SessionContext, enrichedEntities)
+
+                local affectedEntities, unAffectedEntities, unBooostedEntities = RemoveBoostingMany(SessionContext, enrichedEntities, true)
 
                 local entitiesNeedingBoosts = {}
                 entitiesNeedingBoosts = TableCombine(unBooostedEntities, TableCombine(affectedEntities, entitiesNeedingBoosts))
@@ -3928,25 +4390,40 @@ local function OnSessionLoaded()
 
             if statusID == "LCC_UNBOOST" then
                 local entity = Ext.Entity.Get(string.sub(target, -36))
+                --- @cast entity Entity
 
                 local entities = {entity}
 
-                RemoveBoostingMany(SessionContext, entities, true)
+                local enrichedEntities = EnrichEntities(SessionContext, entities)
+
+                SetupUserVars(SessionContext, enrichedEntities)
+
+                RemoveBoostingMany(SessionContext, enrichedEntities, true)
             end
 
             if statusID == "LCC_BOOST" then
                 local entity = Ext.Entity.Get(string.sub(target, -36))
+                --- @cast entity Entity
 
                 local entities = {entity}
 
-                PerformBoostingMany(SessionContext, entities)
+                local enrichedEntities = EnrichEntities(SessionContext, entities)
+
+                SetupUserVars(SessionContext, enrichedEntities)
+
+                PerformBoostingMany(SessionContext, enrichedEntities)
             end
 
 
             if statusID == "LCC_ALL_REBOOST" then
                 local entities = Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")
+                --- @cast entities Entity[]
 
-                local affectedEntities, unAffectedEntities, unBooostedEntities = RemoveBoostingMany(SessionContext, entities, true)
+                local enrichedEntities = EnrichEntities(SessionContext, entities)
+
+                SetupUserVars(SessionContext, enrichedEntities)
+
+                local affectedEntities, unAffectedEntities, unBooostedEntities = RemoveBoostingMany(SessionContext, enrichedEntities, true)
 
                 local entitiesNeedingBoosts = {}
                 entitiesNeedingBoosts = TableCombine(unBooostedEntities, TableCombine(affectedEntities, entitiesNeedingBoosts))
@@ -3962,14 +4439,24 @@ local function OnSessionLoaded()
 
             if statusID == "LCC_ALL_UNBOOST" then
                 local entities = Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")
+                --- @cast entities Entity[]
 
-                RemoveBoostingMany(SessionContext, entities, true)
+                local enrichedEntities = EnrichEntities(SessionContext, entities)
+
+                SetupUserVars(SessionContext, enrichedEntities)
+
+                RemoveBoostingMany(SessionContext, enrichedEntities, true)
             end
 
             if statusID == "LCC_ALL_BOOST" then
                 local entities = Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")
+                --- @cast entities Entity[]
 
-                PerformBoostingMany(SessionContext, entities)
+                local enrichedEntities = EnrichEntities(SessionContext, entities)
+
+                SetupUserVars(SessionContext, enrichedEntities)
+
+                PerformBoostingMany(SessionContext, enrichedEntities)
             end
         end
     )
@@ -4069,14 +4556,17 @@ Ext.Vars.RegisterUserVariable("LCC_PassivesAdded", {Server=true, Persistent=true
 Ext.Vars.RegisterUserVariable("LCC_BoostsAdded", {Server=true, Persistent=true, DontCache=true})
 Ext.Vars.RegisterUserVariable("LCC_Boosted", {Server=true, Persistent=true, DontCache=true})
 Ext.Vars.RegisterUserVariable("LCC_BoostedWithHash", {Server=true, Persistent=true, DontCache=true})
+Ext.Vars.RegisterUserVariable("LCC_BoostedWithClassification", {Server=true, Persistent=true, DontCache=true})
 Ext.Vars.RegisterUserVariable("LCC_DebugMode_RestoreSettings", {Server=true, Persistent=true, DontCache=true})
 
 Ext.Events.SessionLoaded:Subscribe(OnSessionLoaded)
 
 Ext.Events.GameStateChanged:Subscribe(function(event)
+        --- @cast event GameStateEvent
         if event.FromState == "Sync" and event.ToState == "Running" then
             _Log(DummySessionContext(), 2, "Game state loaded")
             for _, e in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
+                --- @cast e +Entity
                 if e.Vars.LCC_BoostsAdded ~= nil then
                     local boosts = e.BoostsContainer.Boosts
                     for _, boost in ipairs(e.Vars.LCC_BoostsAdded) do
@@ -4103,6 +4593,7 @@ Ext.Events.GameStateChanged:Subscribe(function(event)
 function DBG_GetAffected()
     local affected = {}
     for _, e in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
+        --- @cast e +Entity
         local guid = string.sub(e.Uuid.EntityUuid, -36)
         local modified = e.Vars.LCC_Boosted.General
         if modified then
