@@ -3863,6 +3863,14 @@ end
 --- @param entities EnrichedEntity[]
 --- @return boolean
 function WaitRemoveBoostingMany(sessionContext, entities)
+    sessionContext.Log(
+        3,
+        string.format(
+            "Waiting for all boosts to be gone on: %s entities (%s)",
+            #entities,
+            Map(function(entity) return entity.ShortGuid end, entities)
+        )
+    )
     local allGone = true
     for _, entity in ipairs(entities) do
         local boosts = OurBoosts(nil, entity.Entity)
