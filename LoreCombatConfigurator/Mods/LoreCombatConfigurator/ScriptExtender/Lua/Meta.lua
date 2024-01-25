@@ -311,6 +311,7 @@
 --- @field Followers EntityConfig
 --- @field FollowersBosses EntityConfig
 --- @field Summons EntityConfig
+--- @field CombatGroups any
 --- @field [Guid] EntityConfig
 
 --- @class EnrichedEntity

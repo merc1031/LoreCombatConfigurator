@@ -3669,6 +3669,8 @@ function ResetConfigJson(sessionContext)
                 ValueToIncrementByOnLevel = 0,
             },
         },
+        CombatGroups = {
+        },
     }
     local opts = {
         Beautify = true,
@@ -4471,6 +4473,33 @@ function DummySessionContext()
     }
 end
 
+function CombatStarted(sessionContext, combatid)
+    local combatEntities = Map(
+        function(combatEntry)
+            --- @type string
+            local guid = combatEntry[1]
+            --- @type Entity
+            local entity = Ext.Entity.Get(guid)
+            return entity
+        end,
+        Osi.DB_Is_InCombat:Get(nil, combatid)
+    )
+    local uniqueCombatGroups = ToSet(
+        Map(
+            function(entity)
+                return entity.ServerCharacter.Template.CombatComponent.CombatGroupID
+            end,
+            combatEntities
+        )
+    )
+    for combatGroupID, _ in pairs(uniqueCombatGroups) do
+        local cfg = SafeGet(sessionContext.VarsJson, "CombatGroups", combatGroupID)
+        if cfg ~= nil then
+            sessionContext.Log(1, string.format("CombatStarted: combatid: %s; combatGroupID: %s; cfg: %s\n", combatid, combatGroupID, cfg))
+        end
+    end
+end
+
 local function OnSessionLoaded()
     _Log(DummySessionContext(), 0, "0.9.8.1")
 
@@ -4868,6 +4897,7 @@ Ext.Vars.RegisterUserVariable("LCC_Boosted", {Server=true, Persistent=true, Dont
 Ext.Vars.RegisterUserVariable("LCC_BoostedWithHash", {Server=true, Persistent=true, DontCache=true})
 Ext.Vars.RegisterUserVariable("LCC_BoostedWithClassification", {Server=true, Persistent=true, DontCache=true})
 Ext.Vars.RegisterUserVariable("LCC_DebugMode_RestoreSettings", {Server=true, Persistent=true, DontCache=true})
+Ext.Vars.RegisterUserVariable("LCC_CombatGroup", {Server=true, Persistent=true, DontCache=true})
 
 Ext.Events.SessionLoaded:Subscribe(OnSessionLoaded)
 
@@ -4876,6 +4906,7 @@ Ext.Events.GameStateChanged:Subscribe(function(event)
         --- @cast event GameStateEvent
         if event.FromState == "Sync" and event.ToState == "Running" then
             _Log(DummySessionContext(), 2, "Game state loaded")
+            local combatGroupIDs = {}
             for _, e in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
                 --- @cast e +Entity
                 if e.Vars.LCC_BoostsAdded ~= nil then
@@ -4891,6 +4922,32 @@ Ext.Events.GameStateChanged:Subscribe(function(event)
                             AddBoostsAdv(e.Uuid.EntityUuid, boost)
                         end
                     end
+                end
+                if combatGroupIDs[e.ServerCharacter.Template.CombatComponent.CombatGroupID] == nil then
+                    combatGroupIDs[e.ServerCharacter.Template.CombatComponent.CombatGroupID] = {}
+                end
+                table.insert(combatGroupIDs[e.ServerCharacter.Template.CombatComponent.CombatGroupID], e)
+            end
+            local host = Ext.Entity.Get(Osi.GetHostCharacter())
+            if host.Vars.LCC_CombatGroup == nil then
+                host.Vars.LCC_CombatGroup = {}
+            end
+            for combatGroupID, members in pairs(combatGroupIDs) do
+                local cfg = SafeGet(SessionContext.VarsJson, "CombatGroups", combatGroupID)
+                if cfg ~= nil and #members > 0 and host.Vars.LCC_CombatGroup[combatGroupID] == nil then
+                    local firstMember = members[1]
+                    SessionContext.Log(3, string.format("For CombatGroupID: %s; cfg: %s; cloning firstMember: %s", combatGroupID, cfg, firstMember.Uuid.EntityUuid))
+                    local x, y, z = Osi.GetPosition(firstMember.Uuid.EntityUuid)
+                    local clone = Osi.CreateAt(Osi.GetTemplate(firstMember.Uuid.EntityUuid),x+Osi.Random(5)-5,y,z+Osi.Random(5)-5,0,1,"")
+                    SessionContext.Log(3, string.format("For CombatGroupID: %s; cfg: %s; cloned firstMember: %s, %s", combatGroupID, cfg, firstMember.Uuid.EntityUuid, clone))
+                    Osi.SetFaction(clone, Osi.GetFaction(firstMember.Uuid.EntityUuid))
+                    Osi.SetCanJoinCombat(clone, Osi.CanJoinCombat(firstMember.Uuid.EntityUuid))
+                    Osi.SetLevel(clone, Osi.GetLevel(firstMember.Uuid.EntityUuid))
+                    SessionContext.Log(3, string.format("For CombatGroupID: %s; cfg: %s; finshed cloned firstMember: %s, %s", combatGroupID, cfg, firstMember.Uuid.EntityUuid, clone))
+
+                    local combatGroupTracker = host.Vars.LCC_CombatGroup
+                    combatGroupTracker[combatGroupID] = clone
+                    host.Vars.LCC_CombatGroup[combatGroupID] = combatGroupTracker
                 end
             end
         end
