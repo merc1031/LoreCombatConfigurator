@@ -4,6 +4,10 @@ ModName = "LoreCombatConfigurator"
 CONFIG_HASH_SALT = 1234
 
 -- Courtesy to @Buns on Discord
+--- @generic T
+--- @param object table<string, any>
+--- @param ... string
+--- @return T | nil, nil | string
 function SafeGet(object, ...)
     local result = object
     local error = "SafeGet: object"
@@ -32,6 +36,11 @@ function SafeGet(object, ...)
     return result, nil
 end
 
+--- @generic T
+--- @param default T
+--- @param object table<string, any>
+--- @param ... string
+--- @return T
 function SafeGetWithDefault(default, object, ...)
     local result, error = SafeGet(object, ...)
     if error ~= nil then
@@ -174,6 +183,10 @@ function Map(fn, listlike)
     return result
 end
 
+--- @generic V
+--- @param fn fun(val: V): boolean
+--- @param listlike V[]
+--- @return V[]
 function Filter(fn, listlike)
     local result = {}
     for _, val in ipairs(listlike) do
@@ -196,6 +209,10 @@ function MapTableValues(fn, tablelike)
     return result
 end
 
+--- @generic K, V, T
+--- @param fn fun(key: K, val: V): T
+--- @param tablelike table<K, V>
+--- @return table<K, T>
 function MapTable(fn, tablelike)
     local result = {}
     for key, val in pairs(tablelike) do
@@ -204,6 +221,10 @@ function MapTable(fn, tablelike)
     return result
 end
 
+--- @generic K, V
+--- @param fn fun(key: K, val: V): boolean
+--- @param tablelike table<K, V>
+--- @return table<K, V>
 function FilterTable(fn, tablelike)
     local result = {}
     for key, val in pairs(tablelike) do
