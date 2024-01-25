@@ -135,6 +135,11 @@ function ConsistentHash(salt, buckets, str, ...)
     return hash % buckets
 end
 
+--- @generic A, V, T
+--- @param fn fun(result:A, val: V): A
+--- @param acc A
+--- @param listlike V[]
+--- @return A
 function Fold(fn, acc, listlike)
     local result = acc
     for _, val in ipairs(listlike) do
@@ -143,6 +148,24 @@ function Fold(fn, acc, listlike)
     return result
 end
 
+--- @generic K, V, T
+--- @param fn fun(val: V): K, T
+--- @param listlike V[]
+--- @return table<K, T>
+function ListToTable(fn, listlike)
+    local result = {}
+    local fn1 = function(acc, val)
+        local key, value = fn(val)
+        acc[key] = value
+        return acc
+    end
+    return Fold(fn1, result, listlike)
+end
+
+--- @generic V, T
+--- @param fn fun(val: V): T
+--- @param listlike V[]
+--- @return T[]
 function Map(fn, listlike)
     local result = {}
     for _, val in ipairs(listlike) do
@@ -164,7 +187,7 @@ end
 --- @generic K, V, T
 --- @param fn fun(val: V): T
 --- @param tablelike table<K, V>
---- return table<K, T>
+--- @return table<K, T>
 function MapTableValues(fn, tablelike)
     local result = {}
     for key, val in pairs(tablelike) do
