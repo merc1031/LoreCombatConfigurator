@@ -2838,33 +2838,42 @@ function ComputeRollBonusAttackBoost(sessionContext, entity, configType)
     )
 
     local nonSpecificAttackTypes = {"Attack"}
+    --- @type string[]
     local specificAttackTypes = {}
-    for _, attackType in pairs(attackTypes) do
+    for attackType, checkAttackType in pairs(attackTypes) do
         if (
-            (attackType.Melee and isMelee) or
-            (attackType.Ranged and isRanged) or
-            (attackType.Caster and isCaster) or
-            (attackType.Unarmed and isUnarmed)
+            (checkAttackType.Melee and isMelee) or
+            (checkAttackType.Ranged and isRanged) or
+            (checkAttackType.Caster and isCaster) or
+            (checkAttackType.Unarmed and isUnarmed)
         ) then
             table.insert(specificAttackTypes, attackType)
         end
     end
-    local filteredAttackTypes = specificAttackTypes
-    local stackAttackRolls = GetVar(sessionContext, "SpecificAttackRollsStack", entity.ShortGuid, configType)
-    if (#filteredAttackTypes > 0 and stackAttackRolls ~= nil and stackAttackRolls) or #filteredAttackTypes == 0 then
-        filteredAttackTypes = TableCombine(nonSpecificAttackTypes, filteredAttackTypes)
-    end
-    return Filter(
-        function(boostVal)
-            return boostVal ~= nil
-        end,
-        Map(
-            function(attackType)
-                return ComputeRollBonusBoost(sessionContext, attackType, entity, configType)
+
+    local computeAttackTypeBoosts = function(chosenAttackTypes)
+        return Filter(
+            function(boostVal)
+                return boostVal ~= nil
             end,
-            filteredAttackTypes
+            Map(
+                function(attackType)
+                    sessionContext.LogI(4, 10, string.format("RollBonusAttack Increase for %s: %s", entity.ShortGuid, attackType))
+                    return ComputeRollBonusBoost(sessionContext, attackType, entity, configType)
+                end,
+                chosenAttackTypes
+            )
         )
-    )
+    end
+
+    local specificBoosts = computeAttackTypeBoosts(specificAttackTypes)
+
+    local stackAttackRolls = GetVar(sessionContext, "SpecificAttackRollsStack", entity.ShortGuid, configType)
+    if (#specificBoosts > 0 and stackAttackRolls ~= nil and stackAttackRolls) or #specificBoosts == 0 then
+        local nonSpecificBoosts = computeAttackTypeBoosts(nonSpecificAttackTypes)
+        specificBoosts = TableCombine(nonSpecificBoosts, specificBoosts)
+    end
+    return specificBoosts
 end
 
 --- @param sessionContext SessionContext
