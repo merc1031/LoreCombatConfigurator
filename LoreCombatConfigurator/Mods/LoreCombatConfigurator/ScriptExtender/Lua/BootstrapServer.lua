@@ -16,7 +16,7 @@ function SafeGet(object, ...)
         return nil, error
     end
     local arg = {...}
-    for i,v in ipairs(arg) do
+    for _, v in ipairs(arg) do
 
         error = error .. "." .. tostring(v)
 
@@ -89,7 +89,7 @@ end
 ---@param func function
 function DelayedCallUntil(pred, func)
     local handler
-    handler = Ext.Events.Tick:Subscribe(function(e)
+    handler = Ext.Events.Tick:Subscribe(function(_)
         if (pred()) then
             func()
             Ext.Events.Tick:Unsubscribe(handler)
@@ -102,7 +102,7 @@ end
 ---@param func function
 function DelayedCallWhile(pred, func)
     local handler
-    handler = Ext.Events.Tick:Subscribe(function(e)
+    handler = Ext.Events.Tick:Subscribe(function(_)
         func()
         if (pred()) then
             Ext.Events.Tick:Unsubscribe(handler)
@@ -319,7 +319,7 @@ end
 --- @generic T, V
 --- @param t1 V[]
 --- @param t2 T[]
---- @return (V | T)[]
+--- @return (V | T)[] t2
 function TableCombine(t1, t2)
     return table.move(t1, 1, #t1, #t2 + 1, t2)
 end
@@ -371,7 +371,7 @@ end
 --- @return V[]
 function Values(tab)
     local list = {}
-    for key, elem in pairs(tab) do
+    for _, elem in pairs(tab) do
         table.insert(list, elem)
     end
     return list
@@ -382,7 +382,7 @@ end
 --- @return K[]
 function Keys(tab)
     local list = {}
-    for key, elem in pairs(tab) do
+    for key, _ in pairs(tab) do
         table.insert(list, key)
     end
     return list
@@ -422,7 +422,7 @@ end
 
 function CharacterGetStats(target)
     local entity = Ext.Entity.Get(target)
-    local res, statName = pcall(function () return entity["ServerCharacter"]["Character"]["Template"]["Stats"] end)
+    local _, statName = pcall(function () return entity["ServerCharacter"]["Character"]["Template"]["Stats"] end)
     if statName ~= nil then
         return GetStatsChain(statName)
     else
@@ -437,7 +437,7 @@ function GetStatsChain(statName)
     local stat = Ext.Stats.Get(statName)
     while stat ~= nil do
         table.insert(stats, stat.Name)
-        local _res, nextStatName = pcall(function() return stat.Using end)
+        local _, nextStatName = pcall(function() return stat.Using end)
         if nextStatName ~= nil then
             stat = Ext.Stats.Get(nextStatName)
         else
@@ -899,7 +899,6 @@ KindMapping = {
 
 --- @param sessionContext SessionContext
 function _EntityToKinds(sessionContext, kinds, target)
-    local entity = Ext.Entity.Get(target)
     local stats = CharacterGetStats(target)
     for _, stat in ipairs(stats) do
         local overrideKinds = SafeGet(sessionContext.VarsJson, "Kinds", stat)
@@ -915,7 +914,6 @@ end
 
 --- @param sessionContext SessionContext
 function _EntityToRestrictions(sessionContext, restrictions, target)
-    local entity = Ext.Entity.Get(target)
     local stats = CharacterGetStats(target)
     for _, stat in ipairs(stats) do
         local overrideRestrictions = SafeGet(sessionContext.VarsJson, "Restrictions", stat)
@@ -999,6 +997,7 @@ end
 
 --- @param sessionContext SessionContext
 --- @return table<Guid, table<string, Spell>>
+--- @diagnostic disable-next-line: unused-local
 function SpellListsToSpells(sessionContext)
     local allSpellLists = Ext.Definition.GetAll("SpellList")
     local spellListToSpells = {}
@@ -1006,7 +1005,6 @@ function SpellListsToSpells(sessionContext)
     for _, p in ipairs(allSpellLists) do
         spellListToSpells[p] = {}
         local spellList = Ext.Definition.Get(p, "SpellList")
-        local spells = spellList.Spells
         local spellsIterable = Ext.Types.Serialize(spellList.Spells)
         for _, spell in ipairs(spellsIterable) do
             local spellData = Ext.Stats.Get(spell)
@@ -1050,6 +1048,7 @@ function SpellListsToSpells(sessionContext)
 end
 
 --- @param sessionContext SessionContext
+--- @diagnostic disable-next-line: unused-local
 function PassiveListsToPassives(sessionContext)
     local allPassiveLists = Ext.Definition.GetAll("PassiveList")
     local passiveListToPassives = {}
@@ -1192,7 +1191,7 @@ SpellLevelToName = {
 --- @return table<string, ClassSpells>
 function GenerateSpellLists(sessionContext, blacklistedAbilitiesByClass, blacklistedAbilities, blaclistedLists, rootClasses)
     local classToSpellLists = {}
-    for className, class in pairs(rootClasses) do
+    for _, class in pairs(rootClasses) do
         local spells, spellsBySpellLevel, abilitiesByLevel = GenerateClassSpellLists(sessionContext, blacklistedAbilitiesByClass, blacklistedAbilities, blaclistedLists, class)
         classToSpellLists[class.Name] = {
             Spells = spells,
@@ -1205,12 +1204,13 @@ end
 
 --- @param sessionContext SessionContext
 --- @return table<string, ClassSpell>, table<string, string[]>, table<string, string[]>
-function GenerateClassSpellLists(sessionContext, blacklistedAbilitiesByClass, blacklistedAbilities, blaclistedLists, class)
+--- @diagnostic disable-next-line: unused-local
+function GenerateClassSpellLists(sessionContext, blacklistedAbilitiesByClass, blacklistedAbilities, blacklistedLists, class)
     local spells = {}
     for level, progression in pairs(class.Progression) do
         if not blacklistedAbilitiesByClass[progression.Name] then
             for _, selector in ipairs(progression.AddSpells) do
-                for spellId, spell in pairs(selector.Spells) do
+                for _, spell in pairs(selector.Spells) do
                     if not blacklistedAbilities[spell.Name] then
                         spells[spell.Name] = {
                             Spell = spell,
@@ -1220,7 +1220,7 @@ function GenerateClassSpellLists(sessionContext, blacklistedAbilitiesByClass, bl
                 end
             end
             for _, selector in ipairs(progression.SelectSpells) do
-                for spellId, spell in pairs(selector.Spells) do
+                for _, spell in pairs(selector.Spells) do
                     if not blacklistedAbilities[spell.Name] then
                         spells[spell.Name] = {
                             Spell = spell,
@@ -1231,14 +1231,14 @@ function GenerateClassSpellLists(sessionContext, blacklistedAbilitiesByClass, bl
             end
         end
     end
-    for subclassName, subclass in pairs(class.Subclasses) do
+    for _, subclass in pairs(class.Subclasses) do
         if subclass.Progression == nil then
             sessionContext.LogI(2, 18, string.format("Subclass %s of class %s has no progression", subclass.Name, class.Name))
         else
             for level, progression in pairs(subclass.Progression) do
                 if not blacklistedAbilitiesByClass[progression.Name] then
                     for _, selector in ipairs(progression.AddSpells) do
-                        for spellId, spell in pairs(selector.Spells) do
+                        for _, spell in pairs(selector.Spells) do
                             if not blacklistedAbilities[spell.Name] then
                                 spells[spell.Name] = {
                                     Spell = spell,
@@ -1248,7 +1248,7 @@ function GenerateClassSpellLists(sessionContext, blacklistedAbilitiesByClass, bl
                         end
                     end
                     for _, selector in ipairs(progression.SelectSpells) do
-                        for spellId, spell in pairs(selector.Spells) do
+                        for _, spell in pairs(selector.Spells) do
                             if not blacklistedAbilities[spell.Name] then
                                 spells[spell.Name] = {
                                     Spell = spell,
@@ -1280,8 +1280,8 @@ function GenerateClassSpellLists(sessionContext, blacklistedAbilitiesByClass, bl
             end
         end
     end
-    for _, spells in pairs(spellsBySpellLevel) do
-        table.sort(spells)
+    for _, levelSpells in pairs(spellsBySpellLevel) do
+        table.sort(levelSpells)
     end
     for _, abilities in pairs(abiltiiesByLevel) do
         table.sort(abilities)
@@ -1291,10 +1291,10 @@ end
 
 --- @param sessionContext SessionContext
 --- @return table<string, ClassPassives>
-function GeneratePassiveLists(sessionContext, blacklistedPassivesByClass, blacklistedPassives, blaclistedLists, rootClasses)
+function GeneratePassiveLists(sessionContext, blacklistedPassivesByClass, blacklistedPassives, blacklistedLists, rootClasses)
     local classToPassiveLists = {}
-    for className, class in pairs(rootClasses) do
-        local passives, passivesByLevel = GenerateClassPassiveLists(sessionContext, blacklistedPassivesByClass, blacklistedPassives, blaclistedLists, class)
+    for _, class in pairs(rootClasses) do
+        local passives, passivesByLevel = GenerateClassPassiveLists(sessionContext, blacklistedPassivesByClass, blacklistedPassives, blacklistedLists, class)
         classToPassiveLists[class.Name] = {
             Passives = passives,
             PassivesByLevel = passivesByLevel,
@@ -1305,7 +1305,8 @@ end
 
 --- @param sessionContext SessionContext
 --- @return table<string, boolean>, table<string, string[]>
-function GenerateClassPassiveLists(sessionContext, blacklistedPassivesByClass, blacklistedPassives, blaclistedLists, class)
+--- @diagnostic disable-next-line: unused-local
+function GenerateClassPassiveLists(sessionContext, blacklistedPassivesByClass, blacklistedPassives, blacklistedLists, class)
     local passives = {}
     local passivesByLevel = {}
     for level, progression in pairs(class.Progression) do
@@ -1332,7 +1333,7 @@ function GenerateClassPassiveLists(sessionContext, blacklistedPassivesByClass, b
             end
         end
     end
-    for subclassName, subclass in pairs(class.Subclasses) do
+    for _, subclass in pairs(class.Subclasses) do
         for level, progression in pairs(subclass.Progression) do
             if not blacklistedPassivesByClass[progression.Name] then
                 for _, selector in ipairs(progression.SelectPassives) do
@@ -1359,8 +1360,8 @@ function GenerateClassPassiveLists(sessionContext, blacklistedPassivesByClass, b
         end
     end
     local passivesByLevelLists = {}
-    for level, passives in pairs(passivesByLevel) do
-        local passivesList = Keys(passives)
+    for level, levelPassives in pairs(passivesByLevel) do
+        local passivesList = Keys(levelPassives)
         table.sort(passivesList)
         passivesByLevelLists[level] = passivesList
     end
@@ -1370,6 +1371,7 @@ end
 
 --- @param sessionContext SessionContext
 --- @return ItemLists
+--- @diagnostic disable-next-line: unused-local
 function GenerateItemLists(sessionContext)
     local itemsByUseType = {
         Consumable = {},
@@ -1507,10 +1509,11 @@ function ComputeClassLevelAdditions(sessionContext, sourceTables, deps, var, pre
         end
     end
     sessionContext.LogI(7, 26, string.format("DBG: Found %s additions presence table for %s", Ext.Json.Stringify(npcPresenceTable), shortGuid))
-    local npcTable = Keys(FilterTable(function(key, val) return val end, npcPresenceTable))
+    local npcTable = Keys(FilterTable(function(_, val) return val end, npcPresenceTable))
     table.sort(npcTable)
 
     sessionContext.LogI(7, 26, string.format("DBG: Found %s %s additions table for %s", #npcTable, Ext.Json.Stringify(npcTable), shortGuid))
+--- @diagnostic disable-next-line: unused-vararg
     local lookupFn = function(range, ...)
         return Osi.Random(range)
     end
@@ -1796,7 +1799,13 @@ end
 function GetVar(sessionContext, var, guid, configType)
     local race = Osi.GetRace(guid, 0)
     local vars = sessionContext.VarsJson
-    local specific = vars[guid]
+    local handle = Ext.Entity.UuidToHandle(guid)
+    --- @cast handle -userdata
+    local localizedName = nil
+    if handle ~= nil then
+        localizedName = Ext.Loca.GetTranslatedString(handle.DisplayName.NameKey.Handle.Handle)
+    end
+    local specific = vars[guid] or (localizedName ~= nil and vars[localizedName]) or nil
     if specific ~= nil then
         local result = specific[var]
         if result ~= nil then
@@ -1827,7 +1836,12 @@ end
 function GetVarComplex(sessionContext, topvar, var, guid, configType)
     local race = Osi.GetRace(guid, 0)
     local vars = sessionContext.VarsJson
-    local specific = vars[guid]
+    local handle = Ext.Entity.UuidToHandle(guid)
+    local localizedName = nil
+    if handle ~= nil then
+        localizedName = Ext.Loca.GetTranslatedString(handle.DisplayName.NameKey.Handle.Handle)
+    end
+    local specific = vars[guid] or (localizedName ~= nil and vars[localizedName]) or nil
     if specific ~= nil then
         local topresult = specific[topvar]
         if topresult ~= nil then
@@ -1883,6 +1897,7 @@ function FormatBoost(boostEntity)
     return string.format("%s(%s)", boostEntity.BoostInfo.Params.Boost, table.concat(params, ","))
 end
 
+--- @diagnostic disable-next-line: unused-local
 function RemoveBoostsAdv(sessionContext, target, boostEntity)
     if boostEntity.BoostInfo.Cause.Cause == ModName then
         local boost = FormatBoost(boostEntity)
@@ -1902,7 +1917,6 @@ function PrepareSpellBookRoots(sessionContext, target)
 
     for _, derivedSpell in pairs(spells) do
         local prototype = SafeGet(derivedSpell, "Id", "Prototype")
-        local lastUsing = nil
         local using = prototype
 
         while using ~= nil do
@@ -1914,7 +1928,6 @@ function PrepareSpellBookRoots(sessionContext, target)
                 spellRoots[spellData.RootSpellID] = true
                 using = nil
             else
-                lastUsing = using
                 using = spellData.Using
             end
         end
@@ -2195,7 +2208,6 @@ function ComputeNewSpells(sessionContext, entity, configType)
     local shortGuid = entity.ShortGuid
     local npcLevel = tonumber(Osi.GetLevel(shortGuid))
     local spellCastingAbility = entity.Entity.Stats.SpellCastingAbility
-    local npcSpellTable = {}
 
     local spellTables = {}
 
@@ -2244,6 +2256,7 @@ function ComputeNewSpells(sessionContext, entity, configType)
         return selectedSpells
     end
 
+--- @diagnostic disable-next-line: unused-vararg
     local lookupFn = function(range, ...)
         return Osi.Random(range)
     end
@@ -2331,7 +2344,6 @@ end
 --- @param sessionContext SessionContext
 --- @param entity EnrichedEntity
 function ComputeRageBoost(sessionContext, entity, configType)
-    local shortGuid = entity.ShortGuid
     if (
         not GuessIfBarbarian(sessionContext, entity)
     ) then
@@ -2350,7 +2362,6 @@ end
 --- @param sessionContext SessionContext
 --- @param entity EnrichedEntity
 function ComputeSorceryPointBoost(sessionContext, entity, configType)
-    local shortGuid = entity.ShortGuid
     if (
         not GuessIfCaster(sessionContext, entity)
     ) then
@@ -2369,7 +2380,6 @@ end
 --- @param sessionContext SessionContext
 --- @param entity EnrichedEntity
 function ComputeTidesOfChaosBoost(sessionContext, entity, configType)
-    local shortGuid = entity.ShortGuid
     if (
         not GuessIfCaster(sessionContext, entity)
     ) then
@@ -2388,7 +2398,6 @@ end
 --- @param sessionContext SessionContext
 --- @param entity EnrichedEntity
 function ComputeSuperiorityDieBoost(sessionContext, entity, configType)
-    local shortGuid = entity.ShortGuid
     if (
         not GuessIfFighter(sessionContext, entity)
     ) then
@@ -2407,7 +2416,6 @@ end
 --- @param sessionContext SessionContext
 --- @param entity EnrichedEntity
 function ComputeWildShapeBoost(sessionContext, entity, configType)
-    local shortGuid = entity.ShortGuid
     if (
         not GuessIfDruid(sessionContext, entity)
     ) then
@@ -2426,7 +2434,6 @@ end
 --- @param sessionContext SessionContext
 --- @param entity EnrichedEntity
 function ComputeNaturalRecoveryBoost(sessionContext, entity, configType)
-    local shortGuid = entity.ShortGuid
     if (
         not GuessIfDruid(sessionContext, entity)
     ) then
@@ -2445,7 +2452,6 @@ end
 --- @param sessionContext SessionContext
 --- @param entity EnrichedEntity
 function ComputeFungalInfestationBoost(sessionContext, entity, configType)
-    local shortGuid = entity.ShortGuid
     if (
         not GuessIfDruid(sessionContext, entity)
     ) then
@@ -2464,7 +2470,6 @@ end
 --- @param sessionContext SessionContext
 --- @param entity EnrichedEntity
 function ComputeLayOnHandsBoost(sessionContext, entity, configType)
-    local shortGuid = entity.ShortGuid
     if (
         not GuessIfPaladin(sessionContext, entity)
     ) then
@@ -2483,7 +2488,6 @@ end
 --- @param sessionContext SessionContext
 --- @param entity EnrichedEntity
 function ComputeChannelOathBoost(sessionContext, entity, configType)
-    local shortGuid = entity.ShortGuid
     if (
         not GuessIfPaladin(sessionContext, entity)
     ) then
@@ -2502,7 +2506,6 @@ end
 --- @param sessionContext SessionContext
 --- @param entity EnrichedEntity
 function ComputeChannelDivinityBoost(sessionContext, entity, configType)
-    local shortGuid = entity.ShortGuid
     if (
         not GuessIfCleric(sessionContext, entity)
     ) then
@@ -2521,7 +2524,6 @@ end
 --- @param sessionContext SessionContext
 --- @param entity EnrichedEntity
 function ComputeBardicInspirationBoost(sessionContext, entity, configType)
-    local shortGuid = entity.ShortGuid
     if (
         not GuessIfBard(sessionContext, entity)
     ) then
@@ -2540,7 +2542,6 @@ end
 --- @param sessionContext SessionContext
 --- @param entity EnrichedEntity
 function ComputeKiPointBoost(sessionContext, entity, configType)
-    local shortGuid = entity.ShortGuid
     if (
         not GuessIfMonk(sessionContext, entity)
     ) then
@@ -2559,7 +2560,6 @@ end
 --- @param sessionContext SessionContext
 --- @param entity EnrichedEntity
 function ComputeDeflectMissilesBoost(sessionContext, entity, configType)
-    local shortGuid = entity.ShortGuid
     if (
         not GuessIfMonk(sessionContext, entity)
     ) then
@@ -2578,7 +2578,6 @@ end
 --- @param sessionContext SessionContext
 --- @param entity EnrichedEntity
 function ComputeSneakAttackBoost(sessionContext, entity, configType)
-    local shortGuid = entity.ShortGuid
     if (
         not GuessIfRogue(sessionContext, entity)
     ) then
@@ -2645,7 +2644,9 @@ function ComputeIncrementalBoost(sessionContext, stat, entity, configType)
                 return nil
             end
         end,
-        RollBonus = function() return nil end,
+        RollBonusAttack = function() return nil end,
+        RollBonusSavingThrow = function() return nil end,
+        SpellSaveDC = function() return nil end,
         Damage = function() return nil end,
     }
     local statValueFn = statValueFns[stat]
@@ -2685,7 +2686,6 @@ end
 --- @param sessionContext SessionContext
 --- @param entity EnrichedEntity
 function ComputeMovementBoost(sessionContext, entity, configType)
-    local shortGuid = entity.ShortGuid
     local totalMovementBoost = ComputeIncrementalBoost(sessionContext, "Movement", entity, configType)
     if totalMovementBoost > 0 then
         return "ActionResource(Movement," .. totalMovementBoost .. ",0)"
@@ -2698,7 +2698,6 @@ end
 --- @param sessionContext SessionContext
 --- @param entity EnrichedEntity
 function ComputeACBoost(sessionContext, entity, configType)
-    local shortGuid = entity.ShortGuid
     local totalACBoost = ComputeIncrementalBoost(sessionContext, "AC", entity, configType)
     if totalACBoost > 0 then
         return "AC(" .. totalACBoost .. ")"
@@ -2710,7 +2709,6 @@ end
 --- @param sessionContext SessionContext
 --- @param entity EnrichedEntity
 function ComputeStrengthBoost(sessionContext, entity, configType)
-    local shortGuid = entity.ShortGuid
     local totalStrengthBoost = ComputeIncrementalBoost(sessionContext, "Strength", entity, configType)
     if totalStrengthBoost > 0 then
         return "Ability(Strength,+" .. totalStrengthBoost .. ")"
@@ -2722,7 +2720,6 @@ end
 --- @param sessionContext SessionContext
 --- @param entity EnrichedEntity
 function ComputeDexterityBoost(sessionContext, entity, configType)
-    local shortGuid = entity.ShortGuid
     local totalDexterityBoost = ComputeIncrementalBoost(sessionContext, "Dexterity", entity, configType)
     if totalDexterityBoost > 0 then
         return "Ability(Dexterity,+" .. totalDexterityBoost .. ")"
@@ -2735,7 +2732,6 @@ end
 --- @param sessionContext SessionContext
 --- @param entity EnrichedEntity
 function ComputeConstitutionBoost(sessionContext, entity, configType)
-    local shortGuid = entity.ShortGuid
     local totalConstitutionBoost = ComputeIncrementalBoost(sessionContext, "Constitution", entity, configType)
     if totalConstitutionBoost > 0 then
         return "Ability(Constitution,+" .. totalConstitutionBoost .. ")"
@@ -2747,7 +2743,6 @@ end
 --- @param sessionContext SessionContext
 --- @param entity EnrichedEntity
 function ComputeIntelligenceBoost(sessionContext, entity, configType)
-    local shortGuid = entity.ShortGuid
     local totalIntelligenceBoost = ComputeIncrementalBoost(sessionContext, "Intelligence", entity, configType)
     if totalIntelligenceBoost > 0 then
         return "Ability(Intelligence,+" .. totalIntelligenceBoost .. ")"
@@ -2759,7 +2754,6 @@ end
 --- @param sessionContext SessionContext
 --- @param entity EnrichedEntity
 function ComputeWisdomBoost(sessionContext, entity, configType)
-    local shortGuid = entity.ShortGuid
     local totalWisdomBoost = ComputeIncrementalBoost(sessionContext, "Wisdom", entity, configType)
     if totalWisdomBoost > 0 then
         return "Ability(Wisdom,+" .. totalWisdomBoost .. ")"
@@ -2771,7 +2765,6 @@ end
 --- @param sessionContext SessionContext
 --- @param entity EnrichedEntity
 function ComputeCharismaBoost(sessionContext, entity, configType)
-    local shortGuid = entity.ShortGuid
     local totalCharismaBoost = ComputeIncrementalBoost(sessionContext, "Charisma", entity, configType)
     if totalCharismaBoost > 0 then
         return "Ability(Charisma,+" .. totalCharismaBoost .. ")"
@@ -2782,22 +2775,110 @@ end
 
 --- @param sessionContext SessionContext
 --- @param entity EnrichedEntity
-function ComputeRollBonusBoost(sessionContext, entity, configType)
-    local shortGuid = entity.ShortGuid
-    local totalRollBonus = ComputeIncrementalBoost(sessionContext, "RollBonus", entity, configType)
+function ComputeRollBonusAttackBoost(sessionContext, entity, configType)
+    local attackTypes = {
+        MeleeWeaponAttack = {
+            Melee = true,
+        },
+        RangedWeaponAttack = {
+            Ranged = true,
+        },
+        MeleeSpellAttack = {
+            Caster = true,
+        },
+        RangedSpellAttack = {
+            Caster = true,
+        },
+        MeleeUnarmedAttack = {
+            Unarmed = true
+        },
+        RangedUnarmedAttack = {
+            Unarmed = true
+        },
+    }
+
+    local isCaster = GuessIfCaster(sessionContext, entity)
+    local isMelee = (
+        GuessIfBarbarian(sessionContext, entity) or
+        GuessIfFighter(sessionContext, entity) or
+        GuessIfPaladin(sessionContext, entity) or
+        GuessIfRanger(sessionContext, entity) or
+        GuessIfRogue(sessionContext, entity) or
+        GuessIfDruid(sessionContext, entity)
+    )
+    local isRanged = (
+        GuessIfRanger(sessionContext, entity) or
+        GuessIfRogue(sessionContext, entity) or
+        GuessIfFighter(sessionContext, entity)
+    )
+    local isUnarmed = (
+        GuessIfMonk(sessionContext, entity) or
+        GuessIfDruid(sessionContext, entity)
+    )
+
+    local nonSpecificAttackTypes = {"Attack"}
+    local specificAttackTypes = {}
+    for _, attackType in pairs(attackTypes) do
+        if (
+            (attackType.Melee and isMelee) or
+            (attackType.Ranged and isRanged) or
+            (attackType.Caster and isCaster) or
+            (attackType.Unarmed and isUnarmed)
+        ) then
+            table.insert(specificAttackTypes, attackType)
+        end
+    end
+    local filteredAttackTypes = specificAttackTypes
+    local stackAttackRolls = GetVar(sessionContext, "SpecificAttackRollsStack", entity.ShortGuid, configType)
+    if stackAttackRolls ~= nil and stackAttackRolls then
+        filteredAttackTypes = TableCombine(nonSpecificAttackTypes, filteredAttackTypes)
+    end
+    return Filter(
+        function(boostVal)
+            return boostVal ~= nil
+        end,
+        Map(
+            function(attackType)
+                return ComputeRollBonusBoost(sessionContext, attackType, entity, configType)
+            end,
+            filteredAttackTypes
+        )
+    )
+end
+
+--- @param sessionContext SessionContext
+--- @param entity EnrichedEntity
+function ComputeRollBonusSavingThrowBoost(sessionContext, entity, configType)
+    return ComputeRollBonusBoost(sessionContext, "SavingThrow", entity, configType)
+end
+
+--- @param sessionContext SessionContext
+--- @param rollType string
+--- @param entity EnrichedEntity
+function ComputeRollBonusBoost(sessionContext, rollType, entity, configType)
+    local totalRollBonus = ComputeIncrementalBoost(sessionContext, string.format("RollBonus%s", rollType), entity, configType)
     if totalRollBonus > 0 then
-        return "RollBonus(Attack," .. totalRollBonus .. ")"
+        return "RollBonus(".. rollType .. "," .. totalRollBonus .. ")"
+    else
+        return nil
+    end
+end
+
+--- @param sessionContext SessionContext
+--- @param entity EnrichedEntity
+function ComputeSpellSaveDCBoost(sessionContext, entity, configType)
+    local totalRollBonus = ComputeIncrementalBoost(sessionContext, "SpellSaveDC", entity, configType)
+    if totalRollBonus > 0 then
+        return "SpellSaveDC(" .. totalRollBonus .. ")"
     else
         return nil
     end
 end
 
 
-
 --- @param sessionContext SessionContext
 --- @param entity EnrichedEntity
 function ComputeDamageBoost(sessionContext, entity, configType)
-    local shortGuid = entity.ShortGuid
     local totalDamageBoost = ComputeIncrementalBoost(sessionContext, "Damage", entity, configType)
     if totalDamageBoost > 0 then
         return "DamageBonus(" .. totalDamageBoost .. ")"
@@ -3074,6 +3155,8 @@ end
 Defaults = {
     -- Makes Action Point boosting more conservative when boosting a character with ExtraAttack to prevent insanity
     ConservativeActionPointBoosts = true,
+    -- When calculating class sepcific RollBonus Attack, also  add the default Attack. This will cause it to stack with other RollBonus Attack boosts.
+    SpecificAttackRollsStack = true,
     -- Controls How many max level spells will be added. Scales with level if wanted. Each lower level added will have 1 more spell, incrementally.
     SpellsAdded = {
         StaticBoost = 0,
@@ -3311,7 +3394,61 @@ Defaults = {
         ValueToIncrementByOnLevel = 0,
     },
     -- Controls how much bonus to give to the characters hit dice rolls. Scales with level if wanted, additionally can scale with base bonus
-    RollBonus = {
+    RollBonusAttack = {
+        StaticBoost = 0,
+        MaxPercentage = 0,
+        ScalingPercentage = 0,
+        ScalingLevelStepToIncrementOn = 1,
+        LevelStepToIncrementOn = 1,
+        ValueToIncrementByOnLevel = 0,
+    },
+    -- Controls how much bonus to give to the characters melee weapon hit dice rolls. Scales with level if wanted, additionally can scale with base bonus
+    RollBonusMeleeWeaponAttack = {
+        StaticBoost = 0,
+        MaxPercentage = 0,
+        ScalingPercentage = 0,
+        ScalingLevelStepToIncrementOn = 1,
+        LevelStepToIncrementOn = 1,
+        ValueToIncrementByOnLevel = 0,
+    },
+    -- Controls how much bonus to give to the characters ranged weapon hit dice rolls. Scales with level if wanted, additionally can scale with base bonus
+    RollBonusRangedWeaponAttack = {
+        StaticBoost = 0,
+        MaxPercentage = 0,
+        ScalingPercentage = 0,
+        ScalingLevelStepToIncrementOn = 1,
+        LevelStepToIncrementOn = 1,
+        ValueToIncrementByOnLevel = 0,
+    },
+    -- Controls how much bonus to give to the characters melee spell hit dice rolls. Scales with level if wanted, additionally can scale with base bonus
+    RollBonusMeleeSpellAttack = {
+        StaticBoost = 0,
+        MaxPercentage = 0,
+        ScalingPercentage = 0,
+        ScalingLevelStepToIncrementOn = 1,
+        LevelStepToIncrementOn = 1,
+        ValueToIncrementByOnLevel = 0,
+    },
+    -- Controls how much bonus to give to the characters ranged spell hit dice rolls. Scales with level if wanted, additionally can scale with base bonus
+    RollBonusRangedSpellAttack = {
+        StaticBoost = 0,
+        MaxPercentage = 0,
+        ScalingPercentage = 0,
+        ScalingLevelStepToIncrementOn = 1,
+        LevelStepToIncrementOn = 1,
+        ValueToIncrementByOnLevel = 0,
+    },
+    -- Controls how much bonus to give to the characters melee unarmed hit dice rolls. Scales with level if wanted, additionally can scale with base bonus
+    RollBonusMeleeUnarmedAttack = {
+        StaticBoost = 0,
+        MaxPercentage = 0,
+        ScalingPercentage = 0,
+        ScalingLevelStepToIncrementOn = 1,
+        LevelStepToIncrementOn = 1,
+        ValueToIncrementByOnLevel = 0,
+    },
+    -- Controls how much bonus to give to the characters ranged unarmed hit dice rolls. Scales with level if wanted, additionally can scale with base bonus
+    RollBonusRangedUnarmedAttack = {
         StaticBoost = 0,
         MaxPercentage = 0,
         ScalingPercentage = 0,
@@ -3339,6 +3476,24 @@ Defaults = {
     },
     -- Controls how much movement bonus to give to the characters. Scales with level if wanted, additionally can scale with base movement
     Movement = {
+        StaticBoost = 0,
+        MaxPercentage = 0,
+        ScalingPercentage = 0,
+        ScalingLevelStepToIncrementOn = 1,
+        LevelStepToIncrementOn = 1,
+        ValueToIncrementByOnLevel = 0,
+    },
+    -- Controls how much bonus to give to the characters saving throw dice rolls. Scales with level if wanted, additionally can scale with base bonus
+    RollBonusSavingThrow = {
+        StaticBoost = 0,
+        MaxPercentage = 0,
+        ScalingPercentage = 0,
+        ScalingLevelStepToIncrementOn = 1,
+        LevelStepToIncrementOn = 1,
+        ValueToIncrementByOnLevel = 0,
+    },
+    -- Controls how much bonus to give to the characters spell save dc. Scales with level if wanted, additionally can scale with base bonus
+    SpellSaveDC = {
         StaticBoost = 0,
         MaxPercentage = 0,
         ScalingPercentage = 0,
@@ -3424,6 +3579,9 @@ function ResetConfigJson(sessionContext)
         BlacklistedLists = {},
         AbilityDependencies = {},
         PassiveDependencies = {},
+        -- The following configures the boosts that will be fallan back to during inheritance if
+        -- no inherits block is configured
+        Defaults = Defaults,
         -- The following configures the boosts that will be added to normal enemies
         Enemies = Defaults,
         -- The following configures the boosts that will be added to bosses
@@ -3437,6 +3595,7 @@ function ResetConfigJson(sessionContext)
         -- The following configures the boosts that will be added to summons
         Summons = Defaults,
         -- Any guid may be fully overridden with a custom config
+        --- @diagnostic disable-next-line: missing-fields
         ["S_UND_LoneDuergar_BoatGuard_New_001_28b78823-c846-4492-bdb4-14034f3bfced"] = {
             ActionPointBoosts = {
                 StaticBoost = 0,
@@ -3462,7 +3621,7 @@ function ComputeConfigHash(sessionContext)
         IterateUserdata = true,
         AvoidRecursion = false,
     }
-    local stringifiedConfig = Ext.Json.Stringify(FilterTable(function(k, v) return k ~= "DebugMode" and k ~= "Verbosity" end, sessionContext.VarsJson))
+    local stringifiedConfig = Ext.Json.Stringify(FilterTable(function(k, _) return k ~= "DebugMode" and k ~= "Verbosity" end, sessionContext.VarsJson), opts)
     return ConsistentHash(CONFIG_HASH_SALT, #stringifiedConfig * 256, stringifiedConfig)
 end
 
@@ -3470,16 +3629,24 @@ end
 --- @return Config
 function PopulateInherits(sessionContext)
     local originalConfig = sessionContext.VarsJson
+
+    if originalConfig["Defaults"] ~= nil and originalConfig["Defaults"]["Inherits"] ~= nil then
+        sessionContext.Log(0, "Defaults should not \"Inherits\" from  anything. Please remove \"Defaults > Inherits\" key. Ignoring for now.")
+        originalConfig["Defaults"]["Inherits"] = nil
+    end
+
     local legalConfigs = ToSet({"Enemies", "Bosses", "Allies", "Followers", "FollowersBosses", "Summons"})
 
-    for config, _ in ipairs(legalConfigs) do
+    for config, _ in pairs(legalConfigs) do
         local seen = {config = true}
         local targetConfig = SafeGet(originalConfig, config)
         while targetConfig ~= nil do
             local inherits = SafeGet(targetConfig, "Inherits")
             if inherits ~= nil then
                 local inheritsTargetConfig = SafeGet(originalConfig, inherits)
-                if legalConfigs[inherits] == nil then
+                if legalConfigs[inherits] == nil and inherits == "Defaults" then
+                    sessionContext.Log(0, string.format("Please do not directly \"Inherits\" Defaults. Ignoring. Found in %s", inherits, config))
+                elseif legalConfigs[inherits] == nil then
                     sessionContext.Log(0, string.format("Illegal inheritance value for %s in %s", inherits, config))
                     return originalConfig
                 end
@@ -3494,6 +3661,7 @@ function PopulateInherits(sessionContext)
                 seen[inherits] = true
                 targetConfig = inheritsTargetConfig
             end
+            targetConfig = nil
         end
     end
 
@@ -3509,6 +3677,9 @@ function PopulateInherits(sessionContext)
                 if inherits ~= nil then
                     table.insert(configOrder, inherits)
                     targetConfig = originalConfig[inherits]
+                elseif key ~= "Defaults" and inherits == nil then
+                    table.insert(configOrder, "Defaults")
+                    targetConfig = nil
                 else
                     targetConfig = nil
                 end
@@ -3517,7 +3688,7 @@ function PopulateInherits(sessionContext)
             local mergedConfig = {}
             local accumConfig = {}
             for _, config in ipairs(bottomUpOrder) do
-                local bottomUpTargetConfig =  originalConfig[config]
+                local bottomUpTargetConfig =  originalConfig[config] or {}
                 for bkey, bval in pairs(bottomUpTargetConfig) do
                     if mergedConfig[bkey] == nil then
                         mergedConfig[bkey] = DeepCopy(bval)
@@ -3649,9 +3820,11 @@ function GiveBoosts(sessionContext, entity, configType)
         ComputeIntelligenceBoost,
         ComputeWisdomBoost,
         ComputeCharismaBoost,
-        ComputeRollBonusBoost,
+        ComputeRollBonusAttackBoost,
         ComputeDamageBoost,
         ComputeSpellSlotBoosts,
+        ComputeRollBonusSavingThrowBoost,
+        ComputeSpellSaveDCBoost,
     }
 
     for _, boostFn in ipairs(boosts) do
@@ -3771,7 +3944,7 @@ function RemoveBoosts(sessionContext, entity, force)
     if force or modified then
         sessionContext.Log(2, string.format("Removing Boosts for Guid: %s because User Variable set", guid))
         sessionContext.Log(3, string.format("Our Boosts: %s", J(OurBoosts(guid))))
-        for _boostType, boostEntities in pairs(entity.Entity.BoostsContainer.Boosts) do
+        for _, boostEntities in pairs(entity.Entity.BoostsContainer.Boosts) do
             for _, boostEntity in ipairs(boostEntities) do
                 RemoveBoostsAdv(sessionContext, guid, boostEntity)
             end
@@ -3831,6 +4004,7 @@ end
 
 --- @param sessionContext SessionContext
 --- @param entities EnrichedEntity[]
+--- @diagnostic disable-next-line: unused-local
 function SetupUserVars(sessionContext, entities)
     for _, entity in ipairs(entities) do
         if entity.Entity.Vars.LCC_Boosted == nil then
@@ -4136,6 +4310,7 @@ function CreateSessionContext()
         Tags = {},
         Races = {},
         Archetypes = {},
+        CombatGroups = {},
         ConfigFailed = 0,
     }
     sessionContext.Log = function(level, str) _Log(sessionContext, level, str) end
@@ -4161,8 +4336,21 @@ function CreateSessionContext()
     for _, template in pairs(rootTemplates) do
         if ({item = true, character = true})[template.TemplateType] then
             sessionContext.Archetypes[template.CombatComponent.Archetype] = true
+
+            if (
+                template.TemplateType == "character" and
+                template.CombatComponent ~= nil and
+                template.CombatComponent.CombatGroupID ~= nil and
+                template.CombatComponent.CombatGroupID ~= ""
+            ) then
+                if sessionContext.CombatGroups[template.CombatComponent.CombatGroupID] == nil then
+                    sessionContext.CombatGroups[template.CombatComponent.CombatGroupID] = {}
+                end
+                table.insert(sessionContext.CombatGroups[template.CombatComponent.CombatGroupID], Ext.Types.Serialize(template))
+            end
         end
     end
+
     local stats = Ext.Stats.GetStats("StatusData")
     for _, statName in pairs(stats) do
         local stat = Ext.Stats.Get(statName)
@@ -4199,6 +4387,7 @@ local function OnSessionLoaded()
     --- @type SessionContext
     SessionContext = CreateSessionContext()
 
+    --- @diagnostic disable-next-line: unused-local
     Ext.Osiris.RegisterListener("LevelLoaded", 1, "before", function(level)
             _Log(DummySessionContext(), 2, "LevelLoaded: Before")
 
@@ -4208,11 +4397,13 @@ local function OnSessionLoaded()
         end
     )
 
+    --- @diagnostic disable-next-line: unused-local
     Ext.Osiris.RegisterListener("LevelLoaded", 1, "after", function(level)
             _Log(DummySessionContext(), 2, "LevelLoaded: After")
         end
     )
 
+    --- @diagnostic disable-next-line: unused-local
     Ext.Osiris.RegisterListener("EnteredLevel", 3, "before", function(guid, _objectRootTemplate, level)
             _Log(DummySessionContext(), 2, string.format("EnteredLevel: Guid: %s", guid))
             SessionContext.Log(1, string.format("EnteredLevel: Guid: %s", guid))
@@ -4226,6 +4417,7 @@ local function OnSessionLoaded()
 
             SetupUserVars(SessionContext, enrichedEntities)
 
+            --- @diagnostic disable-next-line: unused-local
             local affectedEntities, unAffectedEntities, unBooostedEntities = RemoveBoostingMany(SessionContext, enrichedEntities, false)
 
             local entitiesNeedingBoosts = {}
@@ -4253,6 +4445,7 @@ local function OnSessionLoaded()
 
             SetupUserVars(SessionContext, enrichedEntities)
 
+            --- @diagnostic disable-next-line: unused-local
             local affectedEntities, unAffectedEntities, unBooostedEntities = RemoveBoostingMany(SessionContext, enrichedEntities, false)
 
             local entitiesNeedingBoosts = {}
@@ -4289,6 +4482,7 @@ local function OnSessionLoaded()
 
             SetupUserVars(SessionContext, enrichedEntities)
 
+            --- @diagnostic disable-next-line: unused-local
             local affectedEntities, unAffectedEntities, unBooostedEntities = RemoveBoostingMany(SessionContext, enrichedEntities, false)
 
             local entitiesNeedingBoosts = {}
@@ -4305,6 +4499,7 @@ local function OnSessionLoaded()
         end
     )
 
+    --- @diagnostic disable-next-line: unused-local
     Ext.Osiris.RegisterListener("TimerFinished",1,"after",function(event)
         end
     )
@@ -4326,6 +4521,7 @@ local function OnSessionLoaded()
                 return
             end
 
+            --- @diagnostic disable-next-line: unused-local
             local affectedEntities, unAffectedEntities, unBooostedEntities = RemoveBoostingMany(SessionContext, enrichedEntities, false)
 
             local entitiesNeedingBoosts = {}
@@ -4375,6 +4571,7 @@ local function OnSessionLoaded()
 
                 SetupUserVars(SessionContext, enrichedEntities)
 
+                --- @diagnostic disable-next-line: unused-local
                 local affectedEntities, unAffectedEntities, unBooostedEntities = RemoveBoostingMany(SessionContext, enrichedEntities, true)
 
                 local entitiesNeedingBoosts = {}
@@ -4424,6 +4621,7 @@ local function OnSessionLoaded()
 
                 SetupUserVars(SessionContext, enrichedEntities)
 
+                --- @diagnostic disable-next-line: unused-local
                 local affectedEntities, unAffectedEntities, unBooostedEntities = RemoveBoostingMany(SessionContext, enrichedEntities, true)
 
                 local entitiesNeedingBoosts = {}
@@ -4476,6 +4674,7 @@ function RemoveDeveloperSpells(target)
     end
 end
 
+--- @diagnostic disable-next-line: unused-local
 function DebugMode(sessionContext, characterGuid)
     local shortGuid = string.sub(characterGuid, -36)
     local entity = Ext.Entity.Get(shortGuid)
@@ -4515,6 +4714,7 @@ function DebugMode(sessionContext, characterGuid)
     end
 end
 
+--- @diagnostic disable-next-line: unused-local
 function UnDebugMode(sessionContext, characterGuid)
     local shortGuid = string.sub(characterGuid, -36)
     local entity = Ext.Entity.Get(shortGuid)
@@ -4603,7 +4803,7 @@ function DBG_GetAffected()
                 Boosts = {},
                 Passives = {},
             }
-            for _boostType, boostEntities in pairs(e.BoostsContainer.Boosts) do
+            for _, boostEntities in pairs(e.BoostsContainer.Boosts) do
                 for _, boostEntity in ipairs(boostEntities) do
                     if boostEntity.BoostInfo.Cause.Cause == ModName then
                         local boost = FormatBoost(boostEntity)
@@ -4632,6 +4832,7 @@ function DBG_BoostsAndPassives(guid)
     }
 end
 
+--- @diagnostic disable-next-line: unused-local
 function DBG_Passives(_cmd, guid)
     local entity = Ext.Entity.Get(guid)
     local ourPassives = Keys(entity.Vars.LCC_PassivesAdded)
@@ -4665,6 +4866,7 @@ function OurBoosts(guid, entity)
     )
 end
 
+--- @diagnostic disable-next-line: unused-local
 function DBG_Boosts(_cmd, guid)
     _D(OurBoosts(guid))
 end

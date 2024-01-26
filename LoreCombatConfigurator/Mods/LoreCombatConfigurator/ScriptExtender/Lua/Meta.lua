@@ -130,6 +130,7 @@
 --- @field ActionResources table<string, Guid>
 --- @field Tags table<string, Guid>
 --- @field Races table<string, Guid>
+--- @field CombatGroups table<string, Template>
 --- @field ConfigFailed integer
 --- @field Log fun(level: integer, str: string) | nil
 --- @field LogI fun(level: integer, indent: integer, str: string) | nil
@@ -195,6 +196,7 @@
 
 --- @class EntityConfig
 --- @field ConservativeActionPointBoosts boolean
+--- @field SpecificAttackRollsStack boolean
 --- @field SpellsAdded SpellAddedConfig
 --- @field PassivesAdded ClassSpecificAddedConfig
 --- @field AbilitiesAdded ClassSpecificAddedConfig
@@ -221,10 +223,18 @@
 --- @field Intelligence ScalingLevelScaledConfig
 --- @field Charisma ScalingLevelScaledConfig
 --- @field Wisdom ScalingLevelScaledConfig
---- @field RollBonus ScalingLevelScaledConfig
+--- @field RollBonusAttack ScalingLevelScaledConfig
+--- @field RollBonusMeleeWeaponAttack ScalingLevelScaledConfig
+--- @field RollBonusRangedWeaponAttack ScalingLevelScaledConfig
+--- @field RollBonusMeleeSpellAttack ScalingLevelScaledConfig
+--- @field RollBonusRangedSpellAttack ScalingLevelScaledConfig
+--- @field RollBonusMeleeUnarmedAttack ScalingLevelScaledConfig
+--- @field RollBonusRangedUnarmedAttack ScalingLevelScaledConfig
 --- @field Damage ScalingLevelScaledConfig
 --- @field AC ScalingLevelScaledConfig
 --- @field Movement ScalingLevelScaledConfig
+--- @field RollBonusSavingThrow ScalingLevelScaledConfig
+--- @field SpellSaveDC ScalingLevelScaledConfig
 
 --- @alias KindsConfig tabled<string, string[]>
 
@@ -287,6 +297,7 @@
 --- @field BlacklistedLists BlacklistConfig
 --- @field AbilityDependencies table<string, string[]>
 --- @field PassiveDependencies table<string, string[]>
+--- @field Defaults EntityConfig
 --- @field Enemies EntityConfig
 --- @field Bosses EntityConfig
 --- @field Allies EntityConfig
@@ -405,3 +416,15 @@ EnrichedEntity = {}
 --- @class GameStateEvent
 --- @field FromState string
 --- @field ToState string
+
+--- @class Handle
+--- @field DisplayName DisplayName
+
+--- @class DisplayName
+--- @field NameKey NameKey
+
+--- @class NameKey
+--- @field Handle LocalizationHandle
+
+--- @class LocalizationHandle
+--- @field Handle string

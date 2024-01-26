@@ -40,3 +40,7 @@ function Ext.Osiris.RegisterListener(event, arity, when, handler) end
 --- @class Ext_Vars
 --- @field RegisterUserVariable fun(a1:string, a2:UserVarSettings)
 local Ext_Vars = {}
+
+--- @class Ext_Entity
+--- @field UuidToHandle fun(a1:Guid): Handle
+local Ext_Entity = {}
