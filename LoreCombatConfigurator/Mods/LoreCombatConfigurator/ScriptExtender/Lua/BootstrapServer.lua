@@ -3381,7 +3381,7 @@ Defaults = {
         LevelStepToIncrementOn = 1,
         ValueToIncrementByOnLevel = 0,
     },
-    -- Controls how much bonus to give to the characters hit dice rolls. Scales with level if wanted, additionally can scale with base bonus
+    -- Controls how much bonus to give to the characters saving throw dice rolls. Scales with level if wanted, additionally can scale with base bonus
     RollBonusSavingThrow = {
         StaticBoost = 0,
         MaxPercentage = 0,
