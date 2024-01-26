@@ -3526,7 +3526,7 @@ function PopulateInherits(sessionContext)
     local originalConfig = sessionContext.VarsJson
     local legalConfigs = ToSet({"Enemies", "Bosses", "Allies", "Followers", "FollowersBosses", "Summons"})
 
-    for config, _ in ipairs(legalConfigs) do
+    for config, _ in pairs(legalConfigs) do
         local seen = {config = true}
         local targetConfig = SafeGet(originalConfig, config)
         while targetConfig ~= nil do
