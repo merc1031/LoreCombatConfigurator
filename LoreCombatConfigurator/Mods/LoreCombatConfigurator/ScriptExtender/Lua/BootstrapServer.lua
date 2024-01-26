@@ -3538,6 +3538,7 @@ function PopulateInherits(sessionContext)
                 seen[inherits] = true
                 targetConfig = inheritsTargetConfig
             end
+            targetConfig = nil
         end
     end
 
