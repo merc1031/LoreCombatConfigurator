@@ -408,3 +408,15 @@ EnrichedEntity = {}
 --- @class GameStateEvent
 --- @field FromState string
 --- @field ToState string
+
+--- @class Handle
+--- @field DisplayName DisplayName
+
+--- @class DisplayName
+--- @field NameKey NameKey
+
+--- @class NameKey
+--- @field Handle LocalizationHandle
+
+--- @class LocalizationHandle
+--- @field Handle string
