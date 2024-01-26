@@ -2657,6 +2657,7 @@ function ComputeIncrementalBoost(sessionContext, stat, entity, configType)
         end,
         RollBonus = function() return nil end,
         RollBonusSavingThrow = function() return nil end,
+        SpellSaveDC = function() return nil end,
         Damage = function() return nil end,
     }
     local statValueFn = statValueFns[stat]
@@ -2815,6 +2816,17 @@ function ComputeRollBonusSavingThrowBoost(sessionContext, entity, configType)
     end
 end
 
+--- @param sessionContext SessionContext
+--- @param entity EnrichedEntity
+function ComputeSpellSaveDCBoost(sessionContext, entity, configType)
+    local shortGuid = entity.ShortGuid
+    local totalRollBonus = ComputeIncrementalBoost(sessionContext, "SpellSaveDC", entity, configType)
+    if totalRollBonus > 0 then
+        return "SpellSaveDC(" .. totalRollBonus .. ")"
+    else
+        return nil
+    end
+end
 
 
 --- @param sessionContext SessionContext
@@ -3378,6 +3390,15 @@ Defaults = {
         LevelStepToIncrementOn = 1,
         ValueToIncrementByOnLevel = 0,
     },
+    -- Controls how much bonus to give to the characters spell save dc. Scales with level if wanted, additionally can scale with base bonus
+    SpellSaveDC = {
+        StaticBoost = 0,
+        MaxPercentage = 0,
+        ScalingPercentage = 0,
+        ScalingLevelStepToIncrementOn = 1,
+        LevelStepToIncrementOn = 1,
+        ValueToIncrementByOnLevel = 0,
+    },
 }
 
 --- @param sessionContext SessionContext
@@ -3685,6 +3706,7 @@ function GiveBoosts(sessionContext, entity, configType)
         ComputeDamageBoost,
         ComputeSpellSlotBoosts,
         ComputeRollBonusSavingThrowBoost,
+        ComputeSpellSaveDCBoost,
     }
 
     for _, boostFn in ipairs(boosts) do

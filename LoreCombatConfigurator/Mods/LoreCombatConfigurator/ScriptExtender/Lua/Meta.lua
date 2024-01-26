@@ -227,6 +227,7 @@
 --- @field AC ScalingLevelScaledConfig
 --- @field Movement ScalingLevelScaledConfig
 --- @field RollBonusSavingThrow ScalingLevelScaledConfig
+--- @field SpellSaveDC ScalingLevelScaledConfig
 
 --- @alias KindsConfig tabled<string, string[]>
 
