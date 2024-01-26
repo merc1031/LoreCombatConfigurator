@@ -4134,6 +4134,7 @@ function CreateSessionContext()
         EntityCache = {},
         ActionResources = {},
         Tags = {},
+        Races = {},
         Archetypes = {},
         ConfigFailed = 0,
     }
