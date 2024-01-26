@@ -1796,7 +1796,12 @@ end
 function GetVar(sessionContext, var, guid, configType)
     local race = Osi.GetRace(guid, 0)
     local vars = sessionContext.VarsJson
-    local specific = vars[guid]
+    local handle = Ext.Entity.UuidToHandle(guid)
+    local localizedName = nil
+    if handle ~= nil then
+        localizedName = Ext.Loca.GetTranslatedString(handle.DisplayName.NameKey.Handle.Handle)
+    end
+    local specific = vars[guid] or (localizedName ~= nil and vars[localizedName]) or nil
     if specific ~= nil then
         local result = specific[var]
         if result ~= nil then
@@ -1827,7 +1832,12 @@ end
 function GetVarComplex(sessionContext, topvar, var, guid, configType)
     local race = Osi.GetRace(guid, 0)
     local vars = sessionContext.VarsJson
-    local specific = vars[guid]
+    local handle = Ext.Entity.UuidToHandle(guid)
+    local localizedName = nil
+    if handle ~= nil then
+        localizedName = Ext.Loca.GetTranslatedString(handle.DisplayName.NameKey.Handle.Handle)
+    end
+    local specific = vars[guid] or (localizedName ~= nil and vars[localizedName]) or nil
     if specific ~= nil then
         local topresult = specific[topvar]
         if topresult ~= nil then
