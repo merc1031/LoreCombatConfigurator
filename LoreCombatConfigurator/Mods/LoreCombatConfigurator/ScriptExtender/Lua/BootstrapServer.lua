@@ -3456,6 +3456,9 @@ function ResetConfigJson(sessionContext)
         BlacklistedLists = {},
         AbilityDependencies = {},
         PassiveDependencies = {},
+        -- The following configures the boosts that will be fallan back to during inheritance if
+        -- no inherits block is configured
+        Defaults = Defaults,
         -- The following configures the boosts that will be added to normal enemies
         Enemies = Defaults,
         -- The following configures the boosts that will be added to bosses
@@ -3503,6 +3506,12 @@ end
 --- @return Config
 function PopulateInherits(sessionContext)
     local originalConfig = sessionContext.VarsJson
+
+    if originalConfig["Defaults"] ~= nil and originalConfig["Defaults"]["Inherits"] ~= nil then
+        sessionContext.Log(0, "Defaults should not \"Inherits\" from  anything. Please remove \"Defaults > Inherits\" key. Ignoring for now.")
+        originalConfig["Defaults"]["Inherits"] = nil
+    end
+
     local legalConfigs = ToSet({"Enemies", "Bosses", "Allies", "Followers", "FollowersBosses", "Summons"})
 
     for config, _ in pairs(legalConfigs) do
@@ -3512,7 +3521,9 @@ function PopulateInherits(sessionContext)
             local inherits = SafeGet(targetConfig, "Inherits")
             if inherits ~= nil then
                 local inheritsTargetConfig = SafeGet(originalConfig, inherits)
-                if legalConfigs[inherits] == nil then
+                if legalConfigs[inherits] == nil and inherits == "Defaults" then
+                    sessionContext.Log(0, string.format("Please do not directly \"Inherits\" Defaults. Ignoring. Found in %s", inherits, config))
+                elseif legalConfigs[inherits] == nil then
                     sessionContext.Log(0, string.format("Illegal inheritance value for %s in %s", inherits, config))
                     return originalConfig
                 end
@@ -3542,6 +3553,9 @@ function PopulateInherits(sessionContext)
                 if inherits ~= nil then
                     table.insert(configOrder, inherits)
                     targetConfig = originalConfig[inherits]
+                elseif key ~= "Defaults" and inherits == nil then
+                    table.insert(configOrder, "Defaults")
+                    targetConfig = nil
                 else
                     targetConfig = nil
                 end
@@ -3550,7 +3564,7 @@ function PopulateInherits(sessionContext)
             local mergedConfig = {}
             local accumConfig = {}
             for _, config in ipairs(bottomUpOrder) do
-                local bottomUpTargetConfig =  originalConfig[config]
+                local bottomUpTargetConfig =  originalConfig[config] or {}
                 for bkey, bval in pairs(bottomUpTargetConfig) do
                     if mergedConfig[bkey] == nil then
                         mergedConfig[bkey] = DeepCopy(bval)
