@@ -196,6 +196,7 @@
 
 --- @class EntityConfig
 --- @field ConservativeActionPointBoosts boolean
+--- @field SpecificAttackRollsStack boolean
 --- @field SpellsAdded SpellAddedConfig
 --- @field PassivesAdded ClassSpecificAddedConfig
 --- @field AbilitiesAdded ClassSpecificAddedConfig
@@ -223,6 +224,12 @@
 --- @field Charisma ScalingLevelScaledConfig
 --- @field Wisdom ScalingLevelScaledConfig
 --- @field RollBonusAttack ScalingLevelScaledConfig
+--- @field RollBonusMeleeWeaponAttack ScalingLevelScaledConfig
+--- @field RollBonusRangedWeaponAttack ScalingLevelScaledConfig
+--- @field RollBonusMeleeSpellAttack ScalingLevelScaledConfig
+--- @field RollBonusRangedSpellAttack ScalingLevelScaledConfig
+--- @field RollBonusMeleeUnarmedAttack ScalingLevelScaledConfig
+--- @field RollBonusRangedUnarmedAttack ScalingLevelScaledConfig
 --- @field Damage ScalingLevelScaledConfig
 --- @field AC ScalingLevelScaledConfig
 --- @field Movement ScalingLevelScaledConfig

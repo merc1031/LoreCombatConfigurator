@@ -319,7 +319,7 @@ end
 --- @generic T, V
 --- @param t1 V[]
 --- @param t2 T[]
---- @return (V | T)[]
+--- @return (V | T)[] t2
 function TableCombine(t1, t2)
     return table.move(t1, 1, #t1, #t2 + 1, t2)
 end
@@ -2776,7 +2776,74 @@ end
 --- @param sessionContext SessionContext
 --- @param entity EnrichedEntity
 function ComputeRollBonusAttackBoost(sessionContext, entity, configType)
-    return ComputeRollBonusBoost(sessionContext, "Attack", entity, configType)
+    local attackTypes = {
+        MeleeWeaponAttack = {
+            Melee = true,
+        },
+        RangedWeaponAttack = {
+            Ranged = true,
+        },
+        MeleeSpellAttack = {
+            Caster = true,
+        },
+        RangedSpellAttack = {
+            Caster = true,
+        },
+        MeleeUnarmedAttack = {
+            Unarmed = true
+        },
+        RangedUnarmedAttack = {
+            Unarmed = true
+        },
+    }
+
+    local isCaster = GuessIfCaster(sessionContext, entity)
+    local isMelee = (
+        GuessIfBarbarian(sessionContext, entity) or
+        GuessIfFighter(sessionContext, entity) or
+        GuessIfPaladin(sessionContext, entity) or
+        GuessIfRanger(sessionContext, entity) or
+        GuessIfRogue(sessionContext, entity) or
+        GuessIfDruid(sessionContext, entity)
+    )
+    local isRanged = (
+        GuessIfRanger(sessionContext, entity) or
+        GuessIfRogue(sessionContext, entity) or
+        GuessIfFighter(sessionContext, entity)
+    )
+    local isUnarmed = (
+        GuessIfMonk(sessionContext, entity) or
+        GuessIfDruid(sessionContext, entity)
+    )
+
+    local nonSpecificAttackTypes = {"Attack"}
+    local specificAttackTypes = {}
+    for _, attackType in pairs(attackTypes) do
+        if (
+            (attackType.Melee and isMelee) or
+            (attackType.Ranged and isRanged) or
+            (attackType.Caster and isCaster) or
+            (attackType.Unarmed and isUnarmed)
+        ) then
+            table.insert(specificAttackTypes, attackType)
+        end
+    end
+    local filteredAttackTypes = specificAttackTypes
+    local stackAttackRolls = GetVar(sessionContext, "SpecificAttackRollsStack", entity.ShortGuid, configType)
+    if stackAttackRolls ~= nil and stackAttackRolls then
+        filteredAttackTypes = TableCombine(nonSpecificAttackTypes, filteredAttackTypes)
+    end
+    return Filter(
+        function(boostVal)
+            return boostVal ~= nil
+        end,
+        Map(
+            function(attackType)
+                return ComputeRollBonusBoost(sessionContext, attackType, entity, configType)
+            end,
+            filteredAttackTypes
+        )
+    )
 end
 
 --- @param sessionContext SessionContext
@@ -3088,6 +3155,8 @@ end
 Defaults = {
     -- Makes Action Point boosting more conservative when boosting a character with ExtraAttack to prevent insanity
     ConservativeActionPointBoosts = true,
+    -- When calculating class sepcific RollBonus Attack, also  add the default Attack. This will cause it to stack with other RollBonus Attack boosts.
+    SpecificAttackRollsStack = true,
     -- Controls How many max level spells will be added. Scales with level if wanted. Each lower level added will have 1 more spell, incrementally.
     SpellsAdded = {
         StaticBoost = 0,
@@ -3326,6 +3395,60 @@ Defaults = {
     },
     -- Controls how much bonus to give to the characters hit dice rolls. Scales with level if wanted, additionally can scale with base bonus
     RollBonusAttack = {
+        StaticBoost = 0,
+        MaxPercentage = 0,
+        ScalingPercentage = 0,
+        ScalingLevelStepToIncrementOn = 1,
+        LevelStepToIncrementOn = 1,
+        ValueToIncrementByOnLevel = 0,
+    },
+    -- Controls how much bonus to give to the characters melee weapon hit dice rolls. Scales with level if wanted, additionally can scale with base bonus
+    RollBonusMeleeWeaponAttack = {
+        StaticBoost = 0,
+        MaxPercentage = 0,
+        ScalingPercentage = 0,
+        ScalingLevelStepToIncrementOn = 1,
+        LevelStepToIncrementOn = 1,
+        ValueToIncrementByOnLevel = 0,
+    },
+    -- Controls how much bonus to give to the characters ranged weapon hit dice rolls. Scales with level if wanted, additionally can scale with base bonus
+    RollBonusRangedWeaponAttack = {
+        StaticBoost = 0,
+        MaxPercentage = 0,
+        ScalingPercentage = 0,
+        ScalingLevelStepToIncrementOn = 1,
+        LevelStepToIncrementOn = 1,
+        ValueToIncrementByOnLevel = 0,
+    },
+    -- Controls how much bonus to give to the characters melee spell hit dice rolls. Scales with level if wanted, additionally can scale with base bonus
+    RollBonusMeleeSpellAttack = {
+        StaticBoost = 0,
+        MaxPercentage = 0,
+        ScalingPercentage = 0,
+        ScalingLevelStepToIncrementOn = 1,
+        LevelStepToIncrementOn = 1,
+        ValueToIncrementByOnLevel = 0,
+    },
+    -- Controls how much bonus to give to the characters ranged spell hit dice rolls. Scales with level if wanted, additionally can scale with base bonus
+    RollBonusRangedSpellAttack = {
+        StaticBoost = 0,
+        MaxPercentage = 0,
+        ScalingPercentage = 0,
+        ScalingLevelStepToIncrementOn = 1,
+        LevelStepToIncrementOn = 1,
+        ValueToIncrementByOnLevel = 0,
+    },
+    -- Controls how much bonus to give to the characters melee unarmed hit dice rolls. Scales with level if wanted, additionally can scale with base bonus
+    RollBonusMeleeUnarmedAttack = {
+        StaticBoost = 0,
+        MaxPercentage = 0,
+        ScalingPercentage = 0,
+        ScalingLevelStepToIncrementOn = 1,
+        LevelStepToIncrementOn = 1,
+        ValueToIncrementByOnLevel = 0,
+    },
+    -- Controls how much bonus to give to the characters ranged unarmed hit dice rolls. Scales with level if wanted, additionally can scale with base bonus
+    RollBonusRangedUnarmedAttack = {
         StaticBoost = 0,
         MaxPercentage = 0,
         ScalingPercentage = 0,
