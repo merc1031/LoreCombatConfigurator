@@ -2660,6 +2660,12 @@ function ComputeIncrementalBoost(sessionContext, stat, entity, configType)
             end
         end,
         RollBonusAttack = function() return nil end,
+        RollBonusMeleeWeaponAttack = function() return nil end,
+        RollBonusRangedWeaponAttack = function() return nil end,
+        RollBonusMeleeSpellAttack = function() return nil end,
+        RollBonusRangedSpellAttack = function() return nil end,
+        RollBonusMeleeUnarmedAttack = function() return nil end,
+        RollBonusRangedUnarmedAttack = function() return nil end,
         RollBonusSavingThrow = function() return nil end,
         SpellSaveDC = function() return nil end,
         Damage = function() return nil end,
