@@ -2655,7 +2655,7 @@ function ComputeIncrementalBoost(sessionContext, stat, entity, configType)
                 return nil
             end
         end,
-        RollBonus = function() return nil end,
+        RollBonusAttack = function() return nil end,
         RollBonusSavingThrow = function() return nil end,
         SpellSaveDC = function() return nil end,
         Damage = function() return nil end,
@@ -2794,9 +2794,9 @@ end
 
 --- @param sessionContext SessionContext
 --- @param entity EnrichedEntity
-function ComputeRollBonusBoost(sessionContext, entity, configType)
+function ComputeRollBonusAttackBoost(sessionContext, entity, configType)
     local shortGuid = entity.ShortGuid
-    local totalRollBonus = ComputeIncrementalBoost(sessionContext, "RollBonus", entity, configType)
+    local totalRollBonus = ComputeIncrementalBoost(sessionContext, "RollBonusAttack", entity, configType)
     if totalRollBonus > 0 then
         return "RollBonus(Attack," .. totalRollBonus .. ")"
     else
@@ -3346,7 +3346,7 @@ Defaults = {
         ValueToIncrementByOnLevel = 0,
     },
     -- Controls how much bonus to give to the characters hit dice rolls. Scales with level if wanted, additionally can scale with base bonus
-    RollBonus = {
+    RollBonusAttack = {
         StaticBoost = 0,
         MaxPercentage = 0,
         ScalingPercentage = 0,
@@ -3702,7 +3702,7 @@ function GiveBoosts(sessionContext, entity, configType)
         ComputeIntelligenceBoost,
         ComputeWisdomBoost,
         ComputeCharismaBoost,
-        ComputeRollBonusBoost,
+        ComputeRollBonusAttackBoost,
         ComputeDamageBoost,
         ComputeSpellSlotBoosts,
         ComputeRollBonusSavingThrowBoost,
