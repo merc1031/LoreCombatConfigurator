@@ -2845,7 +2845,7 @@ function ComputeRollBonusAttackBoost(sessionContext, entity, configType)
     end
     local filteredAttackTypes = specificAttackTypes
     local stackAttackRolls = GetVar(sessionContext, "SpecificAttackRollsStack", entity.ShortGuid, configType)
-    if stackAttackRolls ~= nil and stackAttackRolls then
+    if (#filteredAttackTypes > 0 and stackAttackRolls ~= nil and stackAttackRolls) or #filteredAttackTypes == 0 then
         filteredAttackTypes = TableCombine(nonSpecificAttackTypes, filteredAttackTypes)
     end
     return Filter(
