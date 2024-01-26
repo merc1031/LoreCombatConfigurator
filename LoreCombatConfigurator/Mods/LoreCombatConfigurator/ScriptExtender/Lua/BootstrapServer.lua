@@ -4146,6 +4146,7 @@ function CreateSessionContext()
         Tags = {},
         Races = {},
         Archetypes = {},
+        CombatGroups = {},
         ConfigFailed = 0,
     }
     sessionContext.Log = function(level, str) _Log(sessionContext, level, str) end
@@ -4171,8 +4172,21 @@ function CreateSessionContext()
     for _, template in pairs(rootTemplates) do
         if ({item = true, character = true})[template.TemplateType] then
             sessionContext.Archetypes[template.CombatComponent.Archetype] = true
+
+            if (
+                template.TemplateType == "character" and
+                template.CombatComponent ~= nil and
+                template.CombatComponent.CombatGroupID ~= nil and
+                template.CombatComponent.CombatGroupID ~= ""
+            ) then
+                if sessionContext.CombatGroups[template.CombatComponent.CombatGroupID] == nil then
+                    sessionContext.CombatGroups[template.CombatComponent.CombatGroupID] = {}
+                end
+                table.insert(sessionContext.CombatGroups[template.CombatComponent.CombatGroupID], Ext.Types.Serialize(template))
+            end
         end
     end
+
     local stats = Ext.Stats.GetStats("StatusData")
     for _, statName in pairs(stats) do
         local stat = Ext.Stats.Get(statName)
