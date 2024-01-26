@@ -1795,16 +1795,22 @@ function CheckIfOurSummon(entity)
     return false
 end
 
---- @param sessionContext SessionContext
-function GetVar(sessionContext, var, guid, configType)
-    local race = Osi.GetRace(guid, 0)
-    local vars = sessionContext.VarsJson
+--- @param guid Guid
+--- @return string | nil
+function UuidToLocalizedName(guid)
     local handle = Ext.Entity.UuidToHandle(guid)
-    --- @cast handle -userdata
     local localizedName = nil
     if handle ~= nil then
         localizedName = Ext.Loca.GetTranslatedString(handle.DisplayName.NameKey.Handle.Handle)
     end
+    return localizedName
+end
+
+--- @param sessionContext SessionContext
+function GetVar(sessionContext, var, guid, configType)
+    local race = Osi.GetRace(guid, 0)
+    local vars = sessionContext.VarsJson
+    local localizedName = UuidToLocalizedName(guid)
     local specific = vars[guid] or (localizedName ~= nil and vars[localizedName]) or nil
     if specific ~= nil then
         local result = specific[var]
@@ -1836,11 +1842,7 @@ end
 function GetVarComplex(sessionContext, topvar, var, guid, configType)
     local race = Osi.GetRace(guid, 0)
     local vars = sessionContext.VarsJson
-    local handle = Ext.Entity.UuidToHandle(guid)
-    local localizedName = nil
-    if handle ~= nil then
-        localizedName = Ext.Loca.GetTranslatedString(handle.DisplayName.NameKey.Handle.Handle)
-    end
+    local localizedName = UuidToLocalizedName(guid)
     local specific = vars[guid] or (localizedName ~= nil and vars[localizedName]) or nil
     if specific ~= nil then
         local topresult = specific[topvar]
@@ -4575,7 +4577,7 @@ local function OnSessionLoaded()
             -- Courtesy to claravel's DebugSpells mod for this
             if statusID == "LCC_INFO" then
                 local shortGuid = string.sub(target, -36)
-                SessionContext.Log(0, string.format("FullGuid: %s; ShortGuid: %s", target, shortGuid))
+                SessionContext.Log(0, string.format("FullGuid: %s; ShortGuid: %s: LocalizedName %s", target, shortGuid, UuidToLocalizedName(shortGuid)))
             end
 
             if statusID == "LCC_RELOAD_CONFIG" then
