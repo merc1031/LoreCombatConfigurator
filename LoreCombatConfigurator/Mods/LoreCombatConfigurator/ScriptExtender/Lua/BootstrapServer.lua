@@ -2795,22 +2795,23 @@ end
 --- @param sessionContext SessionContext
 --- @param entity EnrichedEntity
 function ComputeRollBonusAttackBoost(sessionContext, entity, configType)
-    local shortGuid = entity.ShortGuid
-    local totalRollBonus = ComputeIncrementalBoost(sessionContext, "RollBonusAttack", entity, configType)
-    if totalRollBonus > 0 then
-        return "RollBonus(Attack," .. totalRollBonus .. ")"
-    else
-        return nil
-    end
+    return ComputeRollBonusBoost(sessionContext, "Attack", entity, configType)
 end
 
 --- @param sessionContext SessionContext
 --- @param entity EnrichedEntity
 function ComputeRollBonusSavingThrowBoost(sessionContext, entity, configType)
+    return ComputeRollBonusBoost(sessionContext, "SavingThrow", entity, configType)
+end
+
+--- @param sessionContext SessionContext
+--- @param rollType string
+--- @param entity EnrichedEntity
+function ComputeRollBonusBoost(sessionContext, rollType, entity, configType)
     local shortGuid = entity.ShortGuid
-    local totalRollBonus = ComputeIncrementalBoost(sessionContext, "RollBonusSavingThrow", entity, configType)
+    local totalRollBonus = ComputeIncrementalBoost(sessionContext, string.format("RollBonus%s", rollType), entity, configType)
     if totalRollBonus > 0 then
-        return "RollBonus(SavingThrow," .. totalRollBonus .. ")"
+        return "RollBonus(".. rollType .. "," .. totalRollBonus .. ")"
     else
         return nil
     end
