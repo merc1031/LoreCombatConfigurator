@@ -290,6 +290,7 @@
 --- @field BlacklistedLists BlacklistConfig
 --- @field AbilityDependencies table<string, string[]>
 --- @field PassiveDependencies table<string, string[]>
+--- @field Defaults EntityConfig
 --- @field Enemies EntityConfig
 --- @field Bosses EntityConfig
 --- @field Allies EntityConfig
