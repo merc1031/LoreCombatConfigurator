@@ -130,6 +130,7 @@
 --- @field ActionResources table<string, Guid>
 --- @field Tags table<string, Guid>
 --- @field Races table<string, Guid>
+--- @field CombatGroups table<string, Template>
 --- @field ConfigFailed integer
 --- @field Log fun(level: integer, str: string) | nil
 --- @field LogI fun(level: integer, indent: integer, str: string) | nil
