@@ -1990,6 +1990,21 @@ end
 
 --- @param sessionContext SessionContext
 --- @param entity EnrichedEntity
+--- @return boolean
+function GuessIfCanCast(sessionContext, entity)
+    return (
+        GuessIfCaster(sessionContext, entity) or
+        GuessIfDruid(sessionContext, entity) or
+        GuessIfCleric(sessionContext, entity) or
+        GuessIfBard(sessionContext, entity) or
+        GuessIfWarlock(sessionContext, entity) or
+        GuessIfRanger(sessionContext, entity) or
+        GuessIfPaladin(sessionContext, entity)
+    )
+end
+
+--- @param sessionContext SessionContext
+--- @param entity EnrichedEntity
 function GuessIfBarbarian(sessionContext, entity)
     local shortGuid = entity.ShortGuid
     sessionContext.LogI(3, 22, string.format("Guessing if barbarian on %s", shortGuid))
@@ -2797,7 +2812,7 @@ function ComputeRollBonusAttackBoost(sessionContext, entity, configType)
         },
     }
 
-    local isCaster = GuessIfCaster(sessionContext, entity)
+    local isCaster = GuessIfCanCast(sessionContext, entity)
     local isMelee = (
         GuessIfBarbarian(sessionContext, entity) or
         GuessIfFighter(sessionContext, entity) or
@@ -2894,13 +2909,7 @@ function ComputeSpellSlotBoosts(sessionContext, entity, configType)
     local slots = {}
     if (
         not (
-            GuessIfCaster(sessionContext, entity) or
-            GuessIfDruid(sessionContext, entity) or
-            GuessIfCleric(sessionContext, entity) or
-            GuessIfBard(sessionContext, entity) or
-            GuessIfWarlock(sessionContext, entity) or
-            GuessIfRanger(sessionContext, entity) or
-            GuessIfPaladin(sessionContext, entity)
+            GuessIfCanCast(sessionContext, entity)
         )
     ) then
         sessionContext.LogI(2, 22, "Computing Spell Slot, couldnt guess if target needs spell slots")
