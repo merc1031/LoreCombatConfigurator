@@ -1029,6 +1029,23 @@ function SpellListsToSpells(sessionContext)
                 end
             end
 
+            local parsedRechargeValues = Split(spellData.RechargeValues, "-")
+            --- @type Range | nil
+            local rechargeValues
+            if #parsedRechargeValues == 2 then
+                rechargeValues = {
+                    Min = tonumber(parsedRechargeValues[1]),
+                    Max = tonumber(parsedRechargeValues[2]),
+                }
+            elseif #parsedRechargeValues == 1 then
+                rechargeValues = {
+                    Min = tonumber(parsedRechargeValues[1]),
+                    Max = tonumber(parsedRechargeValues[1]),
+                }
+            else
+                rechargeValues = nil
+            end
+
             spellListToSpells[p][spell] = {
                 Name = spell,
                 SpellFlags = ToSet(spellData.SpellFlags),
@@ -1042,6 +1059,7 @@ function SpellListsToSpells(sessionContext)
                 CanUseInCombat = canUseInCombat,
                 Origin = Ext.Mod.GetMod(spellData.ModId).Info.Name,
                 DamageType = spellData.DamageType,
+                RechargeValues = rechargeValues,
             }
         end
     end
