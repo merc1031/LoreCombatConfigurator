@@ -10,7 +10,7 @@
 					<attribute id="GeneratePortrait" type="LSString" value="" />
 					<attribute id="DisplayName" type="TranslatedString" handle="h8a234215g7f0cg446bgb33bga6ea755e8a22" version="1" />
 					<attribute id="LevelName" type="FixedString" value="" />
-					<attribute id="Stats" type="FixedString" value="RedCap_Mutant" />
+					<attribute id="Stats" type="FixedString" value="LCC_RedCap_Mutant" />
 					<attribute id="LevelOverride" type="int32" value="4" />
 					<attribute id="MapKey" type="FixedString" value="f6790785-8e31-4d77-a113-d222a2305bdd" />
 					<attribute id="Name" type="LSString" value="LCC_CINE_S_HAG_ForestIllusion_Redcap_Mutant" />

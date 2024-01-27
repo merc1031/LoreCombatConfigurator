@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="0" revision="9" build="313" />
+	<region id="Templates">
+		<node id="Templates">
+			<children>
+				<node id="GameObjects">
+					<attribute id="MapKey" type="FixedString" value="5ce6e4a8-695a-409e-8ef6-40e6f0684d23" />
+					<attribute id="DisplayName" type="TranslatedString" handle="h86828baag567dg478cg99b2g15b39269ee46" version="1" />
+					<attribute id="ParentTemplateId" type="FixedString" value="08da5063-a761-475a-b66e-1356d7fcab40" />
+					<attribute id="Stats" type="FixedString" value="LCC_Dragon_WyrmlingRed" />
+					<attribute id="Name" type="LSString" value="LCC_Dragon_WyrmlingRed" />
+					<attribute id="AnubisConfigName" type="FixedString" value="DefaultMonster" />
+					<attribute id="BloodType" type="FixedString" value="Red" />
+					<attribute id="CanBePickedUp" type="bool" value="False" />
+					<attribute id="CharacterVisualResourceID" type="FixedString" value="baa20049-2ec2-07a7-b4d6-02a38b25d6ac" />
+					<attribute id="DisintegratedResourceID" type="FixedString" value="ab98118f-36e4-8a5f-2e91-925e1c9934c2" />
+					<attribute id="ExplodedResourceID" type="FixedString" value="ab98118f-36e4-8a5f-2e91-925e1c9934c2" />
+					<attribute id="Flag" type="int32" value="0" />
+					<attribute id="FoleyLongResourceID" type="FixedString" value="5b0220fb-ca10-d1ee-ea3e-1fd588b6a15d" />
+					<attribute id="FoleyMediumResourceID" type="FixedString" value="ee60c993-282a-2782-26b0-faf2f90dd4fc" />
+					<attribute id="GeneratePortrait" type="LSString" value="Icon_Dragon" />
+					<attribute id="Icon" type="FixedString" value="baa20049-2ec2-07a7-b4d6-02a38b25d6ac-_(Icon_Dragon)" />
+					<attribute id="IsLootable" type="bool" value="True" />
+					<attribute id="LevelName" type="FixedString" value="" />
+					<attribute id="LightID" type="FixedString" value="782d9d58-f4c5-4500-a16e-b81d737bcc53" />
+					<attribute id="PhysicsTemplate" type="FixedString" value="3c6193a8-3a1a-c40e-1e69-f2c98682bd38" />
+					<attribute id="Race" type="guid" value="eed2c9e5-d1b4-4010-99c4-0e96939867a0" />
+					<attribute id="Type" type="FixedString" value="character" />
+					<children>
+						<node id="LocomotionParams">
+							<attribute id="IsMovementEnabled" type="bool" value="True" />
+							<attribute id="IsWorldClimbingEnabled" type="bool" value="True" />
+						</node>
+						<node id="Tags">
+							<children>
+								<node id="Tag">
+									<attribute id="Object" type="guid" value="90101158-141e-4896-8e60-f8db03f6dde3" />
+								</node>
+								<node id="Tag">
+									<attribute id="Object" type="guid" value="801bd716-0666-4dd5-b449-45ffa9a52a0f" />
+								</node>
+							</children>
+						</node>
+						<node id="SkillList">
+							<children>
+								<node id="Skill">
+									<attribute id="AIFlags" type="uint16" value="0" />
+									<attribute id="FallbackStartRound" type="int32" value="-1" />
+									<attribute id="LearningStrategy" type="uint8" value="0" />
+									<attribute id="MinimumImpact" type="int32" value="0" />
+									<attribute id="OnlyCastOnSelf" type="bool" value="False" />
+									<attribute id="ScoreModifier" type="float" value="1" />
+									<attribute id="Skill" type="FixedString" value="LCC_Zone_BreathWeapon_DragonWyrmling_Fire_Cone" />
+									<attribute id="SpellCastingAbility" type="uint8" value="0" />
+									<attribute id="StartRound" type="int32" value="0" />
+									<children>
+										<node id="SourceConditions">
+											<attribute id="MaximumHealthPercentage" type="int32" value="100" />
+											<attribute id="MinimumHealthPercentage" type="int32" value="0" />
+											<children>
+												<node id="Tags" />
+											</children>
+										</node>
+										<node id="TargetConditions">
+											<attribute id="MaximumHealthPercentage" type="int32" value="100" />
+											<attribute id="MinimumHealthPercentage" type="int32" value="0" />
+											<children>
+												<node id="Tags" />
+											</children>
+										</node>
+									</children>
+								</node>
+								<node id="Skill">
+									<attribute id="AIFlags" type="uint16" value="0" />
+									<attribute id="FallbackStartRound" type="int32" value="-1" />
+									<attribute id="LearningStrategy" type="uint8" value="0" />
+									<attribute id="MinimumImpact" type="int32" value="0" />
+									<attribute id="OnlyCastOnSelf" type="bool" value="False" />
+									<attribute id="ScoreModifier" type="float" value="1.25" />
+									<attribute id="Skill" type="FixedString" value="LCC_Target_Bite_DragonWyrmling" />
+									<attribute id="SpellCastingAbility" type="uint8" value="0" />
+									<attribute id="StartRound" type="int32" value="0" />
+									<children>
+										<node id="SourceConditions">
+											<attribute id="MaximumHealthPercentage" type="int32" value="100" />
+											<attribute id="MinimumHealthPercentage" type="int32" value="0" />
+											<children>
+												<node id="Tags" />
+											</children>
+										</node>
+										<node id="TargetConditions">
+											<attribute id="MaximumHealthPercentage" type="int32" value="100" />
+											<attribute id="MinimumHealthPercentage" type="int32" value="0" />
+											<children>
+												<node id="Tags" />
+											</children>
+										</node>
+									</children>
+								</node>
+								<node id="Skill">
+									<attribute id="AIFlags" type="uint16" value="0" />
+									<attribute id="FallbackStartRound" type="int32" value="-1" />
+									<attribute id="LearningStrategy" type="uint8" value="0" />
+									<attribute id="MinimumImpact" type="int32" value="0" />
+									<attribute id="OnlyCastOnSelf" type="bool" value="False" />
+									<attribute id="ScoreModifier" type="float" value="1" />
+									<attribute id="Skill" type="FixedString" value="LCC_Target_Fly_DragonWyrmling" />
+									<attribute id="SpellCastingAbility" type="uint8" value="0" />
+									<attribute id="StartRound" type="int32" value="0" />
+									<children>
+										<node id="SourceConditions">
+											<attribute id="MaximumHealthPercentage" type="int32" value="100" />
+											<attribute id="MinimumHealthPercentage" type="int32" value="0" />
+											<children>
+												<node id="Tags" />
+											</children>
+										</node>
+										<node id="TargetConditions">
+											<attribute id="MaximumHealthPercentage" type="int32" value="100" />
+											<attribute id="MinimumHealthPercentage" type="int32" value="0" />
+											<children>
+												<node id="Tags" />
+											</children>
+										</node>
+									</children>
+								</node>
+							</children>
+						</node>
+					</children>
+				</node>
+			</children>
+		</node>
+	</region>
+</save>
