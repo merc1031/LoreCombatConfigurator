@@ -3660,6 +3660,8 @@ function ResetConfigJson(sessionContext)
         FollowersBosses = Defaults,
         -- The following configures the boosts that will be added to summons
         Summons = Defaults,
+        CombatGroups = {
+        },
         -- Any guid may be fully overridden with a custom config
         --- @diagnostic disable-next-line: missing-fields
         ["S_UND_LoneDuergar_BoatGuard_New_001_28b78823-c846-4492-bdb4-14034f3bfced"] = {
@@ -3668,8 +3670,6 @@ function ResetConfigJson(sessionContext)
                 LevelStepToIncrementOn = 1,
                 ValueToIncrementByOnLevel = 0,
             },
-        },
-        CombatGroups = {
         },
     }
     local opts = {
