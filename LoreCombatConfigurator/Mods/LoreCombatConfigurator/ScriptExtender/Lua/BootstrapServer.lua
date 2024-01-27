@@ -4590,7 +4590,20 @@ local function OnSessionLoaded()
             -- Courtesy to claravel's DebugSpells mod for this
             if statusID == "LCC_INFO" then
                 local shortGuid = string.sub(target, -36)
-                SessionContext.Log(0, string.format("FullGuid: %s; ShortGuid: %s: LocalizedName %s", target, shortGuid, UuidToLocalizedName(shortGuid)))
+                local x, y, z = Osi.GetPosition(shortGuid)
+                SessionContext.Log(
+                    0,
+                    string.format(
+                        "FullGuid: %s; ShortGuid: %s: LocalizedName %s Template: %s Pos: (%s,%s,%s)",
+                        target,
+                        shortGuid,
+                        UuidToLocalizedName(shortGuid),
+                        Osi.GetTemplate(shortGuid),
+                        x,
+                        y,
+                        z
+                    )
+                )
             end
 
             if statusID == "LCC_RELOAD_CONFIG" then
