@@ -3,6 +3,8 @@ ModName = "LoreCombatConfigurator"
 -- (defaults, inheritance, fallbacks), This value must be changed.
 CONFIG_HASH_SALT = 1234
 
+NULL_GUID = "00000000-0000-0000-0000-000000000000"
+
 -- Courtesy to @Buns on Discord
 --- @generic T
 --- @param object table<string, any> | nil
@@ -1795,16 +1797,22 @@ function CheckIfOurSummon(entity)
     return false
 end
 
---- @param sessionContext SessionContext
-function GetVar(sessionContext, var, guid, configType)
-    local race = Osi.GetRace(guid, 0)
-    local vars = sessionContext.VarsJson
+--- @param guid Guid
+--- @return string | nil
+function UuidToLocalizedName(guid)
     local handle = Ext.Entity.UuidToHandle(guid)
-    --- @cast handle -userdata
     local localizedName = nil
     if handle ~= nil then
         localizedName = Ext.Loca.GetTranslatedString(handle.DisplayName.NameKey.Handle.Handle)
     end
+    return localizedName
+end
+
+--- @param sessionContext SessionContext
+function GetVar(sessionContext, var, guid, configType)
+    local race = Osi.GetRace(guid, 0)
+    local vars = sessionContext.VarsJson
+    local localizedName = UuidToLocalizedName(guid)
     local specific = vars[guid] or (localizedName ~= nil and vars[localizedName]) or nil
     if specific ~= nil then
         local result = specific[var]
@@ -1836,11 +1844,7 @@ end
 function GetVarComplex(sessionContext, topvar, var, guid, configType)
     local race = Osi.GetRace(guid, 0)
     local vars = sessionContext.VarsJson
-    local handle = Ext.Entity.UuidToHandle(guid)
-    local localizedName = nil
-    if handle ~= nil then
-        localizedName = Ext.Loca.GetTranslatedString(handle.DisplayName.NameKey.Handle.Handle)
-    end
+    local localizedName = UuidToLocalizedName(guid)
     local specific = vars[guid] or (localizedName ~= nil and vars[localizedName]) or nil
     if specific ~= nil then
         local topresult = specific[topvar]
@@ -4334,6 +4338,7 @@ function CreateSessionContext()
         Tags = {},
         Races = {},
         Archetypes = {},
+        AIHints = {},
         CombatGroups = {},
         ConfigFailed = 0,
     }
@@ -4359,18 +4364,28 @@ function CreateSessionContext()
     local rootTemplates = Ext.Template.GetAllRootTemplates()
     for _, template in pairs(rootTemplates) do
         if ({item = true, character = true})[template.TemplateType] then
-            sessionContext.Archetypes[template.CombatComponent.Archetype] = true
 
             if (
                 template.TemplateType == "character" and
-                template.CombatComponent ~= nil and
-                template.CombatComponent.CombatGroupID ~= nil and
-                template.CombatComponent.CombatGroupID ~= ""
+                template.CombatComponent ~= nil
             ) then
-                if sessionContext.CombatGroups[template.CombatComponent.CombatGroupID] == nil then
-                    sessionContext.CombatGroups[template.CombatComponent.CombatGroupID] = {}
+                sessionContext.Archetypes[template.CombatComponent.Archetype] = true
+                if (
+                    template.CombatComponent.CombatGroupID ~= nil and
+                    template.CombatComponent.CombatGroupID ~= ""
+                ) then
+                    if sessionContext.CombatGroups[template.CombatComponent.CombatGroupID] == nil then
+                        sessionContext.CombatGroups[template.CombatComponent.CombatGroupID] = {}
+                    end
+                    table.insert(sessionContext.CombatGroups[template.CombatComponent.CombatGroupID], Ext.Types.Serialize(template))
                 end
-                table.insert(sessionContext.CombatGroups[template.CombatComponent.CombatGroupID], Ext.Types.Serialize(template))
+                if (
+                    template.CombatComponent.AiHint ~= nil and
+                    template.CombatComponent.AiHint ~= "" and
+                    template.CombatComponent.AiHint ~= NULL_GUID
+                ) then
+                    sessionContext.AIHints[template.CombatComponent.AiHint] = true
+                end
             end
         end
     end
@@ -4575,7 +4590,20 @@ local function OnSessionLoaded()
             -- Courtesy to claravel's DebugSpells mod for this
             if statusID == "LCC_INFO" then
                 local shortGuid = string.sub(target, -36)
-                SessionContext.Log(0, string.format("FullGuid: %s; ShortGuid: %s", target, shortGuid))
+                local x, y, z = Osi.GetPosition(shortGuid)
+                SessionContext.Log(
+                    0,
+                    string.format(
+                        "FullGuid: %s; ShortGuid: %s: LocalizedName %s Template: %s Pos: (%s,%s,%s)",
+                        target,
+                        shortGuid,
+                        UuidToLocalizedName(shortGuid),
+                        Osi.GetTemplate(shortGuid),
+                        x,
+                        y,
+                        z
+                    )
+                )
             end
 
             if statusID == "LCC_RELOAD_CONFIG" then

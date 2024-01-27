@@ -142,7 +142,8 @@
 --- @field ItemLists ItemLists | nil
 --- @field AbilityDependencies table<string, string[]> | nil
 --- @field PassiveDependencies table<string, string[]> | nil
---- @field Archetypes table<string>
+--- @field Archetypes table<string, boolean>
+--- @field AIHints table<string, boolean>
 --- @field ConfigHash integer
 
 --- @class LevelScaledBoostConfig
