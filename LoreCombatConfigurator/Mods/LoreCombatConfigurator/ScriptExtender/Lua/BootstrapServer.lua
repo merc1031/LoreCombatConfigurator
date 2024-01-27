@@ -4935,19 +4935,46 @@ Ext.Events.GameStateChanged:Subscribe(function(event)
             for combatGroupID, members in pairs(combatGroupIDs) do
                 local cfg = SafeGet(SessionContext.VarsJson, "CombatGroups", combatGroupID)
                 if cfg ~= nil and #members > 0 and host.Vars.LCC_CombatGroup[combatGroupID] == nil then
-                    local firstMember = members[1]
-                    SessionContext.Log(3, string.format("For CombatGroupID: %s; cfg: %s; cloning firstMember: %s", combatGroupID, cfg, firstMember.Uuid.EntityUuid))
-                    local x, y, z = Osi.GetPosition(firstMember.Uuid.EntityUuid)
-                    local clone = Osi.CreateAt(Osi.GetTemplate(firstMember.Uuid.EntityUuid),x+Osi.Random(5)-5,y,z+Osi.Random(5)-5,0,1,"")
-                    SessionContext.Log(3, string.format("For CombatGroupID: %s; cfg: %s; cloned firstMember: %s, %s", combatGroupID, cfg, firstMember.Uuid.EntityUuid, clone))
-                    Osi.SetFaction(clone, Osi.GetFaction(firstMember.Uuid.EntityUuid))
-                    Osi.SetCanJoinCombat(clone, Osi.CanJoinCombat(firstMember.Uuid.EntityUuid))
-                    Osi.SetLevel(clone, Osi.GetLevel(firstMember.Uuid.EntityUuid))
-                    SessionContext.Log(3, string.format("For CombatGroupID: %s; cfg: %s; finshed cloned firstMember: %s, %s", combatGroupID, cfg, firstMember.Uuid.EntityUuid, clone))
+                    local new = {}
 
-                    local combatGroupTracker = host.Vars.LCC_CombatGroup
-                    combatGroupTracker[combatGroupID] = clone
-                    host.Vars.LCC_CombatGroup[combatGroupID] = combatGroupTracker
+                    local combatGroupEffects = SafeGet(cfg, "CombatGroupEffects")
+                    for _, effect in ipairs(combatGroupEffects) do
+                        local combatGroupEffectType = SafeGet(effect, "EffectType")
+                        if combatGroupEffectType == "Add" then
+                            local adds = SafeGet(effect, "Adds")
+                            local firstMember = members[1]
+                            for _, data in ipairs(adds) do
+                                SessionContext.Log(3, string.format("For CombatGroupID: %s; cfg: %s; adding %s near firstMember: %s", combatGroupID, J(cfg), J(data), firstMember.Uuid.EntityUuid))
+                                local template = data.Template
+                                SessionContext.Log(3, string.format("For CombatGroupID: %s; cfg: %s; adding %s near firstMember: %s", combatGroupID, cfg, template, firstMember.Uuid.EntityUuid))
+                                local x, y, z = Osi.GetPosition(firstMember.Uuid.EntityUuid)
+                                local newGuid = Osi.CreateAt(template,x+Osi.Random(5)-5,y,z+Osi.Random(5)-5,0,1,"")
+                                SessionContext.Log(3, string.format("For CombatGroupID: %s; cfg: %s; near firstMember: %s, added %s", combatGroupID, cfg, firstMember.Uuid.EntityUuid, newGuid))
+                                Osi.SetFaction(newGuid, Osi.GetFaction(firstMember.Uuid.EntityUuid))
+                                Osi.SetCanJoinCombat(newGuid, Osi.CanJoinCombat(firstMember.Uuid.EntityUuid))
+                                Osi.SetLevel(newGuid, Osi.GetLevel(firstMember.Uuid.EntityUuid))
+                                SessionContext.Log(3, string.format("For CombatGroupID: %s; cfg: %s; finshed near firstMember: %s,added %s", combatGroupID, cfg, firstMember.Uuid.EntityUuid, newGuid))
+                                table.insert(new, newGuid)
+                            end
+                        elseif combatGroupEffectType == "Clone" then
+                            local firstMember = members[1]
+                            SessionContext.Log(3, string.format("For CombatGroupID: %s; cfg: %s; cloning firstMember: %s", combatGroupID, cfg, firstMember.Uuid.EntityUuid))
+                            local x, y, z = Osi.GetPosition(firstMember.Uuid.EntityUuid)
+                            local clone = Osi.CreateAt(Osi.GetTemplate(firstMember.Uuid.EntityUuid),x+Osi.Random(5)-5,y,z+Osi.Random(5)-5,0,1,"")
+                            SessionContext.Log(3, string.format("For CombatGroupID: %s; cfg: %s; cloned firstMember: %s, %s", combatGroupID, cfg, firstMember.Uuid.EntityUuid, clone))
+                            Osi.SetFaction(clone, Osi.GetFaction(firstMember.Uuid.EntityUuid))
+                            Osi.SetCanJoinCombat(clone, Osi.CanJoinCombat(firstMember.Uuid.EntityUuid))
+                            Osi.SetLevel(clone, Osi.GetLevel(firstMember.Uuid.EntityUuid))
+                            SessionContext.Log(3, string.format("For CombatGroupID: %s; cfg: %s; finshed cloned firstMember: %s, %s", combatGroupID, cfg, firstMember.Uuid.EntityUuid, clone))
+                            table.insert(new, clone)
+                        end
+                    end
+
+                    if #new > 0 then
+                        local combatGroupTracker = host.Vars.LCC_CombatGroup
+                        combatGroupTracker[combatGroupID] = new
+                        host.Vars.LCC_CombatGroup[combatGroupID] = combatGroupTracker
+                    end
                 end
             end
         end
