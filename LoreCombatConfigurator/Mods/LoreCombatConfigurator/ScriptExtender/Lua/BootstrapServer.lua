@@ -3,6 +3,8 @@ ModName = "LoreCombatConfigurator"
 -- (defaults, inheritance, fallbacks), This value must be changed.
 CONFIG_HASH_SALT = 1234
 
+NULL_GUID = "00000000-0000-0000-0000-000000000000"
+
 -- Courtesy to @Buns on Discord
 --- @generic T
 --- @param object table<string, any> | nil
@@ -4336,6 +4338,7 @@ function CreateSessionContext()
         Tags = {},
         Races = {},
         Archetypes = {},
+        AIHints = {},
         CombatGroups = {},
         ConfigFailed = 0,
     }
@@ -4361,18 +4364,28 @@ function CreateSessionContext()
     local rootTemplates = Ext.Template.GetAllRootTemplates()
     for _, template in pairs(rootTemplates) do
         if ({item = true, character = true})[template.TemplateType] then
-            sessionContext.Archetypes[template.CombatComponent.Archetype] = true
 
             if (
                 template.TemplateType == "character" and
-                template.CombatComponent ~= nil and
-                template.CombatComponent.CombatGroupID ~= nil and
-                template.CombatComponent.CombatGroupID ~= ""
+                template.CombatComponent ~= nil
             ) then
-                if sessionContext.CombatGroups[template.CombatComponent.CombatGroupID] == nil then
-                    sessionContext.CombatGroups[template.CombatComponent.CombatGroupID] = {}
+                sessionContext.Archetypes[template.CombatComponent.Archetype] = true
+                if (
+                    template.CombatComponent.CombatGroupID ~= nil and
+                    template.CombatComponent.CombatGroupID ~= ""
+                ) then
+                    if sessionContext.CombatGroups[template.CombatComponent.CombatGroupID] == nil then
+                        sessionContext.CombatGroups[template.CombatComponent.CombatGroupID] = {}
+                    end
+                    table.insert(sessionContext.CombatGroups[template.CombatComponent.CombatGroupID], Ext.Types.Serialize(template))
                 end
-                table.insert(sessionContext.CombatGroups[template.CombatComponent.CombatGroupID], Ext.Types.Serialize(template))
+                if (
+                    template.CombatComponent.AiHint ~= nil and
+                    template.CombatComponent.AiHint ~= "" and
+                    template.CombatComponent.AiHint ~= NULL_GUID
+                ) then
+                    sessionContext.AIHints[template.CombatComponent.AiHint] = true
+                end
             end
         end
     end
