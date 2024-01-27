@@ -236,6 +236,7 @@
 --- @field Movement ScalingLevelScaledConfig
 --- @field RollBonusSavingThrow ScalingLevelScaledConfig
 --- @field SpellSaveDC ScalingLevelScaledConfig
+--- @field Initiative ScalingLevelScaledConfig
 
 --- @alias KindsConfig tabled<string, string[]>
 
@@ -394,6 +395,7 @@ EnrichedEntity = {}
 
 --- @class Stats
 --- @field SpellCastingAbility string
+--- @field InitiativeBonus integer
 
 --- @class EntityUuid
 --- @field EntityUuid Guid

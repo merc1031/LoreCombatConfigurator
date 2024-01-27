@@ -2673,6 +2673,7 @@ function ComputeIncrementalBoost(sessionContext, stat, entity, configType)
         RollBonusSavingThrow = function() return nil end,
         SpellSaveDC = function() return nil end,
         Damage = function() return nil end,
+        Initiative = function() return entity.Entity.Stats.InitiativeBonus end,
     }
     local statValueFn = statValueFns[stat]
 
@@ -2707,6 +2708,16 @@ function ComputeIncrementalBoost(sessionContext, stat, entity, configType)
     return totalBoost
 end
 
+--- @param sessionContext SessionContext
+--- @param entity EnrichedEntity
+function ComputeInitiativeBoost(sessionContext, entity, configType)
+    local totalInitiativeBoost = ComputeIncrementalBoost(sessionContext, "Initiative", entity, configType)
+    if totalInitiativeBoost > 0 then
+        return "Initiative(" .. totalInitiativeBoost .. ")"
+    else
+        return nil
+    end
+end
 
 --- @param sessionContext SessionContext
 --- @param entity EnrichedEntity
@@ -3529,6 +3540,15 @@ Defaults = {
         LevelStepToIncrementOn = 1,
         ValueToIncrementByOnLevel = 0,
     },
+    -- Controls how much initiative bonus to give to the characters. Scales with level if wanted, additionally can scale with base bonus
+    Initiative = {
+        StaticBoost = 0,
+        MaxPercentage = 0,
+        ScalingPercentage = 0,
+        ScalingLevelStepToIncrementOn = 1,
+        LevelStepToIncrementOn = 1,
+        ValueToIncrementByOnLevel = 0,
+    },
 }
 
 --- @param sessionContext SessionContext
@@ -3853,6 +3873,7 @@ function GiveBoosts(sessionContext, entity, configType)
         ComputeSpellSlotBoosts,
         ComputeRollBonusSavingThrowBoost,
         ComputeSpellSaveDCBoost,
+        ComputeInitiativeBoost,
     }
 
     for _, boostFn in ipairs(boosts) do
