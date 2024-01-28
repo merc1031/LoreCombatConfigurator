@@ -17,7 +17,6 @@
 					<attribute id="CanBeTeleported" type="bool" value="False" />
 					<attribute id="CanJoinCombat" type="bool" value="True" />
 					<attribute id="CharacterVisualResourceID" type="FixedString" value="baa20049-2ec2-07a7-b4d6-02a38b25d6ac" />
-					<!-- <attribute id="CharacterVisualResourceID" type="FixedString" value="ff13ed64-fd03-4b3f-946d-039d5553b935" /> -->
 					<attribute id="DisintegratedResourceID" type="FixedString" value="ab98118f-36e4-8a5f-2e91-925e1c9934c2" />
 					<attribute id="ExplodedResourceID" type="FixedString" value="ab98118f-36e4-8a5f-2e91-925e1c9934c2" />
 					<attribute id="Flag" type="int32" value="0" />
@@ -34,12 +33,6 @@
 					<attribute id="TemplateName" type="FixedString" value="64383f18-9830-40c2-8681-657cf36afc05" />
 					<attribute id="Type" type="FixedString" value="character" />
 					<children>
-						<!--
-						<node id="LocomotionParams">
-							<attribute id="IsMovementEnabled" type="bool" value="True" />
-							<attribute id="IsWorldClimbingEnabled" type="bool" value="True" />
-						</node>
-						-->
 						<node id="Transform">
 							<attribute id="Scale" type="float" value="0.2" />
 						</node>
@@ -90,6 +83,60 @@
 									<attribute id="OnlyCastOnSelf" type="bool" value="False" />
 									<attribute id="ScoreModifier" type="float" value="1.25" />
 									<attribute id="Skill" type="FixedString" value="Target_LCC_Bite_DragonWyrmling" />
+									<attribute id="SpellCastingAbility" type="uint8" value="0" />
+									<attribute id="StartRound" type="int32" value="0" />
+									<children>
+										<node id="SourceConditions">
+											<attribute id="MaximumHealthPercentage" type="int32" value="100" />
+											<attribute id="MinimumHealthPercentage" type="int32" value="0" />
+											<children>
+												<node id="Tags" />
+											</children>
+										</node>
+										<node id="TargetConditions">
+											<attribute id="MaximumHealthPercentage" type="int32" value="100" />
+											<attribute id="MinimumHealthPercentage" type="int32" value="0" />
+											<children>
+												<node id="Tags" />
+											</children>
+										</node>
+									</children>
+								</node>
+								<node id="Skill">
+									<attribute id="AIFlags" type="uint16" value="0" />
+									<attribute id="FallbackStartRound" type="int32" value="-1" />
+									<attribute id="LearningStrategy" type="uint8" value="0" />
+									<attribute id="MinimumImpact" type="int32" value="0" />
+									<attribute id="OnlyCastOnSelf" type="bool" value="False" />
+									<attribute id="ScoreModifier" type="float" value="1.25" />
+									<attribute id="Skill" type="FixedString" value="Target_LCC_Bite_DragonWyrmling_2" />
+									<attribute id="SpellCastingAbility" type="uint8" value="0" />
+									<attribute id="StartRound" type="int32" value="0" />
+									<children>
+										<node id="SourceConditions">
+											<attribute id="MaximumHealthPercentage" type="int32" value="100" />
+											<attribute id="MinimumHealthPercentage" type="int32" value="0" />
+											<children>
+												<node id="Tags" />
+											</children>
+										</node>
+										<node id="TargetConditions">
+											<attribute id="MaximumHealthPercentage" type="int32" value="100" />
+											<attribute id="MinimumHealthPercentage" type="int32" value="0" />
+											<children>
+												<node id="Tags" />
+											</children>
+										</node>
+									</children>
+								</node>
+								<node id="Skill">
+									<attribute id="AIFlags" type="uint16" value="0" />
+									<attribute id="FallbackStartRound" type="int32" value="-1" />
+									<attribute id="LearningStrategy" type="uint8" value="0" />
+									<attribute id="MinimumImpact" type="int32" value="0" />
+									<attribute id="OnlyCastOnSelf" type="bool" value="False" />
+									<attribute id="ScoreModifier" type="float" value="1.25" />
+									<attribute id="Skill" type="FixedString" value="Target_LCC_Bite_DragonWyrmling_3" />
 									<attribute id="SpellCastingAbility" type="uint8" value="0" />
 									<attribute id="StartRound" type="int32" value="0" />
 									<children>
