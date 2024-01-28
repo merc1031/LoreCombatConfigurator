@@ -1687,3 +1687,26 @@ Medium
 
 
 ----------------------------------------------------------------
+
+
+
+States
+
+
+# Load save
+LoadModule -> LoadSession
+LoadSession -> LoadLevel
+LoadLevel -> Sync
+Sync -> Running
+
+
+# exit to main
+LoreCombatConfigurator: GameStateChanged: Running -> Disconnect
+LoreCombatConfigurator: GameStateChanged: Disconnect -> UnloadLevel
+
+# New Game
+LoreCombatConfigurator: GameStateChanged: LoadModule -> LoadSession
+LoreCombatConfigurator: GameStateChanged: LoadSession -> LoadLevel
+LoreCombatConfigurator: GameStateChanged: LoadLevel -> Sync
+
+# Level loaded (before) happens after enter level???
