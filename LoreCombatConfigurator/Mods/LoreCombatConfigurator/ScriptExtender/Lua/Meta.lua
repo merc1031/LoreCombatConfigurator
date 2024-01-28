@@ -1,6 +1,10 @@
 --- @meta
 --- @diagnostic disable
 
+--- @class Range
+--- @field Min integer
+-- @field Max integer
+
 --- @class Spell
 --- @field Name string
 --- @field SpellFlags table<string, boolean>
@@ -14,6 +18,7 @@
 --- @field CanUseInCombat boolean
 --- @field Origin string
 --- @field DamageType string
+--- @field RechargeValues Range | nil
 
 --- @class SpellSelector
 --- @field SpellUUID string

@@ -1029,6 +1029,23 @@ function SpellListsToSpells(sessionContext)
                 end
             end
 
+            local parsedRechargeValues = Split(spellData.RechargeValues, "-")
+            --- @type Range | nil
+            local rechargeValues
+            if #parsedRechargeValues == 2 then
+                rechargeValues = {
+                    Min = tonumber(parsedRechargeValues[1]),
+                    Max = tonumber(parsedRechargeValues[2]),
+                }
+            elseif #parsedRechargeValues == 1 then
+                rechargeValues = {
+                    Min = tonumber(parsedRechargeValues[1]),
+                    Max = tonumber(parsedRechargeValues[1]),
+                }
+            else
+                rechargeValues = nil
+            end
+
             spellListToSpells[p][spell] = {
                 Name = spell,
                 SpellFlags = ToSet(spellData.SpellFlags),
@@ -1042,6 +1059,7 @@ function SpellListsToSpells(sessionContext)
                 CanUseInCombat = canUseInCombat,
                 Origin = Ext.Mod.GetMod(spellData.ModId).Info.Name,
                 DamageType = spellData.DamageType,
+                RechargeValues = rechargeValues,
             }
         end
     end
@@ -4135,7 +4153,7 @@ function WaitRemoveBoostingMany(sessionContext, entities)
         string.format(
             "Waiting for all boosts to be gone on: %s entities (%s)",
             #entities,
-            Map(function(entity) return entity.ShortGuid end, entities)
+            J(Map(function(entity) return entity.ShortGuid end, entities))
         )
     )
     local allGone = true
@@ -4153,7 +4171,7 @@ end
 --- @param sessionContext SessionContext
 --- @param entities EnrichedEntity[]
 function PerformBoostingMany(sessionContext, entities)
-    sessionContext.Log(1, "Performing Many Boosting")
+    sessionContext.Log(1, string.format("Performing Many Boosting: %s", J(Map(function(entity) return entity.ShortGuid end, entities))))
 
     for _, entity in ipairs(entities) do
         PerformBoosting(sessionContext, entity)
@@ -4162,16 +4180,32 @@ end
 
 --- @param sessionContext SessionContext
 --- @param entities Entity[]
+--- @param onlyCharacters boolean
 --- @return EnrichedEntity[]
-function EnrichEntities(sessionContext, entities)
-    return Map(
+function EnrichEntities(sessionContext, entities, onlyCharacters)
+    local enriched = Map(
         function(entity)
             --- @type EnrichedEntity
             local ee = EnrichedEntity:New()
             return ee:EnrichEntity(sessionContext, entity)
         end,
-        entities
+        Filter(
+            function(entity)
+                return entity ~= nil
+            end,
+            entities
+        )
     )
+    if onlyCharacters then
+        return Filter(
+            function(entity)
+                return entity.IsCharacter
+            end,
+            enriched
+        )
+    else
+        return enriched
+    end
 end
 
 --- @param entity Entity
@@ -4445,7 +4479,9 @@ local function OnSessionLoaded()
     end
 
     --- @type SessionContext
-    SessionContext = CreateSessionContext()
+    if rawget(_G, SessionContext) == nil then
+        SessionContext = CreateSessionContext()
+    end
 
     --- @diagnostic disable-next-line: unused-local
     Ext.Osiris.RegisterListener("LevelLoaded", 1, "before", function(level)
@@ -4473,7 +4509,7 @@ local function OnSessionLoaded()
 
             local entities = {entity}
 
-            local enrichedEntities = EnrichEntities(SessionContext, entities)
+            local enrichedEntities = EnrichEntities(SessionContext, entities, true)
 
             SetupUserVars(SessionContext, enrichedEntities)
 
@@ -4501,7 +4537,7 @@ local function OnSessionLoaded()
 
             local entities = {entity}
 
-            local enrichedEntities = EnrichEntities(SessionContext, entities)
+            local enrichedEntities = EnrichEntities(SessionContext, entities, true)
 
             SetupUserVars(SessionContext, enrichedEntities)
 
@@ -4538,7 +4574,7 @@ local function OnSessionLoaded()
             local entities = Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")
             --- @cast entities Entity[]
 
-            local enrichedEntities = EnrichEntities(SessionContext, entities)
+            local enrichedEntities = EnrichEntities(SessionContext, entities, true)
 
             SetupUserVars(SessionContext, enrichedEntities)
 
@@ -4573,7 +4609,7 @@ local function OnSessionLoaded()
             local entities = Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")
             --- @cast entities Entity[]
 
-            local enrichedEntities = EnrichEntities(SessionContext, entities)
+            local enrichedEntities = EnrichEntities(SessionContext, entities, true)
 
             SetupUserVars(SessionContext, enrichedEntities)
 
@@ -4640,7 +4676,7 @@ local function OnSessionLoaded()
 
                 local entities = {entity}
 
-                local enrichedEntities = EnrichEntities(SessionContext, entities)
+                local enrichedEntities = EnrichEntities(SessionContext, entities, true)
 
                 SetupUserVars(SessionContext, enrichedEntities)
 
@@ -4665,7 +4701,7 @@ local function OnSessionLoaded()
 
                 local entities = {entity}
 
-                local enrichedEntities = EnrichEntities(SessionContext, entities)
+                local enrichedEntities = EnrichEntities(SessionContext, entities, true)
 
                 SetupUserVars(SessionContext, enrichedEntities)
 
@@ -4678,7 +4714,7 @@ local function OnSessionLoaded()
 
                 local entities = {entity}
 
-                local enrichedEntities = EnrichEntities(SessionContext, entities)
+                local enrichedEntities = EnrichEntities(SessionContext, entities, true)
 
                 SetupUserVars(SessionContext, enrichedEntities)
 
@@ -4690,7 +4726,7 @@ local function OnSessionLoaded()
                 local entities = Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")
                 --- @cast entities Entity[]
 
-                local enrichedEntities = EnrichEntities(SessionContext, entities)
+                local enrichedEntities = EnrichEntities(SessionContext, entities, true)
 
                 SetupUserVars(SessionContext, enrichedEntities)
 
@@ -4713,7 +4749,7 @@ local function OnSessionLoaded()
                 local entities = Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")
                 --- @cast entities Entity[]
 
-                local enrichedEntities = EnrichEntities(SessionContext, entities)
+                local enrichedEntities = EnrichEntities(SessionContext, entities, true)
 
                 SetupUserVars(SessionContext, enrichedEntities)
 
@@ -4724,7 +4760,7 @@ local function OnSessionLoaded()
                 local entities = Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")
                 --- @cast entities Entity[]
 
-                local enrichedEntities = EnrichEntities(SessionContext, entities)
+                local enrichedEntities = EnrichEntities(SessionContext, entities, true)
 
                 SetupUserVars(SessionContext, enrichedEntities)
 
@@ -4836,6 +4872,7 @@ Ext.Vars.RegisterUserVariable("LCC_DebugMode_RestoreSettings", {Server=true, Per
 Ext.Events.SessionLoaded:Subscribe(OnSessionLoaded)
 
 Ext.Events.GameStateChanged:Subscribe(function(event)
+        _Log(DummySessionContext(), 2, string.format("GameStateChanged: %s -> %s", event.FromState, event.ToState))
         --- @cast event GameStateEvent
         if event.FromState == "Sync" and event.ToState == "Running" then
             _Log(DummySessionContext(), 2, "Game state loaded")
@@ -4859,7 +4896,18 @@ Ext.Events.GameStateChanged:Subscribe(function(event)
         end
 
         if event.FromState == "UnloadSession" and event.ToState == "LoadSession" then
-            _Log(DummySessionContext(), 2, "Session Loading")
+            _Log(DummySessionContext(), 2, "Session ReLoading")
+        end
+
+        if event.FromState == "LoadLevel" and event.ToState == "Sync" then
+            _Log(DummySessionContext(), 2, "LoadLevel  -> Sync: CreateSessionContext")
+            --- @type SessionContext
+            if rawget(_G, SessionContext) == nil then
+                SessionContext = CreateSessionContext()
+            end
+
+            SessionContext.EntityCache = {}
+            GetVarsJson(SessionContext)
         end
     end
 )
