@@ -4795,6 +4795,12 @@ local function OnSessionLoaded()
 
                 PerformBoostingMany(SessionContext, enrichedEntities)
             end
+
+            if statusID == "LCC_DOMINATE_PERSON" then
+                local entity = Ext.Entity.Get(string.sub(target, -36))
+                Osi.AddPartyFollower(entity.Uuid.EntityUuid, Osi.GetHostCharacter())
+                Osi.SetFaction(entity.Uuid.EntityUuid, Osi.GetFaction(Osi.GetHostCharacter()))
+            end
         end
     )
 end
@@ -4947,14 +4953,17 @@ Ext.Events.GameStateChanged:Subscribe(function(event)
                                 SessionContext.Log(3, string.format("For CombatGroupID: %s; cfg: %s; adding %s near firstMember: %s", combatGroupID, J(cfg), J(data), firstMember.Uuid.EntityUuid))
                                 local template = data.Template
                                 SessionContext.Log(3, string.format("For CombatGroupID: %s; cfg: %s; adding %s near firstMember: %s", combatGroupID, cfg, template, firstMember.Uuid.EntityUuid))
+                                SessionContext.Log(3, string.format("For CombatGroupID: %s; cfg: %s; checking template exists %s near firstMember: %s", combatGroupID, cfg, Ext.Template.GetTemplate(template), firstMember.Uuid.EntityUuid))
                                 local x, y, z = Osi.GetPosition(firstMember.Uuid.EntityUuid)
                                 local newGuid = Osi.CreateAt(template,x+Osi.Random(5)-5,y,z+Osi.Random(5)-5,0,1,"")
                                 SessionContext.Log(3, string.format("For CombatGroupID: %s; cfg: %s; near firstMember: %s, added %s", combatGroupID, cfg, firstMember.Uuid.EntityUuid, newGuid))
-                                Osi.SetFaction(newGuid, Osi.GetFaction(firstMember.Uuid.EntityUuid))
-                                Osi.SetCanJoinCombat(newGuid, Osi.CanJoinCombat(firstMember.Uuid.EntityUuid))
-                                Osi.SetLevel(newGuid, Osi.GetLevel(firstMember.Uuid.EntityUuid))
-                                SessionContext.Log(3, string.format("For CombatGroupID: %s; cfg: %s; finshed near firstMember: %s,added %s", combatGroupID, cfg, firstMember.Uuid.EntityUuid, newGuid))
-                                table.insert(new, newGuid)
+                                if newGuid ~= nil then
+                                    Osi.SetFaction(newGuid, Osi.GetFaction(firstMember.Uuid.EntityUuid))
+                                    Osi.SetCanJoinCombat(newGuid, Osi.CanJoinCombat(firstMember.Uuid.EntityUuid))
+                                    Osi.SetLevel(newGuid, Osi.GetLevel(firstMember.Uuid.EntityUuid))
+                                    SessionContext.Log(3, string.format("For CombatGroupID: %s; cfg: %s; finshed near firstMember: %s,added %s", combatGroupID, cfg, firstMember.Uuid.EntityUuid, newGuid))
+                                    table.insert(new, newGuid)
+                                end
                             end
                         elseif combatGroupEffectType == "Clone" then
                             local firstMember = members[1]

@@ -1206,3 +1206,484 @@ Stats: { TUT_CambionCommander TUT_Cambion_NoCrits Cambion _Fiend _Base } AiArche
 
 Imps in Helm are
 Stats: {Imp_Weak Imp _Devil _Fiend _Base} AiArchetype imp_ranged
+
+Ext.Entity.Subscribe("Health", function(entity, component, flags)
+        SessionContext.Log(4, string.format("Health event for: %s %s %s", entity.Uuid.EntityUuid, flags, J(component)))
+    end
+)
+
+Ext.Entity.Subscribe("BaseHp", function(entity, component, flags)
+        SessionContext.Log(4, string.format("BaseHp event for: %s %s %s", entity.Uuid.EntityUuid, flags, J(component)))
+    end
+)
+
+From Eagle
+data "Flags" "Floating;FloatingWhileMoving"
+
+in xml
+					<attribute id="CanClimbLadders" type="bool" value="True" />
+					<attribute id="CanFight" type="bool" value="True" />
+
+						<node id="Tags">
+							<children>
+								<node id="Tag">
+									<attribute id="Object" type="guid" value="801bd716-0666-4dd5-b449-45ffa9a52a0f" />
+								</node>
+								<node id="Tag">
+									<attribute id="Object" type="guid" value="8803503b-64e0-49dd-ba5b-0c4f2c5cc0b5" />
+								</node
+
+
+
+BG3 Base
+new entry "_Base"
+type "Character"
+data "Level" "1"
+data "Strength" "10"
+data "Dexterity" "10"
+data "Constitution" "10"
+data "Intelligence" "10"
+data "Wisdom" "10"
+data "Charisma" "10"
+data "Armor" "10"
+data "Vitality" "5"
+data "XPReward" "810b5510-6748-4c8e-bef0-d990880ed1dd"
+data "Sight" "1600"
+data "Hearing" "1100"
+data "FOV" "90"
+data "Weight" "50"
+data "StepsType" "Bare"
+data "DefaultBoosts" "BlockRegainHP(Undead;Construct)"
+data "PathInfluence" "BloodElectrified,100;BloodFrozen,30;Lava,700;Fire,40;HolyFire,40;Hellfire,100;PoisonCloud,70;WyvernPoison,70;DrowPoisonCloud,70;PurpleWormPoison,70;SerpentVenom,70;InvisibleGithAcid,70;CloudkillCloud,70;MaliceCloud,70;CrawlerMucusCloud,70;WaterElectrified,100;WaterFrozen,30;Grease,30;Web,30;Vines,40;SporeBlackCloud,100;WaterCloudElectrified,40;SporeGreenCloud,40;Acid,30;CausticBrine,40;DarknessCloud,30;FogCloud,30;Mud,30;Oil,30;Poison,30;SpikeGrowth,40;SporePinkCloud,40;StinkingCloud,40"
+data "ProficiencyBonusScaling" "265d62c4-9b82-4ed6-9a86-da675b4ef8fe"
+data "SpellCastingAbility" "Intelligence"
+data "UnarmedAttackAbility" "Strength"
+data "UnarmedRangedAttackAbility" "Strength"
+data "ActionResources" "ActionPoint:1;BonusActionPoint:1;Movement:9;ReactionActionPoint:1"
+data "Passives" "AttackOfOpportunity;DarknessRules"
+data "MinimumDetectionRange" "2"
+data "DarkvisionRange" "0"
+data "FallingHitEffect" "VFX_Combat_Bludgeoning_Damage_Blood_01"
+data "FallingLandEffect" "VFX_Combat_Force_Land_01"
+data "DifficultyStatuses" "STATUS_EASY: HEALTHREDUCTION_EASYMODE; STATUS_HARD: HEALTHBOOST_HARDCORE"
+
+
+new entry "_Dragon"
+type "Character"
+using "_Base"
+data "Weight" "6000"
+data "StepsType" "Clawed"
+data "ArmorType" "None"
+
+----------------------------------------------------------------
+
+Theoretical bg3 stats
+
+new entry "LCC_Dragon_AncientRed"
+type "Character"
+using "LCC_Dragon_YoungRed"
+data "Strength" "30"
+data "Dexterity" "10"
+data "Constitution" "29"
+data "Intelligence" "18"
+data "Wisdom" "15"
+data "Charisma" "23"
+data "Armor" "22"
+data "Vitality" "850"
+data "GameSize" "Gargantuan"
+data "Flags" "Grounded"
+data "DefaultBoosts" "ProficiencyBonus(SavingThrow, Dexterity);ProficiencyBonus(SavingThrow, Constitution);ProficiencyBonus(SavingThrow, Wisdom);ProficiencyBonus(SavingThrow, Charisma);ActionResourceBlock(Movement);BlockRegainHP(Undead;Construct)"
+data "PersonalStatusImmunities" "PRONE;BURNING;BURNING_LAVA;GRAPPLED;GRAPPLED_NETHERTENTACLE;SG_Prone"
+data "ProficiencyBonus" "7"
+data "ActionResources" "ActionPoint:1;BonusActionPoint:1;ReactionActionPoint:1;Movement:12"
+data "Passives" "AttackOfOpportunity;Darkvision;DarknessRules"
+data "FireResistance" "Immune"
+data "DarkvisionRange" "30"
+data "DifficultyStatuses" "STATUS_EASY: HEALTHREDUCTION_EASYMODE; STATUS_MEDIUM: REDDRAGON_NORMAL; STATUS_HARD: HEALTHBOOST_HARDCORE; STATUS_HARD: DRAGON_RED_RETALIATE_TECHNICAL; STATUS_HARD: REDDRAGON_HARDCORE"
+
+Ancient Red Dragon
+Gargantuan dragon, chaotic evil
+Armor Class 22 (natural armor)
+Hit Points 546 (28d20+252)
+Speed 40 ft., climb 40 ft., fly 80 ft.
+STR
+30 (+10)
+
+
+DEX
+10 (0)
+
+
+CON
+29 (+9)
+
+
+INT
+18 (+4)
+
+
+WIS
+15 (+2)
+
+
+CHA
+23 (+6)
+
+Damage Immunities fire
+Senses blindsight 60 ft., darkvision 120 ft.
+Saving Throws Dex +7, Con +16, Wis +9, Cha +13
+Skills Perception +16, Stealth +7
+Languages Common, Draconic
+Challenge 24 (62,000 XP)
+Proficiency Bonus +7
+Legendary Resistance (3/Day). If the dragon fails a saving throw, it can choose to succeed instead.
+
+Actions
+Multiattack. The dragon can use its Frightful Presence. It then makes three attacks: one with its bite and two with its claws.
+
+Bite. Melee Weapon Attack: +17 to hit, reach 15 ft., one target. Hit: 21 (2d10 + 10) piercing damage plus 14 (4d6) fire damage.
+
+Claw. Melee Weapon Attack: +17 to hit, reach 10 ft., one target. Hit: 17 (2d6 + 10) slashing damage.
+
+Tail. Melee Weapon Attack: +17 to hit, reach 20 ft., one target. Hit: 19 (2d8 + 10) bludgeoning damage.
+
+Frightful Presence. Each creature of the dragon’s choice that is within 120 feet of the dragon and aware of it must succeed on a DC 21 Wisdom saving throw or become frightened for 1 minute. A creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success. If a creature’s saving throw is successful or the effect ends for it, the creature is immune to the dragon’s Frightful Presence for the next 24 hours.
+
+Fire Breath (Recharge 5-6). The dragon exhales fire in a 90-foot cone. Each creature in that area must make a DC 24 Dexterity saving throw, taking 91 (26d6) fire damage on a failed save, or half as much damage on a successful one.
+
+Legendary Actions
+The ancient red dragon can take 3 legendary actions, choosing from the options below. Only one legendary action option can be used at a time, and only at the end of another creature’s turn. The ancient red dragon regains spent legendary actions at the start of its turn.
+
+Detect. The dragon makes a Wisdom (Perception) check.
+
+Tail Attack. The dragon makes a tail attack.
+
+Wing Attack (Costs 2 Actions). The dragon beats its wings. Each creature within 15 ft. of the dragon must succeed on a DC 25 Dexterity saving throw or take 17 (2d6 + 10) bludgeoning damage and be knocked prone. The dragon can then fly up to half its flying speed.
+
+----------------------------------------------------------------
+BG3 Stats
+
+new entry "Dragon_AdultRed"
+type "Character"
+using "_Dragon"
+data "Strength" "27"
+data "Dexterity" "10"
+data "Constitution" "25"
+data "Intelligence" "16"
+data "Wisdom" "13"
+data "Charisma" "21"
+data "Armor" "19"
+data "Vitality" "400"
+data "GameSize" "Huge"
+data "Flags" "Grounded"
+data "DefaultBoosts" "ProficiencyBonus(SavingThrow, Dexterity);ProficiencyBonus(SavingThrow, Constitution);ProficiencyBonus(SavingThrow, Wisdom);ProficiencyBonus(SavingThrow, Charisma);ActionResourceBlock(Movement);BlockRegainHP(Undead;Construct)"
+data "PersonalStatusImmunities" "PRONE;BURNING;BURNING_LAVA;GRAPPLED;GRAPPLED_NETHERTENTACLE;SG_Prone"
+data "ProficiencyBonus" "6"
+data "ActionResources" "ActionPoint:1;BonusActionPoint:1;ReactionActionPoint:1"
+data "Passives" "MagicResistance;AttackOfOpportunity;Darkvision;DarknessRules"
+data "FireResistance" "Immune"
+data "DarkvisionRange" "30"
+data "DifficultyStatuses" "STATUS_EASY: HEALTHREDUCTION_EASYMODE; STATUS_MEDIUM: REDDRAGON_NORMAL; STATUS_HARD: HEALTHBOOST_HARDCORE; STATUS_HARD: DRAGON_RED_RETALIATE_TECHNICAL; STATUS_HARD: REDDRAGON_HARDCORE"
+
+Theoretical BG3 Stats
+
+new entry "LCC_Dragon_AdultRed"
+type "Character"
+using "LCC_Dragon_YoungRed"
+data "Strength" "27"
+data "Dexterity" "10"
+data "Constitution" "25"
+data "Intelligence" "16"
+data "Wisdom" "13"
+data "Charisma" "21"
+data "Armor" "19"
+data "Vitality" "400"
+data "GameSize" "Huge"
+data "Flags" "Grounded"
+data "DefaultBoosts" "ProficiencyBonus(SavingThrow, Dexterity);ProficiencyBonus(SavingThrow, Constitution);ProficiencyBonus(SavingThrow, Wisdom);ProficiencyBonus(SavingThrow, Charisma);ActionResourceBlock(Movement);BlockRegainHP(Undead;Construct)"
+data "PersonalStatusImmunities" "PRONE;BURNING;BURNING_LAVA;GRAPPLED;GRAPPLED_NETHERTENTACLE;SG_Prone"
+data "ProficiencyBonus" "6"
+data "ActionResources" "ActionPoint:1;BonusActionPoint:1;ReactionActionPoint:1;Movement:12"
+data "Passives" "AttackOfOpportunity;Darkvision;DarknessRules"
+data "FireResistance" "Immune"
+data "DarkvisionRange" "30"
+data "DifficultyStatuses" "STATUS_EASY: HEALTHREDUCTION_EASYMODE; STATUS_MEDIUM: REDDRAGON_NORMAL; STATUS_HARD: HEALTHBOOST_HARDCORE; STATUS_HARD: DRAGON_RED_RETALIATE_TECHNICAL; STATUS_HARD: REDDRAGON_HARDCORE"
+
+
+Adult Red Dragon Real stats
+Armor Class 19 (natural armor)
+Hit Points 256 (19d12 + 133)
+Speed 40 ft., climb 40 ft., fly 80 ft.
+
+STR
+27 (+8)
+DEX
+10 (+0)
+CON
+25 (+7)
+INT
+16 (+3)
+WIS
+13 (+1)
+CHA
+21 (+5)
+
+Saving Throws DEX +6, CON +13, WIS +7, CHA +11
+Skills Perception +13, Stealth +6
+Damage Immunities Fire
+Senses Blindsight 60 ft., Darkvision 120 ft., Passive Perception 23
+Languages Common, Draconic
+Challenge 17 (18,000 XP)
+Proficiency Bonus +6
+
+Legendary Resistance (3/Day). If the dragon fails a saving throw, it can choose to succeed instead.
+
+Actions
+Multiattack. The dragon can use its Frightful Presence. It then makes three attacks: one with its bite and two with its claws.
+
+Bite. Melee Weapon Attack: +14 to hit, reach 10 ft., one target. Hit: 19 (2d10 + 8) piercing damage plus 7 (2d6) fire damage.
+
+Claw. Melee Weapon Attack: +14 to hit, reach 5 ft., one target. Hit: 15 (2d6 + 8) slashing damage.
+
+Tail. Melee Weapon Attack: +14 to hit, reach 15 ft., one target. Hit: 17 (2d8 + 8) bludgeoning damage.
+
+Frightful Presence. Each creature of the dragon’s choice that is within 120 feet of the dragon and aware of it must succeed on a DC 19 Wisdom saving throw or become frightened for 1 minute. A creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success. If a creature’s saving throw is successful or the effect ends for it, the creature is immune to the dragon’s Frightful Presence for the next 24 hours.
+
+Fire Breath (Recharge 5–6). The dragon exhales fire in a 60-foot cone. Each creature in that area must make a DC 21 Dexterity saving throw, taking 63 (18d6) fire damage on a failed save, or half as much damage on a successful one.
+
+Legendary Actions
+The dragon can take 3 legendary actions, choosing from the options below. Only one legendary action option can be used at a time and only at the end of another creature's turn. The dragon regains spent legendary actions at the start of its turn.
+
+Detect. The dragon makes a Wisdom (Perception) check.
+
+Tail Attack. The dragon makes a tail attack.
+
+Wing Attack (Costs 2 Actions). The dragon beats its wings. Each creature within 10 feet of the dragon must succeed on a DC 22 Dexterity saving throw or take 15 (2d6 + 8) bludgeoning damage and be knocked prone. The dragon can then fly up to half its flying speed.
+
+----------------------------------------------------------------
+
+Theoretical bg3 stats
+new entry "Dragon_YoungRed"
+type "Character"
+using "Dragon_WyrmlingRed"
+data "Weight" 3000
+data "Strength" "23"
+data "Dexterity" "10"
+data "Constitution" "21"
+data "Intelligence" "14"
+data "Wisdom" "11"
+data "Charisma" "19"
+data "Armor" "18"
+data "Vitality" "265"
+data "GameSize" "Large"
+data "Flags" "Grounded"
+data "DefaultBoosts" "ProficiencyBonus(SavingThrow, Dexterity);ProficiencyBonus(SavingThrow, Constitution);ProficiencyBonus(SavingThrow, Wisdom);ProficiencyBonus(SavingThrow, Charisma);ActionResourceBlock(Movement);BlockRegainHP(Undead;Construct)"
+data "PersonalStatusImmunities" "PRONE;BURNING;BURNING_LAVA;GRAPPLED;GRAPPLED_NETHERTENTACLE;SG_Prone"
+data "ProficiencyBonus" "4"
+data "ActionResources" "ActionPoint:1;BonusActionPoint:1;ReactionActionPoint:1:Movement:12"
+data "Passives" "AttackOfOpportunity;Darkvision;DarknessRules"
+data "FireResistance" "Immune"
+data "DarkvisionRange" "30"
+data "DifficultyStatuses" "STATUS_EASY: HEALTHREDUCTION_EASYMODE; STATUS_MEDIUM: REDDRAGON_NORMAL; STATUS_HARD: HEALTHBOOST_HARDCORE; STATUS_HARD: DRAGON_RED_RETALIATE_TECHNICAL; STATUS_HARD: REDDRAGON_HARDCORE"
+
+
+Young Red Dragon
+Large dragon, chaotic evil
+Armor Class 18 (natural armor)
+Hit Points 178 (17d10+85)
+Speed 40 ft., climb 40 ft., fly 80 ft.
+STR
+23 (+6)
+
+
+DEX
+10 (0)
+
+
+CON
+21 (+5)
+
+
+INT
+14 (+2)
+
+
+WIS
+11 (0)
+
+
+CHA
+19 (+4)
+
+Damage Immunities fire
+Senses blindsight 30 ft., darkvision 120 ft.
+Saving Throws Dex +4, Con +9, Wis +4, Cha +8
+Skills Perception +8, Stealth +4
+Languages Common, Draconic
+Challenge 10 (5,900 XP)
+Proficiency Bonus +4
+Actions
+Multiattack. The dragon makes three attacks: one with its bite and two with its claws.
+
+Bite. Melee Weapon Attack: +10 to hit, reach 10 ft., one target. Hit: 17 (2d10 + 6) piercing damage plus 3 (1d6) fire damage.
+
+Claw. Melee Weapon Attack: +10 to hit, reach 5 ft., one target. Hit: 13 (2d6 + 6) slashing damage.
+
+Fire Breath (Recharge 5-6). The dragon exhales fire in a 30-foot cone. Each creature in that area must make a DC 17 Dexterity saving throw, taking 56 (16d6) fire damage on a failed save, or half as much damage on a successful one.
+
+----------------------------------------------------------------
+
+Wyvern
+Large dragon, unaligned
+Armor Class 13 (natural armor)
+Hit Points 110 (13d10+39)
+Speed 20 ft., fly 80 ft.
+STR
+19 (+4)
+
+
+DEX
+10 (0)
+
+
+CON
+16 (+3)
+
+
+INT
+5 (-3)
+
+
+WIS
+12 (+1)
+
+
+CHA
+6 (-2)
+
+Senses darkvision 60 ft.
+Skills Perception +4
+Challenge 6 (2,300 XP)
+Actions
+Multiattack. The wyvern makes two attacks: one with its bite and one with its stinger. While flying, it can use its claws in place of one other attack.
+
+Bite. Melee Weapon Attack: +7 to hit, reach 10 ft., one creature. Hit: 11 (2d6 + 4) piercing damage.
+
+Claws. Melee Weapon Attack: +7 to hit, reach 5 ft., one target. Hit: 13 (2d8 + 4) slashing damage.
+
+Stinger. Melee Weapon Attack: +7 to hit, reach 10 ft., one creature. Hit: 11 (2d6 + 4) piercing damage. The target must make a DC 15 Constitution saving throw, taking 24 (7d6) poison damage on a failed save, or half as much damage on a successful one.
+
+----------------------------------------------------------------
+
+
+new entry "Dragon_WyrmlingRed"
+type "Character"
+using "_Dragon"
+data "Weight" 1500
+data "Strength" "19"
+data "Dexterity" "10"
+data "Constitution" "17"
+data "Intelligence" "12"
+data "Wisdom" "11"
+data "Charisma" "15"
+data "Armor" "17"
+data "Vitality" "115"
+data "GameSize" "Medium"
+data "Flags" "Grounded"
+data "DefaultBoosts" "ProficiencyBonus(SavingThrow, Dexterity);ProficiencyBonus(SavingThrow, Constitution);ProficiencyBonus(SavingThrow, Wisdom);ProficiencyBonus(SavingThrow, Charisma);ActionResourceBlock(Movement);BlockRegainHP(Undead;Construct)"
+data "PersonalStatusImmunities" "PRONE;BURNING;BURNING_LAVA;GRAPPLED;GRAPPLED_NETHERTENTACLE;SG_Prone"
+data "ProficiencyBonus" "2"
+data "ActionResources" "ActionPoint:1;BonusActionPoint:1;ReactionActionPoint:1:Movement:9"
+data "Passives" "AttackOfOpportunity;Darkvision;DarknessRules"
+data "FireResistance" "Immune"
+data "DarkvisionRange" "20"
+data "DifficultyStatuses" "STATUS_EASY: HEALTHREDUCTION_EASYMODE; STATUS_MEDIUM: REDDRAGON_NORMAL; STATUS_HARD: HEALTHBOOST_HARDCORE; STATUS_HARD: DRAGON_RED_RETALIATE_TECHNICAL; STATUS_HARD: REDDRAGON_HARDCORE"
+
+
+Red Dragon Wyrmling
+Medium dragon, chaotic evil
+Armor Class 17 (natural armor)
+Hit Points 75 (10d8+30)
+Speed 30 ft., climb 30 ft., fly 60 ft.
+STR
+19 (+4)
+
+
+DEX
+10 (0)
+
+
+CON
+17 (+3)
+
+
+INT
+12 (+1)
+
+
+WIS
+11 (0)
+
+
+CHA
+15 (+2)
+
+Damage Immunities fire
+Senses blindsight 10 ft., darkvision 60 ft.
+Saving Throws Dex +2, Con +5, Wis +2, Cha +4
+Skills Perception +4, Stealth +2
+Languages Draconic
+Challenge 4 (1,100 XP)
+Proficiency Bonus +2
+Actions
+Bite. Melee Weapon Attack: +6 to hit, reach 5 ft., one target. Hit: 9 (1d10 + 4) piercing damage plus 3 (1d6) fire damage.
+
+Fire Breath (Recharge 5-6). The dragon exhales fire in a 15-foot cone. Each creature in that area must make a DC l3 Dexterity saving throw, taking 24 (7d6) fire damage on a failed save, or half as much damage on a successful one.
+
+----------------------------------------------------------------
+
+Red Guard Drake
+Medium dragon, unaligned
+Armor Class 14 (natural armor)
+Hit Points 52 (7d8+21)
+Speed 30 ft., climb 30 ft.
+STR
+16 (+3)
+
+
+DEX
+11 (0)
+
+
+CON
+16 (+3)
+
+
+INT
+4 (-3)
+
+
+WIS
+10 (0)
+
+
+CHA
+7 (-2)
+
+Damage Resistances fire
+Senses darkvision 60 ft.
+Skills Perception +2
+Languages understands Draconic but can't speak it
+Challenge 2 (450 XP)
+Actions
+Multiattack. The drake attacks twice, once with its bite and once with its tail.
+
+Bite. Melee Weapon Attack: +5 to hit, reach 5 ft., one target. Hit: 7 (1d8+3) piercing damage.
+
+Tail. Melee Weapon Attack: +5 to hit, reach 5 ft., one target. Hit: 6 (1d6+3) bludgeoning damage.
+
+Medium
+
+
+
+----------------------------------------------------------------
