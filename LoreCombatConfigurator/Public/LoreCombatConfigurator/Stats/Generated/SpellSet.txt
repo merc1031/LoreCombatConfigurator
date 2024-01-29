@@ -1,0 +1,5 @@
+new spellset "LCC_DragonWyrmlingActions"
+add spell "Zone_LCC_BreathWeapon_DragonWyrmling_Fire_Cone"
+add spell "Target_LCC_Bite_DragonWyrmling"
+add spell "Target_LCC_Fly_DragonWyrmling"
+add spell "Projectile_Fly_Spell"
