@@ -5,3 +5,11 @@ using "UNARMEDATTACK_OVERRIDE_WOLF"
 data "DisplayName" "hded1b6c5gc020g4828g8eaeg12ae8f62e8c1;1"
 data "Boosts" "AttackSpellOverride(Target_LCC_Bite_DragonWyrmling, Target_MainHandAttack); AttackSpellOverride(Target_LCC_Bite_DragonWyrmling, Target_UnarmedAttack)"
 data "StatusPropertyFlags" "IgnoreResting;DisableOverhead;DisableCombatlog;DisablePortraitIndicator"
+
+new entry "UNARMEDATTACK_OVERRIDE_WOLFY"
+type "StatusData"
+data "StatusType" "BOOST"
+// %%% EMPTY
+data "DisplayName" "h0062bb49gc270g4353gb6ebgf4c2248ea879;1"
+data "Boosts" "AttackSpellOverride(Target_Bite_Wolfy, Target_UnarmedAttack) "
+data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;DisablePortraitIndicator"
