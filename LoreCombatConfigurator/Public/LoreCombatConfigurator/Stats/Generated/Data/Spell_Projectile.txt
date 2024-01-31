@@ -1,0 +1,5 @@
+new entry "Projectile_Fly_Spell_80"
+type "SpellData"
+data "SpellType" "Projectile"
+using "Projectile_Fly_Spell"
+data "TargetRadius" "24"

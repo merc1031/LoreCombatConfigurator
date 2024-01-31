@@ -33,8 +33,22 @@
 	<content contentuid="hded1b6c5gc020g4828g8eaeg12ae8f62e8c1" version="1">Wyrmling Bite</content>
 	<content contentuid="h0495a8aeg3be9g4635g9b74g4012d2388716" version="1">Bite your target</content>
 	<content contentuid="h86828baag567dg478cg99b2g15b39269ee46" version="1">Red Dragon Wyrmling</content>
+	<content contentuid="hd6aa605eg45ceg40a1g8d81gbfde775aea17" version="1">Red Dragon Wyrmling 2</content>
 
 	<content contentuid="h6aa9d096g5096g4ebeg8fbfg839c9b08509b" version="1">Wymling Bite 2</content>
 	<content contentuid="hb1cc6fadg2ffag4f30ga756gc95702f67573" version="1">Wymling Bite 3</content>
 	<content contentuid="h383e2dadg162dg4c5egaefagfff145ddafea" version="1">Fire Breath (Fireball both)</content>
+
+	<content contentuid="h091bee70gf949g4cedg9c81gd64a0c8776b7" version="1">Young Red Dragon</content>
+
+	<content contentuid="h812b978eg2723g4a79g8174g3d86eae44849" version="1">Young Red Dragon Bite</content>
+	<content contentuid="hf05f84bfg3839g4b43g955ag9ff98a279059" version="1">Bite your target</content>
+
+	<content contentuid="h84654382g70a9g4236g815eg5e509c80ef59" version="1">Young Red Dragon Claw</content>
+	<content contentuid="h8d8f07e0g8e47g441cga1acge27e11fb8552" version="1">Claw your target</content>
+
+	<content contentuid="h09bffba8g3cc9g495dga894gb8cd3b4fc66f" version="1">Young Red Dragon Multiattack</content>
+	<content contentuid="h7d1efb52ga853g4aaegb384g4ea51fd823d8" version="1">Vicously rend your target with a bite and 2 claw strikes</content>
+
+	<content contentuid="ha9e91c88g4fdag462bgb53dgd85aad78d8b1" version="1">Young Red Dragon Multiattack 2</content>
 </contentList>
