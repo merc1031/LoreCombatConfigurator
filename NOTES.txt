@@ -2068,3 +2068,33 @@ Working template!
 					</children>
 				</node>
 ```
+
+SpellAnimation
+
+First is preperate animation, last is return to idle, in betweens are idel before cast, and animations during
+, , ; Pre-Attack Animation, , ; Attack Animation, , ; Recover Animation, ,;
+
+data "SpellAnimation" "8b8bb757-21ce-4e02-a2f3-97d55cf2f90b,,;ebd0529b-057e-491f-b124-acfed054728b,,;eeca2c0a-5f81-411e-aad8-b72362322900,,;2b6afcc6-c9c1-4dc1-9904-88bebecb892f,,;7bb52cd4-0b1c-4926-9165-fa92b75876a3,,;e6d40932-427f-4699-a0de-66f124d905b1,,;0b07883a-08b8-43b6-ac18-84dc9e84ff50,,;,,;,,"
+That is mulitattack mixed with main hand
+Main is 1, multi is 2,3,4 main is the remaining? I think?
+The last one was identical for the two
+I can get it pulled up and see the exact pattern
+
+
+Bounds:
+type = strong/Normal
+shape = masc/femme
+
+CycleConditions
+LaughingLeader> That's for cycling between targets, like on a controller.
+
+"Cooldown"
+     64 ""
+     27 "None"
+    106 "OncePerCombat"
+     71 "OncePerRest"
+    182 "OncePerRestPerItem"
+     95 "OncePerShortRest"
+     74 "OncePerShortRestPerItem"
+    233 "OncePerTurn"
+      2 "OncePerTurnNoRealtime"
