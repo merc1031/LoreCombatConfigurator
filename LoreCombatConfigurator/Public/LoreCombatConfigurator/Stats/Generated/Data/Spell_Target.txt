@@ -338,7 +338,7 @@ data "DisplayName" "hded1b6c5gc020g4828g8eaeg12ae8f62e8c1;1"
 data "Description" "h0495a8aeg3be9g4635g9b74g4012d2388716;1"
 data "CastSound" "CrSpell_Cast_Dilophosaurus_Bite"
 data "TargetSound" "CrSpell_Impact_Dilophosaurus_Bite"
-data "SpellFlags" "IsMelee;IsHarmful"
+data "SpellFlags" "IsAttack;IsMelee;IsHarmful"
 data "CastEffect" "9a6354f1-5446-42d0-9f43-35c62ac391a5"
 data "TargetEffect" ""
 data "HitEffect" "0d92c537-32dd-45a9-857a-07394959a763
