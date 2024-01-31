@@ -1,0 +1,6 @@
+new entry "DamageReduction_YoungDragon_Tactician"
+type "PassiveData"
+using "DamageReduction_Dragon"
+data "DisplayName" "heb92a984g3362g4c83gabc4g11f0797680db;1"
+data "DescriptionParams" "2"
+data "Boosts" "DamageReduction(All, Flat, 2)"
