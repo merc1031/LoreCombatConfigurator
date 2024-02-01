@@ -232,7 +232,7 @@
 					</children>
 				</node>
 				<node id="GameObjects">
-					<!-- <DevComment>Young Red Dragon</DevComment> -->
+					<!-- <DevComment>Adult Red Dragon</DevComment> -->
 					<attribute id="ParentTemplateId" type="FixedString" value="bb39735a-f886-4590-be48-2a606c4f5632" />
 					<attribute id="DisplayName" type="TranslatedString" handle="hfaa67339ge26eg4b11g927dg081d6629ca9e" version="1" />
 					<attribute id="LevelName" type="FixedString" value="" />

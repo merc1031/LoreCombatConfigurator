@@ -43,3 +43,12 @@
 
 [] New config
     Per entity, new entities to spawn nearby?
+
+
+[] Dragon stuff
+    * Mutliattack needs to apply Fear first
+    * Fear should only apply immmune on resist, or completion
+    * Find tail attack animation?
+    * Split animation for multi attack into bita, claw then we can re-use
+    * Need proper breath legendary reaction
+    * need to add legendary resistences
