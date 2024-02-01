@@ -231,6 +231,30 @@
 						</node>
 					</children>
 				</node>
+				<node id="GameObjects">
+					<!-- <DevComment>Young Red Dragon</DevComment> -->
+					<attribute id="ParentTemplateId" type="FixedString" value="bb39735a-f886-4590-be48-2a606c4f5632" />
+					<attribute id="DisplayName" type="TranslatedString" handle="hfaa67339ge26eg4b11g927dg081d6629ca9e" version="1" />
+					<attribute id="LevelName" type="FixedString" value="" />
+					<attribute id="LevelOverride" type="int32" value="17" />
+					<attribute id="MapKey" type="FixedString" value="2a9bcf88-7249-42b0-8e70-73889f6f79f8" />
+					<attribute id="Name" type="LSString" value="LCC_Dragon_AdultRed" />
+					<attribute id="Scale" type="float" value="0.80" />
+					<attribute id="SpellSet" type="FixedString" value="LCC_DragonAdultActions" />
+					<attribute id="Stats" type="FixedString" value="LCC_Dragon_AdultRed" />
+					<attribute id="Type" type="FixedString" value="character" />
+					<children>
+						<node id="LocomotionParams" />
+						<node id="SkillList" />
+						<node id="StatusList">
+							<children>
+								<node id="Status">
+									<attribute id="Object" type="FixedString" value="UNARMEDATTACK_OVERRIDE_DRAGON_ADULT" />
+								</node>
+							</children>
+						</node>
+					</children>
+				</node>
 			</children>
 		</node>
 	</region>
