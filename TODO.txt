@@ -52,3 +52,4 @@
     * Split animation for multi attack into bita, claw then we can re-use
     * Need proper breath legendary reaction
     * need to add legendary resistences
+    * need legendary action (attack with tail) and wingattack 2 cost aoe

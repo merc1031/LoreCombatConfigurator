@@ -2103,3 +2103,16 @@ LaughingLeader> That's for cycling between targets, like on a controller.
 Having Mulltiple Abilties Tagged IsAttack has VERY strange behaviour
 Last one ALWAYS replaces melee swing??
 Back to back ones, seem to replace each other kind of randomly
+
+
+feet to meters = 3.281
+
+120 feet = 36.576 meters
+90 feet = 27.432 meters
+60 feet = 18.288 meters
+30 feet = 9.144 meters
+20 feet = 6.096 meters
+15 feet = 4.572 meters
+10 feet = 3.048 meters
+5 feet = 1.524 meters
+2 feet = 0.6096 meters
