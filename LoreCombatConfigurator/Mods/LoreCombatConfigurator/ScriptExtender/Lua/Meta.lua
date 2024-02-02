@@ -3,7 +3,7 @@
 
 --- @class Range
 --- @field Min integer
--- @field Max integer
+--- @field Max integer
 
 --- @class Spell
 --- @field Name string
@@ -135,6 +135,7 @@
 --- @field ActionResources table<string, Guid>
 --- @field Tags table<string, Guid>
 --- @field Races table<string, Guid>
+--- @field Factions table<string, Guid>
 --- @field CombatGroups table<string, Template>
 --- @field ConfigFailed integer
 --- @field Log fun(level: integer, str: string) | nil

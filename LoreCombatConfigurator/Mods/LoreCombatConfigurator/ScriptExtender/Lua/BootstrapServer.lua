@@ -4394,6 +4394,7 @@ function CreateSessionContext()
         ActionResources = {},
         Tags = {},
         Races = {},
+        Factions = {},
         Archetypes = {},
         AIHints = {},
         CombatGroups = {},
@@ -4416,6 +4417,11 @@ function CreateSessionContext()
     for _, raceGuid in pairs(Ext.StaticData.GetAll("Race")) do
         local race = Ext.StaticData.Get(raceGuid, "Race")
         sessionContext.Races[race.Name] = raceGuid
+    end
+
+    for _, factionGuid in pairs(Ext.StaticData.GetAll("Faction")) do
+        local faction = Ext.StaticData.Get(factionGuid, "Faction")
+        sessionContext.Factions[faction.Faction] = factionGuid
     end
 
     local rootTemplates = Ext.Template.GetAllRootTemplates()
@@ -4958,7 +4964,20 @@ Ext.Events.GameStateChanged:Subscribe(function(event)
                                 local newGuid = Osi.CreateAt(template,x+Osi.Random(5)-5,y,z+Osi.Random(5)-5,0,1,"")
                                 SessionContext.Log(3, string.format("For CombatGroupID: %s; cfg: %s; near firstMember: %s, added %s", combatGroupID, cfg, firstMember.Uuid.EntityUuid, newGuid))
                                 if newGuid ~= nil then
-                                    Osi.SetFaction(newGuid, Osi.GetFaction(firstMember.Uuid.EntityUuid))
+                                    local faction = Osi.GetFaction(firstMember.Uuid.EntityUuid)
+                                    if data.FactionName ~= nil then
+                                        faction = SessionContext.Factions[data.FactionName]
+                                    elseif data.Faction ~= nil then
+                                        faction = data.Faction
+                                    end
+                                    Osi.SetFaction(newGuid, faction)
+                                    for _, entity in ipairs(members) do
+                                        if Osi.GetFaction(newGuid) ~= Osi.GetFaction(entity.Uuid.EntityUuid) then
+                                            Osi.SetRelationTemporaryHostile(newGuid, entity.Uuid.EntityUuid)
+                                            Osi.SetRelationTemporaryHostile(entity.Uuid.EntityUuid, newGuid)
+                                        end
+                                        -- Osi.AddToCombatGroup(newGuid, entity.Uuid.EntityUuid)
+                                    end
                                     Osi.SetCanJoinCombat(newGuid, Osi.CanJoinCombat(firstMember.Uuid.EntityUuid))
                                     Osi.SetLevel(newGuid, Osi.GetLevel(firstMember.Uuid.EntityUuid))
                                     SessionContext.Log(3, string.format("For CombatGroupID: %s; cfg: %s; finshed near firstMember: %s,added %s", combatGroupID, cfg, firstMember.Uuid.EntityUuid, newGuid))
