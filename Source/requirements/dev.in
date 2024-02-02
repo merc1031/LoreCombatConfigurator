@@ -6,3 +6,4 @@ setuptools-scm~=6.3
 tox~=3.24.5
 lxml~=5.0.0
 beautifulsoup4~=4.12.2
+requests==2.31.0

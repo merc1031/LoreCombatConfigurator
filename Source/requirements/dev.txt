@@ -10,8 +10,12 @@ beautifulsoup4==4.12.2
     # via -r Source/requirements/dev.in
 build==1.0.3
     # via pip-tools
+certifi==2024.2.2
+    # via requests
 cfgv==3.4.0
     # via pre-commit
+charset-normalizer==3.3.2
+    # via requests
 click==8.1.7
     # via
     #   -r Source/requirements/dev.in
@@ -30,6 +34,8 @@ filelock==3.13.1
     #   virtualenv
 identify==2.5.33
     # via pre-commit
+idna==3.6
+    # via requests
 jinja2==3.1.2
     # via commitizen
 lxml==5.0.0
@@ -66,6 +72,8 @@ pyyaml==6.0.1
     #   pre-commit
 questionary==1.10.0
     # via commitizen
+requests==2.31.0
+    # via -r Source/requirements/dev.in
 setuptools-scm==6.4.2
     # via -r Source/requirements/dev.in
 six==1.16.0
@@ -90,6 +98,8 @@ tox==3.24.5
     # via -r Source/requirements/dev.in
 typing-extensions==4.9.0
     # via commitizen
+urllib3==2.2.0
+    # via requests
 virtualenv==20.25.0
     # via
     #   pre-commit
