@@ -95,4 +95,9 @@
 	<content contentuid="hc8163d4agec62g4a1fg8be5g03a2c1289730" version="1">Vicously rend your target with a bite and 2 claw strikes</content>
 
 	<content contentuid="haa671622g36a3g4662g8001geb78257d93b9" version="1">Ancient Wyrm's Scales</content>
+
+	<content contentuid="h084d9dd4g4196g4fbbg85d5gf643bbdfe4d0" version="1">Legendary Action: Ancient Draconic Fury</content>
+	<content contentuid="h252facd2gd24dg441cg8bd0g98f95b043925" version="1">This ancient drake will use its &lt;LSTag Type="Spell" Tooltip="Zone_LCC_BreathWeapon_DragonAncient_Fire_Cone"&gt;Fire Breath&lt;/LSTag&gt; on the next creature that attacks it.</content>
+	<content contentuid="h09d0d1f1g857eg41f5gaac8ge0cb18cc252a" version="1">Legendary Action: Ancient Draconic Fury</content>
+	<content contentuid="h6a4b66bfg9801g4ca3g8da9g479b1a2aa161" version="1">The ancient dragon can retaliate against an attacker with its breath weapon once per round.</content>
 </contentList>
