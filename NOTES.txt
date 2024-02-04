@@ -2109,10 +2109,23 @@ feet to meters = 3.281
 
 120 feet = 36.576 meters
 90 feet = 27.432 meters
+80 feet = 24.384 meters
 60 feet = 18.288 meters
+40 feet = 12.192 meters
 30 feet = 9.144 meters
 20 feet = 6.096 meters
 15 feet = 4.572 meters
 10 feet = 3.048 meters
 5 feet = 1.524 meters
 2 feet = 0.6096 meters
+
+
+Drakewarden VisualPreset using is ddd20049-2ec2-07a7-b4d6-02a38b25d6ac
+ in BG3_Drakewarden\Drakewarden\Public\Drakewarden\Content\Assets\Characters\[PAK]_Creature_Presets\_merged.lsx
+ base ddd9c12d-5b6f-7543-ba76-10d1a91d93ce
+   in BG3_Drakewarden\Drakewarden\Public\Drakewarden\Content\Assets\Characters\Creatures\Dragon\[PAK]_Dragon_Red_Body\_merged.lsx
+   animation waterfal dddd300d-58e7-ab8c-25c5-4446e93e144c in same file
+     this seems to be where the animation edits were done. Found multiattack here as well.....
+ bodyset ddd006bc-5eb7-a43b-752d-e938e0b7b2bc
+ headslot dddab7f8-d1df-1995-b8f7-1f227ca04ff7
+ bodyslot dddb450e-31ec-f7a2-ab92-98b182c01a6d
