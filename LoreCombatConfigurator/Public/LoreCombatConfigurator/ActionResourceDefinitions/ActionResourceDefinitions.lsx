@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="0" revision="9" build="312" />
+	<region id="ActionResourceDefinitions">
+		<node id="root">
+			<children>
+				<node id="ActionResourceDefinition">
+					<attribute id="DisplayName" type="TranslatedString" handle="h6fbe6284gc7c7g44f1g8d8eg56a25ef64471" version="1" />
+					<attribute id="Description" type="TranslatedString" handle="ha3f960b3gf9dbg4e66ga2a8gf94292a2065c" version="1" />
+					<attribute id="MaxLevel" type="uint32" value="0" />
+					<attribute id="Name" type="FixedString" value="LCC_LegendaryActionPoint" />
+					<attribute id="ReplenishType" type="FixedString" value="Turn" />
+					<attribute id="UUID" type="guid" value="aba83ba6-c887-4879-b6f3-9c6748c39036" />
+				</node>
+			</children>
+		</node>
+	</region>
+</save>
