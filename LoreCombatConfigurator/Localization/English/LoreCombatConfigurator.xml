@@ -25,6 +25,9 @@
 	<content contentuid="2637a907-23d7-417c-ae9e-83a0e65d7d8b" version="1">Reload Config</content>
 	<content contentuid="37a8b71e-d6f8-4a86-9869-3916629081f0" version="1">Reloads the LoreCombatConfigurator.json</content>
 
+	<content contentuid="h6fbe6284gc7c7g44f1g8d8eg56a25ef64471" version="1">Legendary Action Point</content>
+	<content contentuid="ha3f960b3gf9dbg4e66ga2a8gf94292a2065c" version="1">Allows the enemy to use legendary actions between player turns</content>
+
 	<content contentuid="h8a234215g7f0cg446bgb33bga6ea755e8a22" version="1">Red Cap Mutant</content>
 
 	<content contentuid="h06de06b7g0adcg4db0gae27gc7854231bc69" version="1">Wolfy</content>
@@ -56,6 +59,7 @@
 
 	<content contentuid="heb92a984g3362g4c83gabc4g11f0797680db" version="1">Younger Wyrm's Scales</content>
 
+	<!-- Adult Red Dragon -->
 	<content contentuid="hfaa67339ge26eg4b11g927dg081d6629ca9e" version="1">Adult Red Dragon</content>
 
 	<content contentuid="hcb6974b6g098cg4f0dgb003gc05b576b69bf" version="1">Frightful Presence Immunity</content>
@@ -80,6 +84,14 @@
 	<content contentuid="h92d928b0geb31g41bdg80d9gb9a466d9c993" version="1">Legendary Action: Adult Draconic Fury</content>
 	<content contentuid="h24cbd247ga565g44f2g8111gac9b1e0bc5d5" version="1">The adult dragon can retaliate against an attacker with its breath weapon once per round.</content>
 
+	<content contentuid="h4ccfd4a0g5f7fg4511g91e1gfe46a6170485" version="1">Adult Red Dragon Legendary Actions</content>
+	<content contentuid="h57c958ecg7129g47dagb1b4g68c09a15439f" version="1">Adult Red Dragon Perform Legendary Action</content>
+	<content contentuid="h76906acdg5746g471bgb47dgf250287364a8" version="1">Adult Red Dragon End Turn Legendary Action Check</content>
+	<content contentuid="haf78fb20g63e1g4f85g9702g6540ed03adbe" version="1">Adult Red Dragon Legendary Action Pulse</content>
+	<content contentuid="h550dc1a0g80ebg4538g97a3gc59034371d31" version="1">Adult Red Dragon End Turn Aura Legendary Action Check</content>
+	<content contentuid="h832be1b4gabd4g4dfbga225gc70cbed784d7" version="1">Adult Red Dragon Legendary Action Pulse Aura</content>
+
+	<!-- Ancient Red Dragon -->
 	<content contentuid="h01b14ccag1c36g4800gbdd8g6693f8e29c9a" version="1">Ancient Red Dragon</content>
 
 	<content contentuid="hc510bd72g61a1g4757gb736g0271fe70f920" version="1">Ancient Dragon Bite</content>

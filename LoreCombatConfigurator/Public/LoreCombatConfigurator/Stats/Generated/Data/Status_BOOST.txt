@@ -110,3 +110,52 @@ data "Passives" "Dragon_RedAncient_Retaliate"
 data "TickFunctors" "IF(not HasStatus('DRAGON_RED_ANCIENT_RETALIATE')):ApplyStatus(DRAGON_RED_ANCIENT_RETALIATE,100,-1)"
 data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;DisablePortraitIndicator;ApplyToDead"
 data "OnRemoveFunctors" "RemoveStatus(DRAGON_RED_ANCIENT_RETALIATE)"
+
+new entry "DRAGON_RED_ADULT_LEGENDARY_ACTIONS_TECHNICAL"
+type "StatusData"
+data "StatusType" "BOOST"
+// %%% EMPTY
+data "DisplayName" "h4ccfd4a0g5f7fg4511g91e1gfe46a6170485;1"
+data "Boosts" "ActionResource(LCC_LegendaryActionPoint,3,0)"
+
+new entry "DRAGON_RED_ADULT_LEGENDARY_ACTION_CHECK"
+type "StatusData"
+data "StatusType" "BOOST"
+// %%% EMPTY
+data "StackId" "DRAGON_LEGENDARY_ACTION_CHECK_TECHNICAL"
+data "DisplayName" "h57c958ecg7129g47dagb1b4g68c09a15439f;1"
+// data "OnApplyFunctors" "IF(HasActionResource('LCC_LegendaryActionPoint', 2, 0, false, false, context.Source) and HasEnemyWithinRange('SG_Incapacitated', 3, nil, 2)):UseSpell(Zone_LCC_BreathWeapon_DragonAdult_Fire_Cone, true, true, true);IF(HasActionResource('LCC_LegendaryActionPoint', 1, 0, false, false, context.Source) and HasEnemyWithinRange('SG_Incapacitated', 4.5)):UseSpell(Target_LCC_Tail_DragonAdult, true, true, true)"
+// data "OnApplyFunctors" "IF(HasEnemyWithinRange('SG_Incapacitated', 3, nil, 2)):UseSpell(Zone_LCC_BreathWeapon_DragonAdult_Fire_Cone, true, true, true);IF(HasEnemyWithinRange('SG_Incapacitated', 4.5)):UseSpell(Target_LCC_Tail_DragonAdult, true, true, true)"
+data "OnApplyFunctors" "UseSpell(SWAP,Target_LCC_Tail_DragonAdult, false, false, true);RemoveStatus(DRAGON_RED_ADULT_LEGENDARY_ACTION_CHECK);"
+
+new entry "DRAGON_RED_ADULT_LEGENDARY_PER_TURN_ACTION_CHECK_AURA_TECHNICAL"
+type "StatusData"
+data "StatusType" "BOOST"
+// %%% EMPTY
+data "DisplayName" "h550dc1a0g80ebg4538g97a3gc59034371d31;1"
+data "AuraRadius" "50"
+data "AuraStatuses" "IF(Enemy() and HasStatus('DRAGON_RED_ADULT_LEGENDARY_PULSE_TECHNICAL')):ApplyStatus(DRAGON_RED_ADULT_LEGENDARY_ACTION_CHECK, 100, 0)"
+
+new entry "DRAGON_RED_ADULT_LEGENDARY_PER_TURN_ACTION_CHECK"
+type "StatusData"
+data "StatusType" "BOOST"
+// %%% EMPTY
+data "DisplayName" "h76906acdg5746g471bgb47dgf250287364a8;1"
+data "TickType" "EndTurn"
+data "TickFunctors" "ApplyStatus(DRAGON_RED_ADULT_LEGENDARY_PER_TURN_ACTION_CHECK_AURA_TECHNICAL, 100, 0)"
+
+new entry "DRAGON_RED_ADULT_LEGENDARY_PULSE_AURA_TECHNICAL"
+type "StatusData"
+data "StatusType" "BOOST"
+// %%% EMPTY
+data "DisplayName" "h832be1b4gabd4g4dfbga225gc70cbed784d7;1"
+data "AuraRadius" "50"
+data "AuraStatuses" "IF(Enemy() and not Tagged('INANIMATE')):ApplyStatus(DRAGON_RED_ADULT_LEGENDARY_PER_TURN_ACTION_CHECK, 100, 1)"
+
+new entry "DRAGON_RED_ADULT_LEGENDARY_PULSE_TECHNICAL"
+type "StatusData"
+data "StatusType" "BOOST"
+// %%% EMPTY
+data "DisplayName" "haf78fb20g63e1g4f85g9702g6540ed03adbe;1"
+data "TickType" "StartRound"
+data "TickFunctors" "ApplyStatus(DRAGON_RED_ADULT_LEGENDARY_PULSE_AURA_TECHNICAL, 100, 1)"
