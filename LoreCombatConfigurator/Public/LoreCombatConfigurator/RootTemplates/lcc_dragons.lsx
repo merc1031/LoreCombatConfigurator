@@ -215,7 +215,7 @@
 					<attribute id="LevelOverride" type="int32" value="10" />
 					<attribute id="MapKey" type="FixedString" value="bb39735a-f886-4590-be48-2a606c4f5632" />
 					<attribute id="Name" type="LSString" value="LCC_Dragon_YoungRed" />
-					<attribute id="Scale" type="float" value="0.45" />
+					<attribute id="Scale" type="float" value="0.50" />
 					<attribute id="SpellSet" type="FixedString" value="LCC_DragonYoungActions" />
 					<attribute id="Stats" type="FixedString" value="LCC_Dragon_YoungRed" />
 					<attribute id="Type" type="FixedString" value="character" />
@@ -239,7 +239,7 @@
 					<attribute id="LevelOverride" type="int32" value="17" />
 					<attribute id="MapKey" type="FixedString" value="2a9bcf88-7249-42b0-8e70-73889f6f79f8" />
 					<attribute id="Name" type="LSString" value="LCC_Dragon_AdultRed" />
-					<attribute id="Scale" type="float" value="0.80" />
+					<attribute id="Scale" type="float" value="1.00" />
 					<attribute id="SpellSet" type="FixedString" value="LCC_DragonAdultActions" />
 					<attribute id="Stats" type="FixedString" value="LCC_Dragon_AdultRed" />
 					<attribute id="Type" type="FixedString" value="character" />
@@ -263,7 +263,7 @@
 					<attribute id="LevelOverride" type="int32" value="24" />
 					<attribute id="MapKey" type="FixedString" value="7d5aae00-8c6f-4c7c-94bf-f262f28e972b" />
 					<attribute id="Name" type="LSString" value="LCC_Dragon_AncientRed" />
-					<attribute id="Scale" type="float" value="1.20" />
+					<attribute id="Scale" type="float" value="1.40" />
 					<attribute id="SpellSet" type="FixedString" value="LCC_DragonAncientActions" />
 					<attribute id="Stats" type="FixedString" value="LCC_Dragon_AncientRed" />
 					<attribute id="Type" type="FixedString" value="character" />
