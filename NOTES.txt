@@ -2129,3 +2129,30 @@ Drakewarden VisualPreset using is ddd20049-2ec2-07a7-b4d6-02a38b25d6ac
  bodyset ddd006bc-5eb7-a43b-752d-e938e0b7b2bc
  headslot dddab7f8-d1df-1995-b8f7-1f227ca04ff7
  bodyslot dddb450e-31ec-f7a2-ab92-98b182c01a6d
+
+
+Dragon Flight
+
+CastEffect c51c542f-e2d1-46fe-ac33-2dfd0f057bd7
+Shared/Public/SharedDev/MultiEffectInfos/c51c542f-e2d1-46fe-ac33-2dfd0f057bd7.lsf.lsx
+PositionEffect 4ae31d59-2d6c-4a68-8bc1-928cf2f9e37c
+Shared\Public\SharedDev\MultiEffectInfos\4ae31d59-2d6c-4a68-8bc1-928cf2f9e37c.lsf.lsx
+                      2 values, null and Skel Still Combat    Red Fly Antic +  Skel Fly Antic        Red Fly Attack + Skel Fly Attack       Red Fly Recover + Skel Fly Recover     null + Skel Skill Combat same as first
+data "SpellAnimation" "24ca7042-fcbd-45a2-86bc-cfbe9ebd1db0,,;2b83de89-ce8b-4e64-95a9-0be378cb78d9,,;51590072-32d2-4d56-962a-a87685538e56,,;5c4cb3d6-2d3b-4f70-9ad5-d6ef58f658cf,,;b719b67b-a530-43a2-b9a4-95f56a681fc7,,;,,;,,;,,;,,"
+
+SpellAnimation Details from Koala
+Prepare, Anticipation, Cast, Recover, Idle
+Prepare,,;
+Cast/Anti,,;
+Cast,,;
+Cast/Recover,,;
+Idle,,;
+Anti/Recover,,;
+Recover,,;
+8 and 9 are special?
+
+1 is selecting spells?
+2-4 are casting
+5 is idle
+6-7 are cancelling
+2 4 6 are usually smears?

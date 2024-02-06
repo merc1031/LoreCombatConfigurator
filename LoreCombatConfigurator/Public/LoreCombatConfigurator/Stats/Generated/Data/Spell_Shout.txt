@@ -48,3 +48,27 @@ data "PrepareEffect" ""
 data "CastEffect" "c51c542f-e2d1-46fe-ac33-2dfd0f057bd7"
 data "TargetEffect" "46637bd0-eeda-40f4-bd69-4c53c2c8d47a"
 data "Sheathing" "DontChange"
+
+// ab6fb758-3ff1-42c9-9716-3372d1701a95 idle still combat flight
+
+// b3cfdeb0-fc45-4a10-b6fb-3c62817662eb combat skill mighty slam attack
+
+// 0c5b02b2-285e-4b39-bc41-46ada271343d combat skill enter flight far antic
+
+// d172e037-7041-4352-9a20-5f4b185f9ef1 combat skill frightfull presenece recover
+
+// bff38699-8732-41a7-8f8c-8045920ad188 combat skill end flight recover
+
+// 0e8c7d53-76c7-4862-847f-151548da02a0 combat skill end flight attack
+
+// 72f2b73f-ab59-4ea7-99fa-ac1c8b298e80 fly landing
+
+// 13b7fbd2-dbce-4f25-8670-d08df8efa021 combat skill fireball antic
+
+// 51590072-32d2-4d56-962a-a87685538e56 combat skill fly attack
+
+// 796476cb-cf16-47ba-b790-bfa5b4c0e863 combat skill enter flight local attack
+
+// d25e89c9-2785-4ed2-abbc-5eee6f2785db combat skill fireball attack
+
+// 47914f67-1915-4f42-bd42-68f565a25ec0 combat skill enter flight local antic
